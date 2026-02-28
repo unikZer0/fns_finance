@@ -10,7 +10,11 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     {{ __("You're logged in!") }}
+
                 </div>
+                <p class="mt-4">
+                    Your role is: <strong>{{ auth()->user()->role }}</strong>
+                </p>
             </div>
         </div>
     </div>
