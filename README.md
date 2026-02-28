@@ -1,59 +1,232 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel Breeze Authentication System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+โปรเจคนี้เป็นระบบ Authentication ที่พัฒนาด้วย Laravel Breeze พร้อมการปรับแต่งเฉพาะทางตามความต้องการขององค์กร
 
-## About Laravel
+## 🎯 ฟีเจอร์หลัก
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- ✅ **Login ด้วย Username** - ใช้ username แทน email ในการเข้าสู่ระบบ
+- ❌ **ไม่มีระบบ Register** - ปิดการสมัครสมาชิกด้วยตนเอง (เพิ่มผู้ใช้ผ่าน Admin เท่านั้น)
+- 🔒 **บังคับ Login ทุกหน้า** - ต้องเข้าสู่ระบบก่อนเข้าใช้งานทุกหน้า
+- 👥 **ระบบ Role และ Department** - จัดการสิทธิ์ผู้ใช้ตามบทบาทและแผนก
+- ✅ **ตรวจสอบสถานะผู้ใช้** - เช็ค `is_active` ก่อนเข้าใช้งาน
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 📋 โครงสร้าง Database
 
-## Learning Laravel
+### roles
+| Column | Type | Description |
+|--------|------|-------------|
+| id | int | Primary Key |
+| role_name | varchar(50) | ชื่อบทบาท |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### departments
+| Column | Type | Description |
+|--------|------|-------------|
+| id | int | Primary Key |
+| department_name | varchar(100) | ชื่อแผนก |
+| department_type | varchar(50) | ประเภทแผนก |
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### users
+| Column | Type | Description |
+|--------|------|-------------|
+| id | int | Primary Key |
+| username | varchar(50) | ชื่อผู้ใช้ (Unique) |
+| password | varchar(255) | รหัสผ่าน (Hash) |
+| full_name | varchar(100) | ชื่อ-นามสกุล |
+| role_id | int | Foreign Key -> roles.id |
+| department_id | int | Foreign Key -> departments.id |
+| is_active | tinyint | สถานะการใช้งาน (1=active, 0=inactive) |
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🚀 การติดตั้ง
 
-### Premium Partners
+### 1. ติดตั้ง Dependencies
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+composer install
+npm install
+```
 
-## Contributing
+### 2. ติดตั้ง Laravel Breeze
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+composer require laravel/breeze --dev
+php artisan breeze:install blade
+```
 
-## Code of Conduct
+### 3. ตั้งค่า Environment
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Security Vulnerabilities
+แก้ไขไฟล์ `.env` ตั้งค่า database:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```env
+DB_CONNECTION=mysql
+DB_HOST=your_host
+DB_PORT=3306
+DB_DATABASE=your_database
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
 
-## License
+### 4. รัน Migration และ Seeder
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan migrate
+php artisan db:seed
+```
+
+### 5. Build Assets
+
+```bash
+npm run build
+# หรือ
+npm run dev
+```
+
+### 6. รันเซิร์ฟเวอร์
+
+```bash
+php artisan serve
+```
+
+---
+
+## 🔑 ข้อมูล Login ทดสอบ
+
+| Username | Password | Role | แผนก |
+|----------|----------|------|------|
+| `admin` | `admin123` | Admin | ฝ่ายบริหาร |
+| `finance01` | `password123` | Finance | ฝ่ายการเงิน |
+
+---
+
+## 📁 ไฟล์ที่แก้ไข/สร้างใหม่
+
+### Models
+- `app/Models/User.php` - แก้ไขให้รองรับ username และ relationships
+- `app/Models/Role.php` - สร้างใหม่
+- `app/Models/Department.php` - สร้างใหม่
+
+### Controllers
+- `app/Http/Controllers/Auth/AuthenticatedSessionController.php` - เพิ่มเช็ค is_active
+- `app/Http/Controllers/Auth/PasswordController.php` - มีอยู่แล้ว (ใช้สำหรับเปลี่ยนรหัสผ่าน)
+- `app/Http/Controllers/ProfileController.php` - แก้ไขให้ใช้ full_name
+
+### Requests
+- `app/Http/Requests/Auth/LoginRequest.php` - เปลี่ยนจาก email เป็น username
+- `app/Http/Requests/ProfileUpdateRequest.php` - แก้ไข validation rules
+
+### Middleware
+- `app/Http/Middleware/CheckUserActive.php` - สร้างใหม่สำหรับเช็คสถานะผู้ใช้
+
+### Routes
+- `routes/auth.php` - ลบ register routes, เพิ่ม password.update
+- `routes/web.php` - บังคับ auth และ check.active middleware
+
+### Views
+- `resources/views/auth/login.blade.php` - ใช้ username แทน email
+- `resources/views/layouts/navigation.blade.php` - แสดง full_name และ username
+- `resources/views/profile/partials/update-profile-information-form.blade.php` - แก้ไขฟอร์ม
+
+### Seeders
+- `database/seeders/RoleSeeder.php` - Roles ตัวอย่าง
+- `database/seeders/DepartmentSeeder.php` - Departments ตัวอย่าง
+- `database/seeders/AdminUserSeeder.php` - Admin user
+- `database/seeders/DatabaseSeeder.php` - เรียกใช้ seeders ทั้งหมด
+
+### Bootstrap
+- `bootstrap/app.php` - ลงทะเบียน middleware alias
+
+---
+
+## 🔐 Middleware
+
+### check.active
+ตรวจสอบว่าผู้ใช้ยังมีสถานะ active อยู่หรือไม่ หากไม่ active จะ logout และ redirect ไปหน้า login พร้อมข้อความแจ้งเตือน
+
+```php
+// ใช้ใน routes
+Route::middleware(['auth', 'check.active'])->group(function () {
+    // routes ที่ต้องการให้ login และ active
+});
+```
+
+---
+
+## 📝 การเพิ่มผู้ใช้ใหม่
+
+เนื่องจากปิดระบบ Register ผู้ใช้ใหม่ต้องเพิ่มผ่าน Seeder หรือ Tinker:
+
+### วิธีที่ 1: ใช้ Tinker
+
+```bash
+php artisan tinker
+```
+
+```php
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
+User::create([
+    'username' => 'newuser',
+    'password' => Hash::make('password123'),
+    'full_name' => 'ชื่อผู้ใช้ใหม่',
+    'role_id' => 3, // Finance
+    'department_id' => 2, // ฝ่ายการเงิน
+    'is_active' => true,
+]);
+```
+
+### วิธีที่ 2: สร้าง Seeder ใหม่
+
+```bash
+php artisan make:seeder NewUserSeeder
+```
+
+แล้วรัน:
+
+```bash
+php artisan db:seed --class=NewUserSeeder
+```
+
+---
+
+## 🛠️ คำสั่งที่มีประโยชน์
+
+```bash
+# ล้าง cache
+php artisan optimize:clear
+
+# รัน seeder ใหม่
+php artisan db:seed
+
+# รัน seeder เฉพาะ class
+php artisan db:seed --class=RoleSeeder
+
+# ดูรายการ routes
+php artisan route:list
+
+# ตรวจสอบโครงสร้าง database
+php artisan db:show
+```
+
+---
+
+## ⚠️ หมายเหตุ
+
+- ระบบนี้ไม่มีการส่ง email (ไม่มี email verification, password reset)
+- การเปลี่ยนรหัสผ่านทำได้ที่หน้า Profile เท่านั้น
+- ผู้ใช้ที่ไม่ active จะไม่สามารถ login หรือใช้งานระบบได้
+- หน้าแรก (`/`) จะ redirect ไปที่หน้า login อัตโนมัติ
+
+---
+
+## 📄 License
+
+This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
