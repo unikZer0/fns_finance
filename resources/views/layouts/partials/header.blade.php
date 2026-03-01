@@ -2,14 +2,14 @@
     <!-- Page Title -->
     <div>
         <h1 class="text-xl font-semibold text-gray-800">
-            @yield('page-title', 'Dashboard')
+            @yield('page-title', 'ແດຊບອດ')
         </h1>
     </div>
 
     <!-- User Menu -->
     <div class="flex items-center space-x-4">
         <span class="text-sm text-gray-600">
-            {{ auth()->user()->full_name ?? 'ผู้ใช้งาน' }}
+            {{ auth()->user()->full_name ?? 'ຜູ້ໃຊ້' }}
         </span>
         <div class="relative">
             <button class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none">
