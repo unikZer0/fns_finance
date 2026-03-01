@@ -22,22 +22,26 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // $user->role is a belongsTo relationship returning a Role model.
+        // The 'role_name' column values match exactly what's in DB (lowercase_underscores).
         Gate::define('admin', function ($user) {
-            return $user->role === 'admin';
+            return $user->role?->role_name === 'admin';
         });
 
         Gate::define('head_of_finance', function ($user) {
-            return in_array($user->role, ['head_of_finance']);
+            return $user->role?->role_name === 'head_of_finance';
         });
 
         Gate::define('accountant', function ($user) {
-            return in_array($user->role, ['accountant']);
+            return $user->role?->role_name === 'accountant';
         });
+
         Gate::define('deputy_head_of_faculty', function ($user) {
-            return in_array($user->role, ['deputy_head_of_faculty']);
+            return $user->role?->role_name === 'deputy_head_of_faculty';
         });
+
         Gate::define('head_of_faculty', function ($user) {
-            return in_array($user->role, ['head_of_faculty']);
+            return $user->role?->role_name === 'head_of_faculty';
         });
 
         // Provide categories to header component for category filtering links

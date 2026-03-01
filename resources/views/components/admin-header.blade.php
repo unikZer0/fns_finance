@@ -46,7 +46,7 @@
                 @endauth
                 <span class="text-sm text-gray-500">{{ now()->format('d/m/Y') }}</span>
                 <div class="flex items-center space-x-2">
-                    <span class="text-sm">{{ Auth::user()->name ?? 'Admin' }}</span>
+                    <span class="text-sm">{{ Auth::user()->username ?? 'Admin' }}</span>
                     <form method="POST" action="{{ route('logout') }}" class="logout-form">
                         @csrf
                         <button type="submit"
