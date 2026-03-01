@@ -9,6 +9,7 @@
 - 🔒 **บังคับ Login ทุกหน้า** - ต้องเข้าสู่ระบบก่อนเข้าใช้งานทุกหน้า
 - 👥 **ระบบ Role และ Department** - จัดการสิทธิ์ผู้ใช้ตามบทบาทและแผนก
 - ✅ **ตรวจสอบสถานะผู้ใช้** - เช็ค `is_active` ก่อนเข้าใช้งาน
+- 📊 **Admin Dashboard** - ระบบจัดการข้อมูลพื้นฐาน (CRUD) สำหรับ Admin
 
 ---
 
@@ -37,6 +38,45 @@
 | role_id | int | Foreign Key -> roles.id |
 | department_id | int | Foreign Key -> departments.id |
 | is_active | tinyint | สถานะการใช้งาน (1=active, 0=inactive) |
+
+---
+
+## 📊 Admin Dashboard
+
+ระบบจัดการข้อมูลพื้นฐานสำหรับผู้ดูแลระบบ (Admin) ประกอบด้วย 4 โมดูลหลัก:
+
+### 🧑‍💼 Users (จัดการผู้ใช้งาน)
+- URL: `/admin/users`
+- ฟีเจอร์:
+  - เพิ่ม/แก้ไข/ลบ/ดูรายละเอียด ผู้ใช้งาน
+  - Search ตาม username, full_name
+  - Filter ตาม Role, Department, Status
+  - Pagination
+  - Validation ข้อมูล
+  - ป้องกันการลบตัวเอง
+
+### 🛡️ Roles (จัดการบทบาท)
+- URL: `/admin/roles`
+- ฟีเจอร์:
+  - เพิ่ม/แก้ไข/ลบ/ดูรายละเอียด บทบาท
+  - แสดงจำนวนผู้ใช้งานในแต่ละบทบาท
+  - Search ตามชื่อบทบาท
+  - ป้องกันการลบบทบาทที่มีผู้ใช้งานอยู่
+
+### 🏢 Departments (จัดการแผนก)
+- URL: `/admin/departments`
+- ฟีเจอร์:
+  - เพิ่ม/แก้ไข/ลบ/ดูรายละเอียด แผนก
+  - Filter ตามประเภทแผนก
+  - Search ตามชื่อหรือประเภทแผนก
+  - ป้องกันการลบแผนกที่มีผู้ใช้งานอยู่
+
+### 📒 Chart of Accounts (ผังบัญชี)
+- URL: `/admin/chart-of-accounts`
+- ฟีเจอร์:
+  - เพิ่ม/แก้ไข/ลบ/ดูรายละเอียด บัญชี
+  - Search ตามรหัสหรือชื่อบัญชี
+  - เรียงลำดับตามรหัสบัญชี
 
 ---
 
@@ -112,11 +152,16 @@ php artisan serve
 - `app/Models/User.php` - แก้ไขให้รองรับ username และ relationships
 - `app/Models/Role.php` - สร้างใหม่
 - `app/Models/Department.php` - สร้างใหม่
+- `app/Models/ChartOfAccount.php` - สร้างใหม่
 
 ### Controllers
 - `app/Http/Controllers/Auth/AuthenticatedSessionController.php` - เพิ่มเช็ค is_active
 - `app/Http/Controllers/Auth/PasswordController.php` - มีอยู่แล้ว (ใช้สำหรับเปลี่ยนรหัสผ่าน)
 - `app/Http/Controllers/ProfileController.php` - แก้ไขให้ใช้ full_name
+- `app/Http/Controllers/Admin/UserController.php` - Resource Controller สำหรับจัดการผู้ใช้งาน
+- `app/Http/Controllers/Admin/RoleController.php` - Resource Controller สำหรับจัดการบทบาท
+- `app/Http/Controllers/Admin/DepartmentController.php` - Resource Controller สำหรับจัดการแผนก
+- `app/Http/Controllers/Admin/ChartOfAccountController.php` - Resource Controller สำหรับจัดการผังบัญชี
 
 ### Requests
 - `app/Http/Requests/Auth/LoginRequest.php` - เปลี่ยนจาก email เป็น username
@@ -128,11 +173,19 @@ php artisan serve
 ### Routes
 - `routes/auth.php` - ลบ register routes, เพิ่ม password.update
 - `routes/web.php` - บังคับ auth และ check.active middleware
+- `routes/admin.php` - เพิ่ม Resource Routes สำหรับ Admin Dashboard (users, roles, departments, chart-of-accounts)
 
 ### Views
 - `resources/views/auth/login.blade.php` - ใช้ username แทน email
 - `resources/views/layouts/navigation.blade.php` - แสดง full_name และ username
 - `resources/views/profile/partials/update-profile-information-form.blade.php` - แก้ไขฟอร์ม
+- `resources/views/layouts/admin.blade.php` - Layout หลักสำหรับ Admin Dashboard
+- `resources/views/layouts/partials/sidebar.blade.php` - Sidebar Navigation
+- `resources/views/layouts/partials/header.blade.php` - Header สำหรับ Admin Dashboard
+- `resources/views/admin/users/` - Views สำหรับจัดการผู้ใช้งาน (index, create, edit, show)
+- `resources/views/admin/roles/` - Views สำหรับจัดการบทบาท (index, create, edit, show)
+- `resources/views/admin/departments/` - Views สำหรับจัดการแผนก (index, create, edit, show)
+- `resources/views/admin/chart-of-accounts/` - Views สำหรับจัดการผังบัญชี (index, create, edit, show)
 
 ### Seeders
 - `database/seeders/RoleSeeder.php` - Roles ตัวอย่าง
@@ -161,7 +214,11 @@ Route::middleware(['auth', 'check.active'])->group(function () {
 
 ## 📝 การเพิ่มผู้ใช้ใหม่
 
-เนื่องจากปิดระบบ Register ผู้ใช้ใหม่ต้องเพิ่มผ่าน Seeder หรือ Tinker:
+### วิธีที่แนะนำ: ใช้ Admin Dashboard
+เข้าสู่ระบบด้วยบัญชี Admin แล้วไปที่ `/admin/users` → คลิก "เพิ่มผู้ใช้งาน"
+
+### วิธีอื่น (ใช้ Tinker หรือ Seeder)
+เนื่องจากปิดระบบ Register ผู้ใช้ใหม่สามารถเพิ่มผ่าน Seeder หรือ Tinker:
 
 ### วิธีที่ 1: ใช้ Tinker
 
