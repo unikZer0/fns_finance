@@ -284,6 +284,63 @@ php artisan db:show
 
 ---
 
+## ⚡ การปรับปรุงประสิทธิภาพ (Performance Optimization)
+
+### วันที่ปรับปรุง: 2026-03-01
+
+ได้ทำการปรับปรุงประสิทธิภาพระบบเพื่อแก้ไขปัญหาหน้าเว็บโหลดช้า ดังนี้:
+
+#### 1. แก้ไข Alpine.js โหลดซ้ำ (Double Loading)
+**ปัญหา:** Alpine.js ถูกโหลดทั้งจาก CDN และจาก npm (Vite) ทำให้ทำงานซ้ำซ้อน
+
+**ไฟล์ที่แก้ไข:**
+- `resources/views/layouts/admin.blade.php`
+- `resources/views/layouts/app.blade.php`
+
+**การแก้ไข:** ลบ CDN `//unpkg.com/alpinejs` ออกจากทั้งสองไฟล์ ให้เหลือแค่การโหลดผ่าน `@vite()`
+
+#### 2. ลบ Custom Element ที่ไม่มีอยู่จริง
+**ปัญหา:** `<notification-bell>` เป็น Custom HTML Tag ที่ไม่ได้ถูกนิยามใน JavaScript ทำให้ Browser รอโหลด
+
+**ไฟล์ที่แก้ไข:**
+- `resources/views/components/admin-header.blade.php`
+
+**การแก้ไข:** เปลี่ยนเป็น comment ไว้ก่อน (`{{-- Notification component will be added here --}}`)
+
+#### 3. แก้ไข N+1 Query Problem
+**ปัญหา:** การใช้ `$department->users()->count()` ใน loop ทำให้เกิด query ซ้ำหลายครั้ง
+
+**ไฟล์ที่แก้ไข:**
+- `app/Http/Controllers/Admin/DepartmentController.php`
+
+**การแก้ไข:**
+- ใช้ `withCount('users')` ใน method `index()` เพื่อโหลด count ทั้งหมดในครั้งเดียว
+- ใช้ `$department->users_count` แทน `users()->count()` ใน method `destroy()`
+
+#### 4. เพิ่ม Caching สำหรับข้อมูลที่ไม่เปลี่ยนบ่อย
+**ปัญหา:** การ query `department_types` ทุกครั้งที่โหลดหน้า Departments
+
+**ไฟล์ที่แก้ไข:**
+- `app/Http/Controllers/Admin/DepartmentController.php`
+
+**การแก้ไข:**
+- Cache รายการ `department_types` ไว้ 1 ชั่วโมง (`cache()->remember()`)
+- Clear cache เมื่อมีการลบ department
+
+#### คำแนะนำเพิ่มเติมสำหรับ Production
+
+```env
+# ปิด debug mode
+APP_DEBUG=false
+APP_ENV=production
+
+# ใช้ Redis สำหรับ Cache และ Session (ถ้ามี)
+CACHE_STORE=redis
+SESSION_DRIVER=redis
+```
+
+---
+
 ## 📄 License
 
 This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

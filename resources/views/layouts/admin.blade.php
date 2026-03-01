@@ -9,7 +9,6 @@
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="//unpkg.com/alpinejs" defer></script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

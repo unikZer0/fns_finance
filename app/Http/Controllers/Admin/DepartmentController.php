@@ -30,10 +30,12 @@ class DepartmentController extends Controller
             $query->where('department_type', $request->department_type);
         }
 
-        $departments = $query->latest('id')->paginate(10)->withQueryString();
+        $departments = $query->withCount('users')->latest('id')->paginate(10)->withQueryString();
         
-        // Get unique department types for filter
-        $departmentTypes = Department::distinct()->pluck('department_type')->filter()->values();
+        // Get unique department types for filter (cached for 1 hour)
+        $departmentTypes = cache()->remember('department_types', 3600, function () {
+            return Department::distinct()->pluck('department_type')->filter()->values();
+        });
 
         return view('admin.departments.index', compact('departments', 'departmentTypes'));
     }
@@ -105,14 +107,17 @@ class DepartmentController extends Controller
      */
     public function destroy(Department $department)
     {
-        // Check if department has users
-        if ($department->users()->count() > 0) {
+        // Check if department has users (use withCount from index if loaded)
+        if ($department->users_count > 0 || $department->users()->count() > 0) {
             return redirect()
                 ->route('admin.departments.index')
                 ->with('error', 'ไม่สามารถลบแผนกนี้ได้เนื่องจากมีผู้ใช้งานอยู่');
         }
 
         $department->delete();
+        
+        // Clear cache when department is deleted
+        cache()->forget('department_types');
 
         return redirect()
             ->route('admin.departments.index')

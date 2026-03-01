@@ -28,7 +28,7 @@
             </div>
             <div class="hidden md:flex items-center space-x-4">
                 @auth
-                    <notification-bell></notification-bell>
+                    {{-- Notification component will be added here --}}
                 @else
                     <div class="relative inline-block">
                         <button class="p-2 rounded-full hover:bg-gray-200 relative">
