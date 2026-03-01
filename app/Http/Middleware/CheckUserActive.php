@@ -21,7 +21,7 @@ class CheckUserActive
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('login')->with('status', 'บัญชีผู้ใช้ของคุณถูกปิดการใช้งาน กรุณาติดต่อผู้ดูแลระบบ');
+            return redirect()->route('login')->with('status', 'ບັນຊີຜູ້ໃຊ້ຂອງທ່ານຖືກປິດການໃຊ້ງານ ກະລຸນາຕິດຕໍ່ຜູ້ດູແລລະບົບ');
         }
 
         return $next($request);

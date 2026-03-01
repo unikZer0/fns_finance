@@ -10,13 +10,11 @@
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="//unpkg.com/alpinejs" defer></script>
-
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-noto-sans-thai antialiased bg-gray-50">
+<body class="font-sans antialiased bg-gray-50">
     <div class="min-h-screen">
         <x-admin-header />
         <div class="flex">
@@ -46,12 +44,12 @@
                     e.preventDefault();
 
                     Swal.fire({
-                        title: 'ยืนยันการออกจากระบบ',
-                        text: 'คุณต้องการออกจากระบบใช่หรือไม่?',
+                        title: 'ຢືນຢັນການອອກຈາກລະບົບ',
+                        text: 'ທ່ານຕ້ອງການອອກຈາກລະບົບບໍ່?',
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonText: 'ตกลง',
-                        cancelButtonText: 'ยกเลิก',
+                        confirmButtonText: 'ຕົກລົງ',
+                        cancelButtonText: 'ຍົກເລີກ',
                         reverseButtons: true
                     }).then((result) => {
                         if (result.isConfirmed) {

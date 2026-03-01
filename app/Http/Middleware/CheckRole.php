@@ -19,7 +19,7 @@ class CheckRole
         $userRoleName = Auth::user()?->role?->role_name;
 
         if (!in_array($userRoleName, $roles)) {
-            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
+            abort(403, 'ທ່ານບໍ່ມີສິດໃນການເຂົ້າເຖິງໜ້ານີ້');
         }
 
         return $next($request);

@@ -23,12 +23,12 @@
                             d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
-                <a href="#" class="font-semibold text-gray-800">gg web</a>
+                <a href="#" class="font-semibold text-gray-800">FNS</a>
                 {{-- <a href="{{ route('admin.index') }}" class="font-semibold text-gray-800">Admin Dashboard</a> --}}
             </div>
             <div class="hidden md:flex items-center space-x-4">
                 @auth
-                    <notification-bell></notification-bell>
+                    {{-- Notification component will be added here --}}
                 @else
                     <div class="relative inline-block">
                         <button class="p-2 rounded-full hover:bg-gray-200 relative">
@@ -46,7 +46,7 @@
                 @endauth
                 <span class="text-sm text-gray-500">{{ now()->format('d/m/Y') }}</span>
                 <div class="flex items-center space-x-2">
-                    <span class="text-sm">{{ Auth::user()->username ?? 'Admin' }}</span>
+                    <span class="text-sm">{{ Auth::user()->full_name ?? 'Admin' }}</span>
                     <form method="POST" action="{{ route('logout') }}" class="logout-form">
                         @csrf
                         <button type="submit"

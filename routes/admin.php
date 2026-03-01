@@ -6,7 +6,11 @@
 // Your friend working on admin features edits THIS file.
 // ─────────────────────────────────────────────────────
 
+use App\Http\Controllers\Admin\ChartOfAccountController;
+use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\HomeController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'check.active', 'role:admin'])
@@ -16,6 +20,9 @@ Route::middleware(['auth', 'check.active', 'role:admin'])
 
         Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-        // Add more admin routes here, e.g.:
-        // Route::resource('users', UserController::class);
+        // CRUD Resources
+        Route::resource('users', UserController::class);
+        Route::resource('roles', RoleController::class);
+        Route::resource('departments', DepartmentController::class);
+        Route::resource('chart-of-accounts', ChartOfAccountController::class);
     });
