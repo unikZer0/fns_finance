@@ -32,6 +32,7 @@ class AnnualBudgetPlanController extends Controller
         BudgetPlan::create([
             'fiscal_year' => $request->fiscal_year,
             'status' => 'draft',
+            'created_by' => auth()->id(),
         ]);
 
         return redirect()->route('head_of_finance.annual-budget.index')
