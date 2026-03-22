@@ -7,6 +7,8 @@ use App\Models\BudgetLineItem;
 use App\Models\BudgetPlan;
 use App\Models\ChartOfAccount;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class AnnualBudgetPlanController extends Controller
 {
@@ -138,19 +140,27 @@ class AnnualBudgetPlanController extends Controller
             'amount_academic' => 'nullable|numeric|min:0',
         ]);
 
-        // Prevent duplicate account in same plan
-        $exists = $annualBudget->lineItems()->where('account_id', $request->account_id)->exists();
-        if ($exists) {
-            return back()->with('error', 'ບັນຊີນີ້ມີຢູ່ໃນແຜນແລ້ວ!');
+        try {
+            DB::transaction(function () use ($request, $annualBudget) {
+                // Prevent duplicate account in same plan
+                $exists = $annualBudget->lineItems()->where('account_id', $request->account_id)->exists();
+                if ($exists) {
+                    throw ValidationException::withMessages(['account_id' => 'ບັນຊີນີ້ມີຢູ່ໃນແຜນແລ້ວ!']);
+                }
+
+                $annualBudget->lineItems()->create([
+                    'account_id' => $request->account_id,
+                    'amount_regular' => $request->amount_regular ?? 0,
+                    'amount_academic' => $request->amount_academic ?? 0,
+                ]);
+
+                $this->validateBudgetLimits($annualBudget);
+            });
+
+            return back()->with('success', 'ເພີ່ມລາຍການງົບປະມານສຳເລັດ!');
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
         }
-
-        $annualBudget->lineItems()->create([
-            'account_id' => $request->account_id,
-            'amount_regular' => $request->amount_regular ?? 0,
-            'amount_academic' => $request->amount_academic ?? 0,
-        ]);
-
-        return back()->with('success', 'ເພີ່ມລາຍການງົບປະມານສຳເລັດ!');
     }
 
     public function storeBulkItems(Request $request, BudgetPlan $annualBudget)
@@ -165,32 +175,38 @@ class AnnualBudgetPlanController extends Controller
         $skipped = 0;
         $added = 0;
 
-        foreach ($request->items as $row) {
-            if (empty($row['account_id']))
-                continue;
+        try {
+            DB::transaction(function () use ($request, $annualBudget, &$skipped, &$added) {
+                foreach ($request->items as $row) {
+                    if (empty($row['account_id'])) continue;
 
-            $exists = $annualBudget->lineItems()
-                ->where('account_id', $row['account_id'])
-                ->exists();
+                    $exists = $annualBudget->lineItems()
+                        ->where('account_id', $row['account_id'])
+                        ->exists();
 
-            if ($exists) {
-                $skipped++;
-                continue;
-            }
+                    if ($exists) {
+                        $skipped++;
+                        continue;
+                    }
 
-            $annualBudget->lineItems()->create([
-                'account_id' => $row['account_id'],
-                'amount_regular' => $row['amount_regular'] ?? 0,
-                'amount_academic' => $row['amount_academic'] ?? 0,
-            ]);
-            $added++;
+                    $annualBudget->lineItems()->create([
+                        'account_id' => $row['account_id'],
+                        'amount_regular' => $row['amount_regular'] ?? 0,
+                        'amount_academic' => $row['amount_academic'] ?? 0,
+                    ]);
+                    $added++;
+                }
+
+                $this->validateBudgetLimits($annualBudget);
+            });
+
+            $msg = "ເພີ່ມ {$added} ລາຍການສຳເລັດ!";
+            if ($skipped > 0) $msg .= " (ຂ້າມ {$skipped} ລາຍການທີ່ຊ້ຳ)";
+            return back()->with('success', $msg);
+
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
         }
-
-        $msg = "ເພີ່ມ {$added} ລາຍການສຳເລັດ!";
-        if ($skipped > 0)
-            $msg .= " (ຂ້າມ {$skipped} ລາຍການທີ່ຊ້ຳ)";
-
-        return back()->with('success', $msg);
     }
 
     public function updateItem(Request $request, BudgetPlan $annualBudget, BudgetLineItem $item)
@@ -200,12 +216,20 @@ class AnnualBudgetPlanController extends Controller
             'amount_academic' => 'nullable|numeric|min:0',
         ]);
 
-        $item->update([
-            'amount_regular' => $request->amount_regular ?? 0,
-            'amount_academic' => $request->amount_academic ?? 0,
-        ]);
+        try {
+            DB::transaction(function () use ($request, $annualBudget, $item) {
+                $item->update([
+                    'amount_regular' => $request->amount_regular ?? 0,
+                    'amount_academic' => $request->amount_academic ?? 0,
+                ]);
 
-        return back()->with('success', 'ອັບເດດລາຍການສຳເລັດ!');
+                $this->validateBudgetLimits($annualBudget);
+            });
+
+            return back()->with('success', 'ອັບເດດລາຍການສຳເລັດ!');
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        }
     }
 
     public function destroyItem(BudgetPlan $annualBudget, BudgetLineItem $item)
@@ -214,6 +238,81 @@ class AnnualBudgetPlanController extends Controller
         $item->delete();
 
         return back()->with('success', 'ລຶບລາຍການສຳເລັດ!');
+    }
+
+    /**
+     * Get the significant prefix of an account code for hierarchical comparison.
+     */
+    protected function getSignificantPrefix($code)
+    {
+        if (!$code || strlen($code) !== 8) return $code;
+        if (substr($code, 2, 6) === '000000') return substr($code, 0, 2);
+        if (substr($code, 4, 4) === '0000') return substr($code, 0, 4);
+        if (substr($code, 6, 2) === '00') return substr($code, 0, 6);
+        return $code;
+    }
+
+    /**
+     * Finds the closest parent code from a pool of codes.
+     */
+    protected function findClosestParentCode($childCode, $allCodes)
+    {
+        $potentialParents = array_filter($allCodes, function ($c) use ($childCode) {
+            return $c !== $childCode && str_starts_with($childCode, $this->getSignificantPrefix($c));
+        });
+
+        if (empty($potentialParents)) return null;
+
+        usort($potentialParents, function ($a, $b) {
+            return strlen($this->getSignificantPrefix($b)) - strlen($this->getSignificantPrefix($a));
+        });
+
+        return array_values($potentialParents)[0];
+    }
+
+    /**
+     * Validate that the sum of immediate children does not exceed their parent's limit.
+     * Throws ValidationException if a limit is exceeded.
+     */
+    protected function validateBudgetLimits(BudgetPlan $annualBudget)
+    {
+        $items = $annualBudget->lineItems()->with('account')->get()->keyBy('account_id');
+        if ($items->isEmpty()) return;
+
+        $itemsByCode = $items->keyBy(function ($item) {
+            return $item->account->account_code ?? '';
+        });
+        
+        $allCodes = $itemsByCode->keys()->toArray();
+
+        foreach ($itemsByCode as $code => $parentItem) {
+            $immediateChildren = [];
+            foreach ($allCodes as $childCode) {
+                if ($childCode !== $code) {
+                    $closestParent = $this->findClosestParentCode($childCode, $allCodes);
+                    if ($closestParent === $code) {
+                        $immediateChildren[] = $itemsByCode[$childCode];
+                    }
+                }
+            }
+
+            if (count($immediateChildren) > 0) {
+                $sumRegular = collect($immediateChildren)->sum('amount_regular');
+                $sumAcademic = collect($immediateChildren)->sum('amount_academic');
+
+                if ($sumRegular > $parentItem->amount_regular) {
+                    throw ValidationException::withMessages([
+                        'budget_limit' => "ຍອດລວມງົບປະມານປົກກະຕິຂອງໝວດຍ່ອຍ (" . number_format($sumRegular) . ") ເກີນກຳນົດຂອງໝວດຫຼັກ {$parentItem->account->formatted_code} (" . number_format($parentItem->amount_regular) . ")!"
+                    ]);
+                }
+                
+                if ($sumAcademic > $parentItem->amount_academic) {
+                    throw ValidationException::withMessages([
+                        'budget_limit' => "ຍອດລວມງົບປະມານອື່ນການຂອງໝວດຍ່ອຍ (" . number_format($sumAcademic) . ") ເກີນກຳນົດຂອງໝວດຫຼັກ {$parentItem->account->formatted_code} (" . number_format($parentItem->amount_academic) . ")!"
+                    ]);
+                }
+            }
+        }
     }
 
     /**
