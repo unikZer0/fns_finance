@@ -86,13 +86,13 @@
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($annualBudget->lineItems as $item)
                         @php
-                            $isHeader = str_ends_with($item->account->account_code ?? '', '-00-00');
+                            $isHeader = str_ends_with($item->account->formatted_code ?? '', '-00-00');
                             $itemLuam = ($item->amount_regular ?? 0) + ($item->amount_academic ?? 0);
                         @endphp
                         <tr class="{{ $isHeader ? 'bg-blue-50 font-semibold' : 'bg-white hover:bg-gray-50' }}">
                             <td
                                 class="border border-gray-200 px-3 py-2 font-mono text-xs text-gray-600 whitespace-nowrap text-center">
-                                {{ $item->account->account_code ?? '-' }}
+                                {{ $item->account->formatted_code ?? '-' }}
                             </td>
                             <td class="border border-gray-200 px-4 py-2 text-gray-800">
                                 {{ $item->account->account_name ?? '-' }}
@@ -269,7 +269,7 @@
 
             // ── Bulk-add dynamic rows ──────────────────────────────────────────────
             // Build the accounts option list once from PHP data
-            const allAccounts = @json($accounts->map(fn($a) => ['id' => $a->id, 'code' => $a->account_code, 'name' => $a->account_name]));
+            const allAccounts = @json($accounts->map(fn($a) => ['id' => $a->id, 'code' => $a->formatted_code, 'name' => $a->account_name]));
             const usedIds = new Set(@json($annualBudget->lineItems->pluck('account_id')));
 
             let rowCount = 0;

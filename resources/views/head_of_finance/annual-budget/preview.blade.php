@@ -122,7 +122,7 @@
 
                     @forelse ($annualBudget->lineItems as $item)
                         @php
-                            $code = $item->account->account_code ?? '';
+                            $code = $item->account->formatted_code ?? '';
                             $rowType = previewGetRowType($code);
                             $itemLuam = ($item->amount_regular ?? 0) + ($item->amount_academic ?? 0);
 
@@ -154,6 +154,11 @@
     @push('scripts')
         <style>
             @media print {
+                * {
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                }
+
                 html, body {
                     background-color: #fff !important;
                 }

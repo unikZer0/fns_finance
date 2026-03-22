@@ -217,45 +217,10 @@ class AnnualBudgetPlanController extends Controller
     }
 
     /**
-     * Sort line items hierarchically based on the account's parent_id.
+     * Sort line items hierarchically based on the account structure.
      */
     protected function sortLineItemsHierarchically($lineItems)
     {
-        // 1. Map items by account_id for quick lookup
-        $itemsByAccount = $lineItems->keyBy('account_id');
-
-        // 2. Group items by their account's parent_id
-        $childrenMap = [];
-        foreach ($lineItems as $item) {
-            $parentId = $item->account->parent_id;
-            // If the parent is not in this budget plan's line items, treat this item as a root
-            if (!$parentId || !$itemsByAccount->has($parentId)) {
-                $parentId = 'root';
-            }
-            $childrenMap[$parentId][] = $item;
-        }
-
-        // 3. Sort each group by account_code ascending
-        foreach ($childrenMap as $parentId => &$items) {
-            usort($items, function ($a, $b) {
-                return strcmp($a->account->account_code ?? '', $b->account->account_code ?? '');
-            });
-        }
-
-        // 4. Flatten the tree recursively
-        $sorted = [];
-        $addChildren = function ($parentId) use (&$sorted, &$addChildren, $childrenMap) {
-            if (!isset($childrenMap[$parentId])) {
-                return;
-            }
-            foreach ($childrenMap[$parentId] as $item) {
-                $sorted[] = $item;
-                $addChildren($item->account_id);
-            }
-        };
-
-        $addChildren('root');
-
-        return collect($sorted);
+        return $lineItems->sortBy('account.account_code')->values();
     }
 }

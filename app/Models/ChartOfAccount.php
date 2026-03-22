@@ -35,4 +35,16 @@ class ChartOfAccount extends Model
             'id' => 'integer',
         ];
     }
+
+    /**
+     * Get the code formatted with dashes (e.g. 60-00-00-00)
+     */
+    public function getFormattedCodeAttribute(): string
+    {
+        $code = $this->account_code;
+        if (strlen($code) === 8) {
+            return substr($code, 0, 2) . '-' . substr($code, 2, 2) . '-' . substr($code, 4, 2) . '-' . substr($code, 6, 2);
+        }
+        return $code;
+    }
 }

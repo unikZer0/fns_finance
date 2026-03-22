@@ -247,7 +247,7 @@
 
             @forelse ($annualBudget->lineItems as $item)
                 @php
-                    $code = $item->account->account_code ?? '';
+                    $code = $item->account->formatted_code ?? '';
                     $rowType = getRowType($code);
                     $itemLuam = ($item->amount_regular ?? 0) + ($item->amount_academic ?? 0);
                     $rowClass = match($rowType) {
