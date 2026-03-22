@@ -32,6 +32,7 @@ class AnnualBudgetPlanController extends Controller
         BudgetPlan::create([
             'fiscal_year' => $request->fiscal_year,
             'status' => 'draft',
+            'created_by' => auth()->id(),
         ]);
 
         return redirect()->route('head_of_finance.annual-budget.index')
@@ -42,12 +43,21 @@ class AnnualBudgetPlanController extends Controller
     {
         $accounts = ChartOfAccount::orderBy('account_code')->get();
         $annualBudget->load(['lineItems.account', 'lineItems.periodAllocations']);
+        $annualBudget->setRelation('lineItems', $this->sortLineItemsHierarchically($annualBudget->lineItems));
         return view('head_of_finance.annual-budget.show', compact('annualBudget', 'accounts'));
+    }
+
+    public function preview(BudgetPlan $annualBudget)
+    {
+        $annualBudget->load(['lineItems.account']);
+        $annualBudget->setRelation('lineItems', $this->sortLineItemsHierarchically($annualBudget->lineItems));
+        return view('head_of_finance.annual-budget.preview', compact('annualBudget'));
     }
 
     public function exportPdf(BudgetPlan $annualBudget)
     {
         $annualBudget->load(['lineItems.account', 'lineItems.periodAllocations']);
+        $annualBudget->setRelation('lineItems', $this->sortLineItemsHierarchically($annualBudget->lineItems));
 
         $html = view('head_of_finance.annual-budget.pdf', compact('annualBudget'))->render();
 
@@ -83,7 +93,7 @@ class AnnualBudgetPlanController extends Controller
         $mpdf->WriteHTML($html);
         return response($mpdf->Output('', 'S'))
             ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="ແຜນງົບປະມານປະຈຳປີ_' . $annualBudget->fiscal_year . '.pdf"');
+            ->header('Content-Disposition', 'inline; filename="ແຜນງົບປະມານປະຈຳປີ_' . $annualBudget->fiscal_year . '.pdf"');
     }
 
     public function edit(BudgetPlan $annualBudget)
@@ -204,5 +214,13 @@ class AnnualBudgetPlanController extends Controller
         $item->delete();
 
         return back()->with('success', 'ລຶບລາຍການສຳເລັດ!');
+    }
+
+    /**
+     * Sort line items hierarchically based on the account structure.
+     */
+    protected function sortLineItemsHierarchically($lineItems)
+    {
+        return $lineItems->sortBy('account.account_code')->values();
     }
 }

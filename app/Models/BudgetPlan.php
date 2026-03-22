@@ -14,6 +14,7 @@ class BudgetPlan extends Model
     protected $fillable = [
         'fiscal_year',
         'status',
+        'created_by',
     ];
 
     /**
