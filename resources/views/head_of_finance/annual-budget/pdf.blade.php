@@ -171,8 +171,10 @@
         $categories = [];
 
         foreach ($annualBudget->lineItems as $item) {
-            $totalRegular += $item->amount_regular ?? 0;
-            $totalOther += $item->amount_academic ?? 0;
+            if (str_ends_with($item->account->formatted_code ?? '', '-00-00-00')) {
+                $totalRegular += $item->amount_regular ?? 0;
+                $totalOther += $item->amount_academic ?? 0;
+            }
         }
         $totalLuam = $totalRegular + $totalOther;
 

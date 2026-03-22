@@ -241,58 +241,34 @@ class AnnualBudgetPlanController extends Controller
     }
 
     /**
-     * Get the significant prefix of an account code for hierarchical comparison.
-     */
-    protected function getSignificantPrefix($code)
-    {
-        if (!$code || strlen($code) !== 8) return $code;
-        if (substr($code, 2, 6) === '000000') return substr($code, 0, 2);
-        if (substr($code, 4, 4) === '0000') return substr($code, 0, 4);
-        if (substr($code, 6, 2) === '00') return substr($code, 0, 6);
-        return $code;
-    }
-
-    /**
-     * Finds the closest parent code from a pool of codes.
-     */
-    protected function findClosestParentCode($childCode, $allCodes)
-    {
-        $potentialParents = array_filter($allCodes, function ($c) use ($childCode) {
-            return $c !== $childCode && str_starts_with($childCode, $this->getSignificantPrefix($c));
-        });
-
-        if (empty($potentialParents)) return null;
-
-        usort($potentialParents, function ($a, $b) {
-            return strlen($this->getSignificantPrefix($b)) - strlen($this->getSignificantPrefix($a));
-        });
-
-        return array_values($potentialParents)[0];
-    }
-
-    /**
      * Validate that the sum of immediate children does not exceed their parent's limit.
      * Throws ValidationException if a limit is exceeded.
      */
     protected function validateBudgetLimits(BudgetPlan $annualBudget)
     {
-        $items = $annualBudget->lineItems()->with('account')->get()->keyBy('account_id');
+        $items = $annualBudget->lineItems()->with('account.parent')->get()->keyBy('account_id');
         if ($items->isEmpty()) return;
 
         $itemsByCode = $items->keyBy(function ($item) {
             return $item->account->account_code ?? '';
         });
-        
-        $allCodes = $itemsByCode->keys()->toArray();
 
+        // 1. Validate that every sub-item has its direct parent present in the plan
+        foreach ($itemsByCode as $code => $item) {
+            $parentAccount = $item->account->parent;
+            if ($parentAccount && !isset($itemsByCode[$parentAccount->account_code])) {
+                throw ValidationException::withMessages([
+                    'missing_parent' => "ບໍ່ສາມາດເພີ່ມໝວດຍ່ອຍ {$item->account->formatted_code} ໄດ້! ຕ້ອງກະກຽມໝວດຫຼັກໃຫ້ມັນກ່ອນສະເໝີ."
+                ]);
+            }
+        }
+
+        // 2. Validate that children summation does not exceed parent limit
         foreach ($itemsByCode as $code => $parentItem) {
             $immediateChildren = [];
-            foreach ($allCodes as $childCode) {
-                if ($childCode !== $code) {
-                    $closestParent = $this->findClosestParentCode($childCode, $allCodes);
-                    if ($closestParent === $code) {
-                        $immediateChildren[] = $itemsByCode[$childCode];
-                    }
+            foreach ($itemsByCode as $childCode => $childItem) {
+                if ($childCode !== $code && $childItem->account->parent_id === $parentItem->account->id) {
+                    $immediateChildren[] = $childItem;
                 }
             }
 
@@ -316,10 +292,39 @@ class AnnualBudgetPlanController extends Controller
     }
 
     /**
+     * Compute and attach the sums of immediate children to parent items.
+     * Useful for displaying remaining balances in the UI.
+     */
+    protected function computeImmediateChildrenSums($sortedLineItems)
+    {
+        $itemsByCode = $sortedLineItems->keyBy(function ($item) {
+            return $item->account->account_code ?? '';
+        });
+
+        foreach ($itemsByCode as $item) {
+            $item->children_sum_regular = 0;
+            $item->children_sum_academic = 0;
+            $item->has_children = false;
+        }
+
+        foreach ($itemsByCode as $code => $parentItem) {
+            foreach ($itemsByCode as $childCode => $childItem) {
+                if ($childCode !== $code && $childItem->account->parent_id === $parentItem->account->id) {
+                    $parentItem->has_children = true;
+                    $parentItem->children_sum_regular += $childItem->amount_regular ?? 0;
+                    $parentItem->children_sum_academic += $childItem->amount_academic ?? 0;
+                }
+            }
+        }
+    }
+
+    /**
      * Sort line items hierarchically based on the account structure.
      */
     protected function sortLineItemsHierarchically($lineItems)
     {
-        return $lineItems->sortBy('account.account_code')->values();
+        $sorted = $lineItems->sortBy('account.account_code')->values();
+        $this->computeImmediateChildrenSums($sorted);
+        return $sorted;
     }
 }

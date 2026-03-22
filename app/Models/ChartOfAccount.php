@@ -22,7 +22,18 @@ class ChartOfAccount extends Model
     protected $fillable = [
         'account_code',
         'account_name',
+        'parent_id',
     ];
+
+    public function parent()
+    {
+        return $this->belongsTo(ChartOfAccount::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(ChartOfAccount::class, 'parent_id');
+    }
 
     /**
      * The attributes that should be cast.

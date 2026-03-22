@@ -57,8 +57,10 @@
             $totalRegular = 0;
             $totalAcademic = 0;
             foreach ($annualBudget->lineItems as $item) {
-                $totalRegular += $item->amount_regular ?? 0;
-                $totalAcademic += $item->amount_academic ?? 0;
+                if (str_ends_with($item->account->formatted_code ?? '', '-00-00-00')) {
+                    $totalRegular += $item->amount_regular ?? 0;
+                    $totalAcademic += $item->amount_academic ?? 0;
+                }
             }
             $totalLuam = $totalRegular + $totalAcademic; // ແຜນລວມ = ປົກກະຕິ + ວິຊາການ
         @endphp
@@ -104,10 +106,20 @@
                             {{-- ຄໍ 7: ງົບປະມານປົກກະຕິ --}}
                             <td class="border border-gray-200 px-3 py-2 text-right tabular-nums">
                                 {{ $item->amount_regular ? number_format($item->amount_regular, 2) : '' }}
+                                @if (($isHeader || $item->has_children) && ($item->amount_regular ?? 0) > ($item->children_sum_regular ?? 0))
+                                    <div class="text-[10px] text-orange-500 font-normal mt-0.5" title="ງົບປະມານຍັງບໍ່ຖືກຈັດສັນຄົບຖ້ວນ">
+                                        (ຍັງເຫຼືອ: {{ number_format(($item->amount_regular ?? 0) - ($item->children_sum_regular ?? 0), 2) }})
+                                    </div>
+                                @endif
                             </td>
                             {{-- ຄໍ 8=6-7: ງົບປະມານວິຊາການ --}}
                             <td class="border border-gray-200 px-3 py-2 text-right tabular-nums">
                                 {{ $item->amount_academic ? number_format($item->amount_academic, 2) : '' }}
+                                @if (($isHeader || $item->has_children) && ($item->amount_academic ?? 0) > ($item->children_sum_academic ?? 0))
+                                    <div class="text-[10px] text-orange-500 font-normal mt-0.5" title="ງົບປະມານຍັງບໍ່ຖືກຈັດສັນຄົບຖ້ວນ">
+                                        (ຍັງເຫຼືອ: {{ number_format(($item->amount_academic ?? 0) - ($item->children_sum_academic ?? 0), 2) }})
+                                    </div>
+                                @endif
                             </td>
                             <td class="border border-gray-200 px-3 py-2 text-center">
                                 <div class="flex items-center justify-center gap-2">
