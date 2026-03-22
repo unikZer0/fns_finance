@@ -211,21 +211,16 @@
     <table class="budget-table">
         <thead>
             <tr>
-                <th rowspan="2" class="col-code" style="width: 90px;">ພາກ.ພາກສ່ວນ.</th>
-                <th rowspan="2" style="min-width: 200px;">ເນື້ອໃນ</th>
+                <th class="col-code" style="width: 90px;">ພາກ.ພາກສ່ວນ.</th>
+                <th style="min-width: 200px;">ເນື້ອໃນ</th>
                 <th colspan="3">ແຜນປີ {{ $annualBudget->fiscal_year }}</th>
             </tr>
             <tr>
+                <th class="col-num-header" style="font-size: 10px;">ຮ່ວງ.ລູກຮ່ວງ</th>
+                <th class="col-num-header" style="font-size: 10px;">ລາຍການຈ່າຍ</th>
                 <th class="col-num-header" style="width: 110px;">ແຜນລວມ</th>
                 <th class="col-num-header" style="width: 110px;">ງົບປະມານປົກກະຕິ</th>
                 <th class="col-num-header" style="width: 110px;">ງົບປະມານອື່ນການ</th>
-            </tr>
-            <tr>
-                <th style="font-size: 9px;">ຮ່ວງ.ລູກຮ່ວງ</th>
-                <th style="font-size: 9px;">ລາຍການຈ່າຍ</th>
-                <th style="font-size: 9px;">6</th>
-                <th style="font-size: 9px;">7</th>
-                <th style="font-size: 9px;">8=6-7</th>
             </tr>
             <tr class="number-row">
                 <td>4</td>

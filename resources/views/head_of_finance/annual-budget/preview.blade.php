@@ -81,33 +81,27 @@
                 <thead>
                     {{-- Row 1: Main headers --}}
                     <tr class="bg-blue-100 text-gray-800">
-                        <th rowspan="2" class="border border-gray-400 px-3 py-2 w-28 text-center font-bold">ພາກ.ພາກສ່ວນ.</th>
-                        <th rowspan="2" class="border border-gray-400 px-3 py-2 font-bold">ເນື້ອໃນ</th>
+                        <th class="border border-gray-400 px-3 py-2 w-28 text-center font-bold">ພາກ.ພາກສ່ວນ.</th>
+                        <th class="border border-gray-400 px-3 py-2 font-bold text-center">ເນື້ອໃນ</th>
                         <th colspan="3" class="border border-gray-400 px-3 py-2 text-center font-bold">
                             ແຜນປີ {{ $annualBudget->fiscal_year }}
                         </th>
                     </tr>
                     {{-- Row 2: Sub headers --}}
-                    <tr class="bg-blue-100 text-gray-800">
-                        <th class="border border-gray-400 px-3 py-2 w-32 text-center font-bold text-xs">ແຜນລວມ</th>
-                        <th class="border border-gray-400 px-3 py-2 w-32 text-center font-bold text-xs">ງົບປະມານປົກກະຕິ</th>
-                        <th class="border border-gray-400 px-3 py-2 w-32 text-center font-bold text-xs">ງົບປະມານອື່ນການ</th>
+                    <tr class="bg-blue-50 text-gray-700">
+                        <th class="border border-gray-400 px-2 py-2 text-center font-semibold text-xs">ຮ່ວງ.ລູກຮ່ວງ</th>
+                        <th class="border border-gray-400 px-2 py-2 text-center font-semibold text-xs">ລາຍການຈ່າຍ</th>
+                        <th class="border border-gray-400 px-3 py-2 w-32 text-center font-semibold text-xs">ແຜນລວມ</th>
+                        <th class="border border-gray-400 px-3 py-2 w-32 text-center font-semibold text-xs">ງົບປະມານປົກກະຕິ</th>
+                        <th class="border border-gray-400 px-3 py-2 w-32 text-center font-semibold text-xs">ງົບປະມານອື່ນການ</th>
                     </tr>
-                    {{-- Row 3: Sub-sub headers --}}
-                    <tr class="bg-blue-50 text-gray-600 text-xs">
-                        <th class="border border-gray-400 px-2 py-1 text-center">ຮ່ວງ.ລູກຮ່ວງ</th>
-                        <th class="border border-gray-400 px-2 py-1 text-center">ລາຍການຈ່າຍ</th>
-                        <th class="border border-gray-400 px-2 py-1 text-center">6</th>
-                        <th class="border border-gray-400 px-2 py-1 text-center">7</th>
-                        <th class="border border-gray-400 px-2 py-1 text-center">8=6-7</th>
-                    </tr>
-                    {{-- Row 4: Column numbers --}}
-                    <tr class="bg-gray-100 text-gray-500 text-xs font-bold">
-                        <td class="border border-gray-400 px-2 py-1 text-center">4</td>
-                        <td class="border border-gray-400 px-2 py-1 text-center">5</td>
-                        <td class="border border-gray-400 px-2 py-1 text-center">6</td>
-                        <td class="border border-gray-400 px-2 py-1 text-center">7</td>
-                        <td class="border border-gray-400 px-2 py-1 text-center">8=6-7</td>
+                    {{-- Row 3: Column numbers --}}
+                    <tr class="bg-gray-100 text-gray-500 text-xs font-bold text-center">
+                        <td class="border border-gray-400 px-2 py-1">4</td>
+                        <td class="border border-gray-400 px-2 py-1">5</td>
+                        <td class="border border-gray-400 px-2 py-1">6</td>
+                        <td class="border border-gray-400 px-2 py-1">7</td>
+                        <td class="border border-gray-400 px-2 py-1">8=6-7</td>
                     </tr>
                 </thead>
                 <tbody>
