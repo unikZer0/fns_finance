@@ -46,6 +46,12 @@ class AnnualBudgetPlanController extends Controller
         return view('head_of_finance.annual-budget.show', compact('annualBudget', 'accounts'));
     }
 
+    public function preview(BudgetPlan $annualBudget)
+    {
+        $annualBudget->load(['lineItems.account']);
+        return view('head_of_finance.annual-budget.preview', compact('annualBudget'));
+    }
+
     public function exportPdf(BudgetPlan $annualBudget)
     {
         $annualBudget->load(['lineItems.account', 'lineItems.periodAllocations']);
@@ -84,7 +90,7 @@ class AnnualBudgetPlanController extends Controller
         $mpdf->WriteHTML($html);
         return response($mpdf->Output('', 'S'))
             ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="ແຜນງົບປະມານປະຈຳປີ_' . $annualBudget->fiscal_year . '.pdf"');
+            ->header('Content-Disposition', 'inline; filename="ແຜນງົບປະມານປະຈຳປີ_' . $annualBudget->fiscal_year . '.pdf"');
     }
 
     public function edit(BudgetPlan $annualBudget)

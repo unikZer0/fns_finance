@@ -21,6 +21,7 @@ Route::middleware(['auth', 'check.active', 'role:head_of_finance'])
         // ── Annual Budget Plans ──────────────────────────────────────────
         Route::resource('annual-budget', AnnualBudgetPlanController::class);
         Route::get('annual-budget/{annualBudget}/pdf', [AnnualBudgetPlanController::class, 'exportPdf'])->name('annual-budget.pdf');
+        Route::get('annual-budget/{annualBudget}/preview', [AnnualBudgetPlanController::class, 'preview'])->name('annual-budget.preview');
 
         // Line item sub-routes
         Route::post(

@@ -9,6 +9,8 @@
             font-family: 'notosanslao', sans-serif;
             font-size: 11px;
             color: #000;
+            margin: 0;
+            padding: 0;
         }
 
         .text-center {
@@ -19,158 +21,249 @@
             text-align: right;
         }
 
+        .text-left {
+            text-align: left;
+        }
+
         .font-bold {
             font-weight: bold;
         }
 
-        .mb-4 {
-            margin-bottom: 1rem;
+        /* Document Header */
+        .doc-header {
+            text-align: center;
+            margin-bottom: 5px;
         }
 
-        .mt-2 {
-            margin-top: 0.5rem;
-        }
-
-        /* Header section */
         .doc-header p {
             margin: 2px 0;
-            font-size: 11px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .doc-header .line2 {
+            font-size: 12px;
         }
 
         .header-grid {
             width: 100%;
-            margin-top: 15px;
-            margin-bottom: 10px;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            border: none;
         }
 
         .header-grid td {
             vertical-align: top;
+            border: none;
+            padding: 2px 0;
         }
 
-        /* Table Styles */
-        table {
+        .header-grid p {
+            margin: 2px 0;
+            font-size: 11px;
+        }
+
+        .doc-title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px 0 15px 0;
+        }
+
+        /* Main Table */
+        table.budget-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 10px;
         }
 
-        th,
-        td {
+        table.budget-table th,
+        table.budget-table td {
             border: 1px solid #000;
-            padding: 4px;
+            padding: 3px 5px;
         }
 
-        th {
-            background-color: #fce4d6;
-            /* Light orange matching the image */
+        table.budget-table th {
+            background-color: #d6e4f0;
             text-align: center;
-        }
-
-        .bg-gray {
-            background-color: #f3f4f6;
-        }
-
-        .header-row td {
             font-weight: bold;
-            background-color: #e6f2ff;
+            font-size: 10px;
         }
 
-        /* Specific widths */
+        /* Row styles */
+        .row-grand-total {
+            background-color: #e2efda;
+            font-weight: bold;
+        }
+
+        .row-main-category {
+            background-color: #d9e2f3;
+            font-weight: bold;
+            color: #0000cc;
+        }
+
+        .row-sub-category {
+            background-color: #e2d9f3;
+            font-weight: bold;
+        }
+
+        .row-detail {
+            background-color: #ffffff;
+        }
+
         .col-code {
-            width: 120px;
+            width: 90px;
             text-align: center;
         }
 
         .col-name {
-            width: auto;
+            text-align: left;
         }
 
-        .col-amount {
-            width: 100px;
+        .col-number {
+            width: 110px;
             text-align: right;
+            font-family: 'notosanslao', sans-serif;
+        }
+
+        .col-num-header {
+            text-align: center;
+        }
+
+        .number-row td {
+            text-align: center;
+            font-weight: bold;
+            font-size: 9px;
+            background-color: #f2f2f2;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="doc-header text-center">
+    {{-- ── Document Header ──────────────────────────────────────── --}}
+    <div class="doc-header">
         <p>ສາທາລະນະລັດ ປະຊາທິປະໄຕ ປະຊາຊົນລາວ</p>
-        <p>ສັນຕິພາບ ເອກະລາດ ປະຊາທິປະໄຕ ເອກະພາບ ວັດທະນາຖາວອນ</p>
+        <p class="line2">ສັນຕິພາບ ເອກະລາດ ປະຊາທິປະໄຕ ເອກະພາບ ວັດທະນາຖາວອນ</p>
     </div>
 
-    <table class="header-grid" style="border: none;">
+    <table class="header-grid">
         <tr>
-            <td style="border: none; text-align: left;">
-                <p style="margin:2px 0;">ມະຫາວິທະຍາໄລແຫ່ງຊາດ</p>
-                <p style="margin:2px 0;">ຄະນະວິທະຍາສາດປ່າໄມ້</p>
+            <td class="text-left" style="width: 50%;">
+                <p><strong>ມະຫາວິທະຍາໄລແຫ່ງຊາດ</strong></p>
+                <p><strong>ຄະນະວິທະຍາສາດທຳມະຊາດ</strong></p>
             </td>
-            <td style="border: none; text-align: right;">
-                <p style="margin:2px 0;">ເລກທີ .................... /ຄນທ</p>
-                <p style="margin:2px 0;">ວັນທີ........./........./ 2025</p>
+            <td class="text-right" style="width: 50%;">
+                <p>ເລກທີ ............../ຄວທ</p>
+                <p>ວັນທີ........./........./ {{ $annualBudget->fiscal_year - 1 }}</p>
             </td>
         </tr>
     </table>
 
-    <h3 class="text-center mb-4">ແຜນງົບປະມານປະຈຳປີ {{ $annualBudget->fiscal_year }}</h3>
+    <div class="doc-title">ແຜນງົບປະມານປະຈຳປີ {{ $annualBudget->fiscal_year }}</div>
 
+    {{-- ── Calculate Totals ──────────────────────────────────────── --}}
     @php
         $totalRegular = 0;
-        $totalAcademic = 0;
+        $totalOther = 0;
+
+        // Collect subtotals per main category and sub-category
+        $categories = [];
+
         foreach ($annualBudget->lineItems as $item) {
             $totalRegular += $item->amount_regular ?? 0;
-            $totalAcademic += $item->amount_academic ?? 0;
+            $totalOther += $item->amount_academic ?? 0;
         }
-        $totalLuam = $totalRegular + $totalAcademic;
+        $totalLuam = $totalRegular + $totalOther;
+
+        // Determine row type based on account_code pattern
+        // XX-00-00-00 = main category
+        // XX-XX-00-00 = sub-category
+        // XX-XX-XX-00 = detail item
+        function getRowType($code) {
+            if (!$code) return 'detail';
+            $parts = explode('-', $code);
+            if (count($parts) !== 4) return 'detail';
+            if ($parts[1] === '00' && $parts[2] === '00' && $parts[3] === '00') return 'main';
+            if ($parts[2] === '00' && $parts[3] === '00') return 'sub';
+            return 'detail';
+        }
+
+        function formatLaoNumber($number) {
+            if ($number == 0) return '0';
+            return number_format($number, 0, ',', '.');
+        }
+
+        // Calculate subtotals per main category
+        $mainCatTotals = [];
+        foreach ($annualBudget->lineItems as $item) {
+            $code = $item->account->account_code ?? '';
+            $parts = explode('-', $code);
+            $mainKey = $parts[0] . '-' . ($parts[1] ?? '00') . '-00-00';
+            if (getRowType($code) === 'main') {
+                // This is the main category header itself
+                continue;
+            }
+        }
     @endphp
 
-    <table>
+    {{-- ── Budget Table ──────────────────────────────────────────── --}}
+    <table class="budget-table">
         <thead>
             <tr>
-                <th rowspan="2" class="col-code">ພາກ.ພາກສ່ວນ.</th>
-                <th rowspan="2" class="col-name">ເນື້ອໃນ</th>
+                <th rowspan="2" class="col-code" style="width: 90px;">ພາກ.ພາກສ່ວນ.</th>
+                <th rowspan="2" style="min-width: 200px;">ເນື້ອໃນ</th>
                 <th colspan="3">ແຜນປີ {{ $annualBudget->fiscal_year }}</th>
             </tr>
             <tr>
-                <th class="col-amount flex flex-col justify-center">ຮ່ວງ.ລູກຮ່ວງ</th>
-                <th class="col-name">ລາຍການຈ່າຍ</th>
-                <th class="col-amount">ແຜນລວມ<br>(6)</th>
-                <th class="col-amount">ງົບປະມານ<br>ປົກກະຕິ (7)</th>
-                <th class="col-amount">ງົບປະມານ<br>ວິຊາການ (8=6-7)</th>
+                <th class="col-num-header" style="width: 110px;">ແຜນລວມ</th>
+                <th class="col-num-header" style="width: 110px;">ງົບປະມານປົກກະຕິ</th>
+                <th class="col-num-header" style="width: 110px;">ງົບປະມານອື່ນການ</th>
+            </tr>
+            <tr>
+                <th style="font-size: 9px;">ຮ່ວງ.ລູກຮ່ວງ</th>
+                <th style="font-size: 9px;">ລາຍການຈ່າຍ</th>
+                <th style="font-size: 9px;">6</th>
+                <th style="font-size: 9px;">7</th>
+                <th style="font-size: 9px;">8=6-7</th>
+            </tr>
+            <tr class="number-row">
+                <td>4</td>
+                <td>5</td>
+                <td>6</td>
+                <td>7</td>
+                <td>8=6-7</td>
             </tr>
         </thead>
         <tbody>
-            {{-- Grand Totals Row at top --}}
-            <tr style="background-color: #e2efda; font-weight: bold;">
-                <td colspan="2" class="text-right"></td>
-                <td class="text-right" style="color: #000; text-decoration: underline;">
-                    {{ number_format($totalLuam, 0, ',', '.') }}
-                </td>
-                <td class="text-right" style="color: #000; text-decoration: underline;">
-                    {{ number_format($totalRegular, 0, ',', '.') }}
-                </td>
-                <td class="text-right" style="color: #000; text-decoration: underline;">
-                    {{ number_format($totalAcademic, 0, ',', '.') }}
-                </td>
+            {{-- Grand Totals Row --}}
+            <tr class="row-grand-total">
+                <td class="col-code"></td>
+                <td class="col-name"></td>
+                <td class="col-number">{{ formatLaoNumber($totalLuam) }}</td>
+                <td class="col-number">{{ formatLaoNumber($totalRegular) }}</td>
+                <td class="col-number">{{ formatLaoNumber($totalOther) }}</td>
             </tr>
 
             @forelse ($annualBudget->lineItems as $item)
                 @php
-                    $isHeader = str_ends_with($item->account->account_code ?? '', '-00-00');
+                    $code = $item->account->account_code ?? '';
+                    $rowType = getRowType($code);
                     $itemLuam = ($item->amount_regular ?? 0) + ($item->amount_academic ?? 0);
+                    $rowClass = match($rowType) {
+                        'main' => 'row-main-category',
+                        'sub'  => 'row-sub-category',
+                        default => 'row-detail',
+                    };
                 @endphp
-                <tr class="{{ $isHeader ? 'header-row' : '' }}">
-                    <td class="col-code">{{ $item->account->account_code ?? '-' }}</td>
-                    <td class="col-name" style="{{ $isHeader ? 'color: #00b050;' : '' }}">
-                        @if(!$isHeader)- @endif{{ $item->account->account_name ?? '-' }}
+                <tr class="{{ $rowClass }}">
+                    <td class="col-code">{{ $code ?: '-' }}</td>
+                    <td class="col-name">
+                        @if($rowType === 'detail')- @endif{{ $item->account->account_name ?? '-' }}
                     </td>
-                    <td class="col-amount">{{ $itemLuam ? number_format($itemLuam, 0, ',', '.') : '0' }}</td>
-                    <td class="col-amount">
-                        {{ $item->amount_regular ? number_format($item->amount_regular, 0, ',', '.') : '0' }}
-                    </td>
-                    <td class="col-amount">
-                        {{ $item->amount_academic ? number_format($item->amount_academic, 0, ',', '.') : '0' }}
-                    </td>
+                    <td class="col-number">{{ formatLaoNumber($itemLuam) }}</td>
+                    <td class="col-number">{{ formatLaoNumber($item->amount_regular ?? 0) }}</td>
+                    <td class="col-number">{{ formatLaoNumber($item->amount_academic ?? 0) }}</td>
                 </tr>
             @empty
                 <tr>
