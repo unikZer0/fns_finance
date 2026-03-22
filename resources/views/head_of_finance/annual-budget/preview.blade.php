@@ -143,6 +143,18 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- Signatures Footer --}}
+        <div class="flex justify-between mt-12 mb-8 px-4 sm:px-12 text-gray-800">
+            <div class="text-center font-bold">
+                <p>ຫົວໜ້າຄະນະວິຊາ</p>
+                <br><br><br>
+            </div>
+            <div class="text-center font-bold">
+                <p>ຜູ້ສ້າງແຜນ</p>
+                <br><br><br>
+            </div>
+        </div>
     </div>
 
     @push('scripts')
