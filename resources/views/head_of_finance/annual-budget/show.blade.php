@@ -57,8 +57,10 @@
             $totalRegular = 0;
             $totalAcademic = 0;
             foreach ($annualBudget->lineItems as $item) {
-                $totalRegular += $item->amount_regular ?? 0;
-                $totalAcademic += $item->amount_academic ?? 0;
+                if (str_ends_with($item->account->formatted_code ?? '', '-00-00-00')) {
+                    $totalRegular += $item->amount_regular ?? 0;
+                    $totalAcademic += $item->amount_academic ?? 0;
+                }
             }
             $totalLuam = $totalRegular + $totalAcademic; // ແຜນລວມ = ປົກກະຕິ + ວິຊາການ
         @endphp
@@ -104,10 +106,20 @@
                             {{-- ຄໍ 7: ງົບປະມານປົກກະຕິ --}}
                             <td class="border border-gray-200 px-3 py-2 text-right tabular-nums">
                                 {{ $item->amount_regular ? number_format($item->amount_regular, 2) : '' }}
+                                @if (($isHeader || $item->has_children) && ($item->amount_regular ?? 0) > ($item->children_sum_regular ?? 0))
+                                    <div class="text-[10px] text-orange-500 font-normal mt-0.5" title="ງົບປະມານຍັງບໍ່ຖືກຈັດສັນຄົບຖ້ວນ">
+                                        (ຍັງເຫຼືອ: {{ number_format(($item->amount_regular ?? 0) - ($item->children_sum_regular ?? 0), 2) }})
+                                    </div>
+                                @endif
                             </td>
                             {{-- ຄໍ 8=6-7: ງົບປະມານວິຊາການ --}}
                             <td class="border border-gray-200 px-3 py-2 text-right tabular-nums">
                                 {{ $item->amount_academic ? number_format($item->amount_academic, 2) : '' }}
+                                @if (($isHeader || $item->has_children) && ($item->amount_academic ?? 0) > ($item->children_sum_academic ?? 0))
+                                    <div class="text-[10px] text-orange-500 font-normal mt-0.5" title="ງົບປະມານຍັງບໍ່ຖືກຈັດສັນຄົບຖ້ວນ">
+                                        (ຍັງເຫຼືອ: {{ number_format(($item->amount_academic ?? 0) - ($item->children_sum_academic ?? 0), 2) }})
+                                    </div>
+                                @endif
                             </td>
                             <td class="border border-gray-200 px-3 py-2 text-center">
                                 <div class="flex items-center justify-center gap-2">
@@ -246,6 +258,13 @@
     </div>
 
     @push('scripts')
+        <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+        <style>
+            /* Customizing TomSelect to blend better with Tailwind forms */
+            .ts-control { border-radius: 0.375rem; border-color: #d1d5db; padding: 0.375rem 0.5rem; font-size: 0.875rem; }
+            .ts-control.focus { box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5); border-color: #60a5fa; }
+        </style>
         <script>
             // ── Edit-item modal ────────────────────────────────────────────────────
             const BASE_URL = '{{ url("head-of-finance/annual-budget/" . $annualBudget->id . "/items") }}';
@@ -269,20 +288,31 @@
 
             // ── Bulk-add dynamic rows ──────────────────────────────────────────────
             // Build the accounts option list once from PHP data
-            const allAccounts = @json($accounts->map(fn($a) => ['id' => $a->id, 'code' => $a->formatted_code, 'name' => $a->account_name]));
-            const usedIds = new Set(@json($annualBudget->lineItems->pluck('account_id')));
+            @php
+                $accountData = $accounts->map(function($a) {
+                    return [
+                        'id' => $a->id,
+                        'code' => $a->formatted_code,
+                        'raw' => $a->account_code,
+                        'name' => $a->account_name,
+                        'parent_id' => $a->parent_id
+                    ];
+                });
+                $usedData = $annualBudget->lineItems->pluck('account_id');
+                $dbItemsData = $annualBudget->lineItems->mapWithKeys(function($item) {
+                    return [$item->account_id => [
+                        'amount_regular' => $item->amount_regular,
+                        'amount_academic' => $item->amount_academic,
+                        'children_sum_regular' => $item->children_sum_regular ?? 0,
+                        'children_sum_academic' => $item->children_sum_academic ?? 0,
+                    ]];
+                });
+            @endphp
+            const allAccounts = @json($accountData);
+            const usedIds = new Set(@json($usedData));
+            const dbItems = @json($dbItemsData);
 
             let rowCount = 0;
-
-            function buildAccountOptions(selectedId = '') {
-                let html = '<option value="">-- ເລືອກບັນຊີ --</option>';
-                allAccounts.forEach(acc => {
-                    const disabled = usedIds.has(acc.id) ? 'disabled' : '';
-                    const selected = acc.id == selectedId ? 'selected' : '';
-                    html += `<option value="${acc.id}" ${disabled} ${selected}>${acc.code} — ${acc.name}</option>`;
-                });
-                return html;
-            }
 
             function addRow() {
                 const idx = rowCount++;
@@ -290,22 +320,23 @@
                 const tr = document.createElement('tr');
                 tr.className = 'border-b border-gray-100 hover:bg-gray-50';
                 tr.setAttribute('data-row', idx);
+                const selectId = `account_select_${idx}`;
                 tr.innerHTML = `
                                 <td class="px-3 py-2 text-center text-gray-400 text-xs">${idx + 1}</td>
                                 <td class="px-3 py-2">
-                                    <select name="items[${idx}][account_id]"
-                                            class="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-400">
-                                        ${buildAccountOptions()}
+                                    <select id="${selectId}" name="items[${idx}][account_id]"
+                                            class="w-full text-sm"
+                                            placeholder="-- ພິມຊອກຫາບັນຊີ (ຕົວຢ່າງ: 60100100) --">
                                     </select>
                                 </td>
                                 <td class="px-3 py-2">
                                     <input type="number" name="items[${idx}][amount_regular]"
-                                           min="0" step="0.01" placeholder="0.00"
+                                           min="0" step="0.01" placeholder="0.00" oninput="validateRows()"
                                            class="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-400 text-right">
                                 </td>
                                 <td class="px-3 py-2">
                                     <input type="number" name="items[${idx}][amount_academic]"
-                                           min="0" step="0.01" placeholder="0.00"
+                                           min="0" step="0.01" placeholder="0.00" oninput="validateRows()"
                                            class="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-400 text-right">
                                 </td>
                                 <td class="px-3 py-2 text-center">
@@ -318,12 +349,163 @@
                                     </button>
                                 </td>`;
                 tbody.appendChild(tr);
-                // Focus the new select
-                tr.querySelector('select').focus();
+                
+                const tsOptions = allAccounts.map(acc => ({
+                    value: String(acc.id),
+                    text: acc.code + ' — ' + acc.name,
+                    raw: acc.raw,
+                    disabled: usedIds.has(acc.id)
+                }));
+
+                // Initialize TomSelect on the new select element
+                const ts = new TomSelect(`#${selectId}`, {
+                    create: false,
+                    maxOptions: 50,
+                    dropdownParent: "body",
+                    options: tsOptions,
+                    valueField: 'value',
+                    labelField: 'text',
+                    searchField: ['text', 'raw'],
+                    sortField: {
+                        field: "text",
+                        direction: "asc"
+                    },
+                    onChange: function() {
+                        validateRows();
+                    }
+                });
+
+                // Force dropdown to open UPWARDS instead of downwards
+                const origPosition = ts.positionDropdown;
+                ts.positionDropdown = function() {
+                    origPosition.apply(ts, arguments);
+                    const controlRect = ts.control.getBoundingClientRect();
+                    // When dropdown parent is 'body', TomSelect sets absolute position relative to document.
+                    // We just need to subtract the dropdown height and the control height to flip it upwards.
+                    // TomSelect sets top = controlRect.top + window.scrollY + controlRect.height
+                    // We change it to top = controlRect.top + window.scrollY - dropdownHeight
+                    const dropdownHeight = ts.dropdown.offsetHeight;
+                    ts.dropdown.style.top = (controlRect.top + window.scrollY - dropdownHeight - 4) + 'px';
+                };
             }
 
             function removeRow(btn) {
                 btn.closest('tr').remove();
+                validateRows();
+            }
+
+            // Client-side visual validation
+            function validateRows() {
+                const rows = document.querySelectorAll('#bulkRows tr');
+                
+                // Reset styling
+                rows.forEach(tr => {
+                    tr.classList.remove('bg-red-50');
+                    const tsControl = tr.querySelector('.ts-control');
+                    if (tsControl) {
+                        tsControl.style.borderColor = '';
+                        tsControl.style.backgroundColor = '';
+                    }
+                    const inputs = tr.querySelectorAll('input[type="number"]');
+                    inputs.forEach(inp => inp.classList.remove('border-red-500', 'bg-red-50', 'text-red-700'));
+                });
+
+                // 1. Duplicate check
+                const selectedAccounts = new Map();
+                const formValues = new Map();
+                
+                rows.forEach(tr => {
+                    const sel = tr.querySelector('select');
+                    const val = sel ? sel.value : '';
+                    if (val) {
+                        const accId = parseInt(val);
+                        if (!selectedAccounts.has(accId)) selectedAccounts.set(accId, []);
+                        selectedAccounts.get(accId).push(tr);
+                        
+                        const reg = tr.querySelector('input[name*="amount_regular"]');
+                        const acad = tr.querySelector('input[name*="amount_academic"]');
+                        formValues.set(accId, {
+                            reg: parseFloat(reg.value) || 0,
+                            acad: parseFloat(acad.value) || 0,
+                            row: tr
+                        });
+                    }
+                });
+
+                let hasDuplicates = false;
+                selectedAccounts.forEach((trArray) => {
+                    if (trArray.length > 1) {
+                        hasDuplicates = true;
+                        trArray.forEach(tr => {
+                            tr.classList.add('bg-red-50');
+                            const tsControl = tr.querySelector('.ts-control');
+                            if (tsControl) {
+                                tsControl.style.borderColor = '#ef4444';
+                                tsControl.style.backgroundColor = '#fef2f2';
+                            }
+                        });
+                    }
+                });
+
+                // 2. Limit Check
+                const accountMap = new Map();
+                allAccounts.forEach(acc => accountMap.set(acc.id, acc));
+                
+                const formChildrenSums = new Map(); // parent_id => sums
+                formValues.forEach((vals, accId) => {
+                    const acc = accountMap.get(accId);
+                    if (acc && acc.parent_id) {
+                        if (!formChildrenSums.has(acc.parent_id)) {
+                            formChildrenSums.set(acc.parent_id, { reg: 0, acad: 0 });
+                        }
+                        const sum = formChildrenSums.get(acc.parent_id);
+                        sum.reg += vals.reg;
+                        sum.acad += vals.acad;
+                    }
+                });
+
+                let hasOverLimit = false;
+                formChildrenSums.forEach((sums, parentId) => {
+                    let limitReg = 0, limitAcad = 0, dbUsedReg = 0, dbUsedAcad = 0;
+                    
+                    if (formValues.has(parentId)) {
+                        limitReg = formValues.get(parentId).reg;
+                        limitAcad = formValues.get(parentId).acad;
+                    } else if (dbItems[parentId]) {
+                        limitReg = dbItems[parentId].amount_regular;
+                        limitAcad = dbItems[parentId].amount_academic;
+                        dbUsedReg = dbItems[parentId].children_sum_regular;
+                        dbUsedAcad = dbItems[parentId].children_sum_academic;
+                    } else {
+                        return; // Parent not selected natively handling
+                    }
+                    
+                    const totalChildReg = sums.reg + dbUsedReg;
+                    const totalChildAcad = sums.acad + dbUsedAcad;
+                    
+                    if (totalChildReg > limitReg || totalChildAcad > limitAcad) {
+                        hasOverLimit = true;
+                        formValues.forEach((vals, childId) => {
+                            const acc = accountMap.get(childId);
+                            if (acc && acc.parent_id === parentId) {
+                                const tr = vals.row;
+                                const regInput = tr.querySelector('input[name*="amount_regular"]');
+                                const acadInput = tr.querySelector('input[name*="amount_academic"]');
+                                
+                                if (totalChildReg > limitReg) regInput.classList.add('border-red-500', 'bg-red-50', 'text-red-700');
+                                if (totalChildAcad > limitAcad) acadInput.classList.add('border-red-500', 'bg-red-50', 'text-red-700');
+                            }
+                        });
+                    }
+                });
+                
+                // Allow Submit only if no errors
+                const btnSubmit = document.querySelector('#bulkForm button[type="submit"]');
+                if (btnSubmit) {
+                    btnSubmit.disabled = hasDuplicates || hasOverLimit;
+                    btnSubmit.classList.toggle('opacity-50', hasDuplicates || hasOverLimit);
+                    btnSubmit.classList.toggle('cursor-not-allowed', hasDuplicates || hasOverLimit);
+                }
             }
 
             // Wire up the "ເພີ່ມແຖວໃໝ່" button
