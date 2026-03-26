@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db:3306
--- Generation Time: Mar 26, 2026 at 10:50 AM
+-- Generation Time: Mar 26, 2026 at 05:28 PM
 -- Server version: 8.0.45
 -- PHP Version: 8.3.30
 
@@ -115,7 +115,7 @@ CREATE TABLE `budget_period_allocations` (
 CREATE TABLE `budget_plans` (
   `id` int NOT NULL,
   `fiscal_year` int NOT NULL,
-  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` enum('DRAFT','PENDING_REVIEW','MODIFYING','PENDING_FINAL_APPROVAL','APPROVED') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT',
   `version` int NOT NULL DEFAULT '1',
   `created_by` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -125,7 +125,7 @@ CREATE TABLE `budget_plans` (
 --
 
 INSERT INTO `budget_plans` (`id`, `fiscal_year`, `status`, `version`, `created_by`) VALUES
-(6, 2027, 'draft', 1, 2);
+(6, 2027, 'DRAFT', 1, 2);
 
 -- --------------------------------------------------------
 
@@ -349,12 +349,12 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `username`, `password`, `full_name`, `role_id`, `department_id`, `is_active`, `remember_token`) VALUES
 (1, 'admin01', '$2y$12$Cy73vWzkYGAjnpybpWpphuYXJH1nF/rM8cJS6QWOOb232Reeto6qe', 'admin', 1, 1, 1, NULL),
-(2, 'aj_boasod', '$2y$12$Cy73vWzkYGAjnpybpWpphuYXJH1nF/rM8cJS6QWOOb232Reeto6qe', 'aj_boasod', 2, 2, 1, 'y2AaV9X322w0gtwEhdn87ME3QaVv5pMatwqMIQQN1479CtV7ECUS8xO6J8Ma'),
+(2, 'aj_boasod', '$2y$12$Cy73vWzkYGAjnpybpWpphuYXJH1nF/rM8cJS6QWOOb232Reeto6qe', 'aj_boasod', 2, 2, 1, 'UthJThyhg8aQD62V193rHG7ZHsDVdEMu7TTNk7BCP7NPTBswCcOTGBnt91lO'),
 (3, 'accountant01', '$2y$12$Cy73vWzkYGAjnpybpWpphuYXJH1nF/rM8cJS6QWOOb232Reeto6qe', 'accountant', 3, 1, 1, NULL),
 (4, 'accountant02', '$2y$12$Cy73vWzkYGAjnpybpWpphuYXJH1nF/rM8cJS6QWOOb232Reeto6qe', 'accountantnaja', 3, 3, 0, NULL),
 (5, 'hong_head_fac', '$2y$12$Cy73vWzkYGAjnpybpWpphuYXJH1nF/rM8cJS6QWOOb232Reeto6qe', 'hong_fac', 4, 5, 1, NULL),
 (6, 'head_fac', '$2y$12$Cy73vWzkYGAjnpybpWpphuYXJH1nF/rM8cJS6QWOOb232Reeto6qe', 'head_fac', 5, 5, 1, NULL),
-(8, 'Teng1122', '$2y$12$VV.VHc/Efa2JrlWZpa04QuxAj7DJUDEzUvcMoHzUW3/uNevf/ZULS', 'Teng', 1, 1, 1, NULL),
+(8, 'Teng1122', '$2y$12$VV.VHc/Efa2JrlWZpa04QuxAj7DJUDEzUvcMoHzUW3/uNevf/ZULS', 'Teng', 1, 3, 1, NULL),
 (9, 'valenthaiymany@gmail.com', '$2y$12$UsTnHcVp3x7FH3e9sED34eg0MiP3wWg5oI37YMnhdI6tfl9QbPHr.', 'Valenthaiy Many', 6, 4, 1, NULL),
 (10, 'luminusxdd981@gmail.com', '$2y$12$W0b4/PaL.421XOksvS/hn.lEaawX4smoMI5KKuOkUHL3XjszEMojK', 'Valenthaiy Many', 3, 1, 1, NULL),
 (11, 'beekhnlor', '$2y$12$1/yzOvXFvq18Qu4FhmVBtu2XO5xLxfu0O78jFx4D3JjRecGJJVAIy', 'beekingword', 1, 1, 1, NULL),
