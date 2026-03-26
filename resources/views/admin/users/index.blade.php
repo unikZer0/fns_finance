@@ -18,12 +18,12 @@
 
     <!-- Filters -->
     <div class="p-6 border-b border-gray-200 bg-gray-50">
-        <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-wrap gap-4">
+        <form id="filter-form" method="GET" action="{{ route('admin.users.index') }}" class="flex flex-wrap gap-4">
             <div class="flex-1 min-w-[200px]">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="ຄົ້ນຫາຊື່ຜູ້ໃຊ້ ຫຼື ຊື່ເຕັມ..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="ຄົ້ນຫາຊື່ຜູ້ໃຊ້ ຫຼື ຊື່ເຕັມ..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onkeydown="if(event.key==='Enter'){this.form.submit();}">
             </div>
             <div class="w-48">
-                <select name="role_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <select name="role_id" onchange="this.form.submit()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">-- ທຸກບົດບາດ --</option>
                     @foreach ($roles as $role)
                         <option value="{{ $role->id }}" {{ request('role_id') == $role->id ? 'selected' : '' }}>{{ $role->role_name }}</option>
@@ -31,7 +31,7 @@
                 </select>
             </div>
             <div class="w-48">
-                <select name="department_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <select name="department_id" onchange="this.form.submit()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">-- ທຸກພະແນກ --</option>
                     @foreach ($departments as $dept)
                         <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->department_name }}</option>
@@ -39,18 +39,12 @@
                 </select>
             </div>
             <div class="w-40">
-                <select name="is_active" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <select name="is_active" onchange="this.form.submit()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">-- ທຸກສະຖານະ --</option>
                     <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>ໃຊ້ງານ</option>
                     <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>ບໍ່ໃຊ້ງານ</option>
                 </select>
             </div>
-            <button type="submit" class="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700">
-                ຄົ້ນຫາ
-            </button>
-            <a href="{{ route('admin.users.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300">
-                ຄືນຄ່າເລີ່ມຕົ້ນ
-            </a>
         </form>
     </div>
 
