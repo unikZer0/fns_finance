@@ -18,16 +18,10 @@
 
     <!-- Filters -->
     <div class="p-6 border-b border-gray-200 bg-gray-50">
-        <form method="GET" action="{{ route('admin.roles.index') }}" class="flex flex-wrap gap-4">
+        <form id="filter-form" method="GET" action="{{ route('admin.roles.index') }}" class="flex flex-wrap gap-4">
             <div class="flex-1 min-w-[200px]">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="ຄົ້ນຫາຊື່ບົດບາດ..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="ຄົ້ນຫາຊື່ບົດບາດ..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onkeydown="if(event.key==='Enter'){this.form.submit();}">
             </div>
-            <button type="submit" class="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700">
-                ຄົ້ນຫາ
-            </button>
-            <a href="{{ route('admin.roles.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300">
-                ຄືນຄ່າເລີ່ມຕົ້ນ
-            </a>
         </form>
     </div>
 

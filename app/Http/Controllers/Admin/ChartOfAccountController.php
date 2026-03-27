@@ -14,7 +14,7 @@ class ChartOfAccountController extends Controller
      */
     public function index(Request $request)
     {
-        $query = ChartOfAccount::query();
+        $query = ChartOfAccount::with('parent');
 
         // Search
         if ($request->filled('search')) {
@@ -25,9 +25,15 @@ class ChartOfAccountController extends Controller
             });
         }
 
-        $chartOfAccounts = $query->orderBy('account_code')->paginate(10)->withQueryString();
+        // Filter by parent_id
+        if ($request->has('parent_id') && strlen($request->parent_id) > 0) {
+            $query->where('parent_id', (int) $request->parent_id);
+        }
 
-        return view('admin.chart-of-accounts.index', compact('chartOfAccounts'));
+        $chartOfAccounts = $query->orderBy('account_code')->paginate(10)->withQueryString();
+        $parentAccounts = ChartOfAccount::has('children')->orderBy('account_code')->get();
+
+        return view('admin.chart-of-accounts.index', compact('chartOfAccounts', 'parentAccounts'));
     }
 
     /**
@@ -35,7 +41,8 @@ class ChartOfAccountController extends Controller
      */
     public function create()
     {
-        return view('admin.chart-of-accounts.create');
+        $chartOfAccounts = ChartOfAccount::orderBy('account_code')->get();
+        return view('admin.chart-of-accounts.create', compact('chartOfAccounts'));
     }
 
     /**
@@ -46,6 +53,7 @@ class ChartOfAccountController extends Controller
         $validated = $request->validate([
             'account_code' => 'required|string|max:20|unique:chart_of_accounts',
             'account_name' => 'required|string|max:255',
+            'parent_id' => 'nullable|exists:chart_of_accounts,id',
         ]);
 
         ChartOfAccount::create($validated);
@@ -68,7 +76,8 @@ class ChartOfAccountController extends Controller
      */
     public function edit(ChartOfAccount $chartOfAccount)
     {
-        return view('admin.chart-of-accounts.edit', compact('chartOfAccount'));
+        $allAccounts = ChartOfAccount::orderBy('account_code')->get();
+        return view('admin.chart-of-accounts.edit', compact('chartOfAccount', 'allAccounts'));
     }
 
     /**
@@ -79,6 +88,7 @@ class ChartOfAccountController extends Controller
         $validated = $request->validate([
             'account_code' => ['required', 'string', 'max:20', Rule::unique('chart_of_accounts')->ignore($chartOfAccount->id)],
             'account_name' => 'required|string|max:255',
+            'parent_id' => ['nullable', 'exists:chart_of_accounts,id', Rule::notIn([$chartOfAccount->id])],
         ]);
 
         $chartOfAccount->update($validated);

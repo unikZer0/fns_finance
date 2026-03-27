@@ -39,8 +39,8 @@ class UserController extends Controller
         }
 
         // Filter by status
-        if ($request->has('is_active') && $request->is_active !== '') {
-            $query->where('is_active', $request->is_active);
+        if ($request->has('is_active') && strlen($request->is_active) > 0) {
+            $query->where('is_active', (int) $request->is_active);
         }
 
         $users = $query->latest('id')->paginate(10)->withQueryString();
