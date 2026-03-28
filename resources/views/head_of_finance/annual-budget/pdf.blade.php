@@ -192,8 +192,7 @@
         }
 
         function formatLaoNumber($number) {
-            if ($number == 0) return '0';
-            return number_format($number, 0, ',', '.');
+            return number_format($number, 2, '.', ',');
         }
 
         // Calculate subtotals per main category

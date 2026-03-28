@@ -141,6 +141,11 @@ class AnnualBudgetPlanController extends Controller
         ]);
 
         try {
+            $account = \App\Models\ChartOfAccount::findOrFail($request->account_id);
+            if ($account->children()->exists()) {
+                throw ValidationException::withMessages(['account_id' => 'ບໍ່ສາມາດບັນທຶກໃນໝວດຫຼັກໄດ້, ກະລຸນາເລືອກໝວดย่อยທີ່ສຸດ']);
+            }
+
             DB::transaction(function () use ($request, $annualBudget) {
                 // Prevent duplicate account in same plan
                 $exists = $annualBudget->lineItems()->where('account_id', $request->account_id)->exists();
@@ -153,8 +158,6 @@ class AnnualBudgetPlanController extends Controller
                     'amount_regular' => $request->amount_regular ?? 0,
                     'amount_academic' => $request->amount_academic ?? 0,
                 ]);
-
-                $this->validateBudgetLimits($annualBudget);
             });
 
             return back()->with('success', 'ເພີ່ມລາຍການງົບປະມານສຳເລັດ!');
@@ -177,8 +180,15 @@ class AnnualBudgetPlanController extends Controller
 
         try {
             DB::transaction(function () use ($request, $annualBudget, &$skipped, &$added) {
+                $accounts = \App\Models\ChartOfAccount::with('children')->get()->keyBy('id');
+
                 foreach ($request->items as $row) {
                     if (empty($row['account_id'])) continue;
+                    
+                    $acc = $accounts->get($row['account_id']);
+                    if ($acc && $acc->children->count() > 0) {
+                        continue; // Skip parent accounts
+                    }
 
                     $exists = $annualBudget->lineItems()
                         ->where('account_id', $row['account_id'])
@@ -196,8 +206,6 @@ class AnnualBudgetPlanController extends Controller
                     ]);
                     $added++;
                 }
-
-                $this->validateBudgetLimits($annualBudget);
             });
 
             $msg = "ເພີ່ມ {$added} ລາຍການສຳເລັດ!";
@@ -217,13 +225,16 @@ class AnnualBudgetPlanController extends Controller
         ]);
 
         try {
+            $account = $item->account;
+            if ($account->children()->exists()) {
+                throw ValidationException::withMessages(['account_id' => 'ບໍ່ສາມາດແກ້ໄຂໝວດຫຼັກໄດ້']);
+            }
+
             DB::transaction(function () use ($request, $annualBudget, $item) {
                 $item->update([
                     'amount_regular' => $request->amount_regular ?? 0,
                     'amount_academic' => $request->amount_academic ?? 0,
                 ]);
-
-                $this->validateBudgetLimits($annualBudget);
             });
 
             return back()->with('success', 'ອັບເດດລາຍການສຳເລັດ!');
@@ -240,91 +251,89 @@ class AnnualBudgetPlanController extends Controller
         return back()->with('success', 'ລຶບລາຍການສຳເລັດ!');
     }
 
-    /**
-     * Validate that the sum of immediate children does not exceed their parent's limit.
-     * Throws ValidationException if a limit is exceeded.
-     */
-    protected function validateBudgetLimits(BudgetPlan $annualBudget)
+    protected function synthesizeTreeAndRollUp($lineItems)
     {
-        $items = $annualBudget->lineItems()->with('account.parent')->get()->keyBy('account_id');
-        if ($items->isEmpty()) return;
-
-        $itemsByCode = $items->keyBy(function ($item) {
-            return $item->account->account_code ?? '';
-        });
-
-        // 1. Validate that every sub-item has its direct parent present in the plan
-        foreach ($itemsByCode as $code => $item) {
-            $parentAccount = $item->account->parent;
-            if ($parentAccount && !isset($itemsByCode[$parentAccount->account_code])) {
-                throw ValidationException::withMessages([
-                    'missing_parent' => "ບໍ່ສາມາດເພີ່ມໝວດຍ່ອຍ {$item->account->formatted_code} ໄດ້! ຕ້ອງກະກຽມໝວດຫຼັກໃຫ້ມັນກ່ອນສະເໝີ."
-                ]);
+        $allAccounts = \App\Models\ChartOfAccount::orderBy('account_code')->get();
+        $accountMap = $allAccounts->keyBy('id');
+        
+        $childrenMap = [];
+        foreach ($allAccounts as $acc) {
+            if ($acc->parent_id) {
+                $childrenMap[$acc->parent_id][] = $acc->id;
             }
         }
-
-        // 2. Validate that children summation does not exceed parent limit
-        foreach ($itemsByCode as $code => $parentItem) {
-            $immediateChildren = [];
-            foreach ($itemsByCode as $childCode => $childItem) {
-                if ($childCode !== $code && $childItem->account->parent_id === $parentItem->account->id) {
-                    $immediateChildren[] = $childItem;
+        
+        $aggregated = [];
+        foreach ($lineItems as $item) {
+            $aggregated[$item->account_id] = [
+                'amount_regular' => $item->amount_regular,
+                'amount_academic' => $item->amount_academic,
+                'original_item' => $item,
+            ];
+        }
+        
+        $computeSum = function($accountId) use (&$computeSum, &$aggregated, $childrenMap) {
+            $reg = $aggregated[$accountId]['amount_regular'] ?? 0;
+            $acad = $aggregated[$accountId]['amount_academic'] ?? 0;
+            $hasItems = isset($aggregated[$accountId]['original_item']);
+            
+            if (isset($childrenMap[$accountId])) {
+                $reg = 0; $acad = 0; // Parent's own DB amount is overridden by children sum
+                foreach ($childrenMap[$accountId] as $childId) {
+                    $childSums = $computeSum($childId);
+                    $reg += $childSums['reg'];
+                    $acad += $childSums['acad'];
+                    if ($childSums['hasItems']) {
+                        $hasItems = true;
+                    }
                 }
+                $aggregated[$accountId]['amount_regular'] = $reg;
+                $aggregated[$accountId]['amount_academic'] = $acad;
             }
-
-            if (count($immediateChildren) > 0) {
-                $sumRegular = collect($immediateChildren)->sum('amount_regular');
-                $sumAcademic = collect($immediateChildren)->sum('amount_academic');
-
-                if ($sumRegular > $parentItem->amount_regular) {
-                    throw ValidationException::withMessages([
-                        'budget_limit' => "ຍອດລວມງົບປະມານປົກກະຕິຂອງໝວດຍ່ອຍ (" . number_format($sumRegular) . ") ເກີນກຳນົດຂອງໝວດຫຼັກ {$parentItem->account->formatted_code} (" . number_format($parentItem->amount_regular) . ")!"
-                    ]);
-                }
+            
+            $aggregated[$accountId]['should_render'] = $hasItems || $reg > 0 || $acad > 0;
+            return ['reg' => $reg, 'acad' => $acad, 'hasItems' => $hasItems];
+        };
+        
+        $roots = $allAccounts->whereNull('parent_id');
+        foreach ($roots as $root) {
+            $computeSum($root->id);
+        }
+        
+        $syntheticItems = collect();
+        foreach ($allAccounts as $acc) {
+            $shouldRender = $aggregated[$acc->id]['should_render'] ?? false;
+            
+            if ($shouldRender) {
+                $reg = $aggregated[$acc->id]['amount_regular'] ?? 0;
+                $acad = $aggregated[$acc->id]['amount_academic'] ?? 0;
+                $isParent = isset($childrenMap[$acc->id]);
                 
-                if ($sumAcademic > $parentItem->amount_academic) {
-                    throw ValidationException::withMessages([
-                        'budget_limit' => "ຍອດລວມງົບປະມານອື່ນການຂອງໝວດຍ່ອຍ (" . number_format($sumAcademic) . ") ເກີນກຳນົດຂອງໝວດຫຼັກ {$parentItem->account->formatted_code} (" . number_format($parentItem->amount_academic) . ")!"
+                if (isset($aggregated[$acc->id]['original_item'])) {
+                    $item = $aggregated[$acc->id]['original_item'];
+                    $item->amount_regular = $reg;
+                    $item->amount_academic = $acad;
+                    $item->is_parent = $isParent;
+                    $item->setRelation('account', $acc);
+                    $syntheticItems->push($item);
+                } else {
+                    $syntheticItem = new \App\Models\BudgetLineItem([
+                        'account_id' => $acc->id,
+                        'amount_regular' => $reg,
+                        'amount_academic' => $acad,
                     ]);
+                    $syntheticItem->is_parent = $isParent;
+                    $syntheticItem->setRelation('account', $acc);
+                    $syntheticItems->push($syntheticItem);
                 }
             }
         }
+        
+        return $syntheticItems;
     }
 
-    /**
-     * Compute and attach the sums of immediate children to parent items.
-     * Useful for displaying remaining balances in the UI.
-     */
-    protected function computeImmediateChildrenSums($sortedLineItems)
-    {
-        $itemsByCode = $sortedLineItems->keyBy(function ($item) {
-            return $item->account->account_code ?? '';
-        });
-
-        foreach ($itemsByCode as $item) {
-            $item->children_sum_regular = 0;
-            $item->children_sum_academic = 0;
-            $item->has_children = false;
-        }
-
-        foreach ($itemsByCode as $code => $parentItem) {
-            foreach ($itemsByCode as $childCode => $childItem) {
-                if ($childCode !== $code && $childItem->account->parent_id === $parentItem->account->id) {
-                    $parentItem->has_children = true;
-                    $parentItem->children_sum_regular += $childItem->amount_regular ?? 0;
-                    $parentItem->children_sum_academic += $childItem->amount_academic ?? 0;
-                }
-            }
-        }
-    }
-
-    /**
-     * Sort line items hierarchically based on the account structure.
-     */
     protected function sortLineItemsHierarchically($lineItems)
     {
-        $sorted = $lineItems->sortBy('account.account_code')->values();
-        $this->computeImmediateChildrenSums($sorted);
-        return $sorted;
+        return $this->synthesizeTreeAndRollUp($lineItems);
     }
 }
