@@ -97,53 +97,48 @@
                                 {{ $item->account->formatted_code ?? '-' }}
                             </td>
                             <td class="border border-gray-200 px-4 py-2 text-gray-800">
+                                @if(!($item->is_parent ?? false))
+                                    - 
+                                @endif
                                 {{ $item->account->account_name ?? '-' }}
                             </td>
                             {{-- ຄໍ 6: ແຜນລວມ = ປົກກະຕິ + ວິຊາການ --}}
                             <td class="border border-gray-200 px-3 py-2 text-right tabular-nums font-semibold">
-                                {{ $itemLuam ? number_format($itemLuam, 2) : '' }}
+                                {{ number_format($itemLuam, 2) }}
                             </td>
                             {{-- ຄໍ 7: ງົບປະມານປົກກະຕິ --}}
                             <td class="border border-gray-200 px-3 py-2 text-right tabular-nums">
-                                {{ $item->amount_regular ? number_format($item->amount_regular, 2) : '' }}
-                                @if (($isHeader || $item->has_children) && ($item->amount_regular ?? 0) > ($item->children_sum_regular ?? 0))
-                                    <div class="text-[10px] text-orange-500 font-normal mt-0.5" title="ງົບປະມານຍັງບໍ່ຖືກຈັດສັນຄົບຖ້ວນ">
-                                        (ຍັງເຫຼືອ: {{ number_format(($item->amount_regular ?? 0) - ($item->children_sum_regular ?? 0), 2) }})
-                                    </div>
-                                @endif
+                                {{ number_format($item->amount_regular ?? 0, 2) }}
                             </td>
                             {{-- ຄໍ 8=6-7: ງົບປະມານວິຊາການ --}}
                             <td class="border border-gray-200 px-3 py-2 text-right tabular-nums">
-                                {{ $item->amount_academic ? number_format($item->amount_academic, 2) : '' }}
-                                @if (($isHeader || $item->has_children) && ($item->amount_academic ?? 0) > ($item->children_sum_academic ?? 0))
-                                    <div class="text-[10px] text-orange-500 font-normal mt-0.5" title="ງົບປະມານຍັງບໍ່ຖືກຈັດສັນຄົບຖ້ວນ">
-                                        (ຍັງເຫຼືອ: {{ number_format(($item->amount_academic ?? 0) - ($item->children_sum_academic ?? 0), 2) }})
-                                    </div>
-                                @endif
+                                {{ number_format($item->amount_academic ?? 0, 2) }}
                             </td>
                             <td class="border border-gray-200 px-3 py-2 text-center">
-                                <div class="flex items-center justify-center gap-2">
-                                    {{-- Edit inline via modal --}}
-                                    <button type="button"
-                                        onclick="openEditModal({{ $item->id }}, {{ $item->amount_regular ?? 0 }}, {{ $item->amount_academic ?? 0 }})"
-                                        class="text-yellow-600 hover:text-yellow-800" title="ແກ້ໄຂ">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <form
-                                        action="{{ route('head_of_finance.annual-budget.items.destroy', [$annualBudget, $item]) }}"
-                                        method="POST" class="inline" onsubmit="return confirm('ລຶບລາຍການນີ້?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-800" title="ລຶບ">
+                                @if(!($item->is_parent ?? false))
+                                    <div class="flex items-center justify-center gap-2">
+                                        {{-- Edit inline via modal --}}
+                                        <button type="button"
+                                            onclick="openEditModal({{ $item->id }}, {{ $item->amount_regular ?? 0 }}, {{ $item->amount_academic ?? 0 }})"
+                                            class="text-yellow-600 hover:text-yellow-800" title="ແກ້ໄຂ">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </button>
-                                    </form>
-                                </div>
+                                        <form
+                                            action="{{ route('head_of_finance.annual-budget.items.destroy', [$annualBudget, $item]) }}"
+                                            method="POST" class="inline" onsubmit="return confirm('ລຶບລາຍການນີ້?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-800" title="ລຶບ">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                @endif
                             </td>
                         </tr>
                     @empty
@@ -289,28 +284,21 @@
             // ── Bulk-add dynamic rows ──────────────────────────────────────────────
             // Build the accounts option list once from PHP data
             @php
+                $accounts->loadCount('children');
                 $accountData = $accounts->map(function($a) {
                     return [
                         'id' => $a->id,
                         'code' => $a->formatted_code,
                         'raw' => $a->account_code,
                         'name' => $a->account_name,
-                        'parent_id' => $a->parent_id
+                        'parent_id' => $a->parent_id,
+                        'is_parent' => $a->children_count > 0
                     ];
                 });
                 $usedData = $annualBudget->lineItems->pluck('account_id');
-                $dbItemsData = $annualBudget->lineItems->mapWithKeys(function($item) {
-                    return [$item->account_id => [
-                        'amount_regular' => $item->amount_regular,
-                        'amount_academic' => $item->amount_academic,
-                        'children_sum_regular' => $item->children_sum_regular ?? 0,
-                        'children_sum_academic' => $item->children_sum_academic ?? 0,
-                    ]];
-                });
             @endphp
             const allAccounts = @json($accountData);
             const usedIds = new Set(@json($usedData));
-            const dbItems = @json($dbItemsData);
 
             let rowCount = 0;
 
@@ -354,13 +342,13 @@
                     value: String(acc.id),
                     text: acc.code + ' — ' + acc.name,
                     raw: acc.raw,
-                    disabled: usedIds.has(acc.id)
+                    disabled: usedIds.has(acc.id) || acc.is_parent
                 }));
 
                 // Initialize TomSelect on the new select element
                 const ts = new TomSelect(`#${selectId}`, {
                     create: false,
-                    maxOptions: 50,
+                    maxOptions: null,
                     dropdownParent: "body",
                     options: tsOptions,
                     valueField: 'value',
@@ -446,65 +434,13 @@
                         });
                     }
                 });
-
-                // 2. Limit Check
-                const accountMap = new Map();
-                allAccounts.forEach(acc => accountMap.set(acc.id, acc));
-                
-                const formChildrenSums = new Map(); // parent_id => sums
-                formValues.forEach((vals, accId) => {
-                    const acc = accountMap.get(accId);
-                    if (acc && acc.parent_id) {
-                        if (!formChildrenSums.has(acc.parent_id)) {
-                            formChildrenSums.set(acc.parent_id, { reg: 0, acad: 0 });
-                        }
-                        const sum = formChildrenSums.get(acc.parent_id);
-                        sum.reg += vals.reg;
-                        sum.acad += vals.acad;
-                    }
-                });
-
-                let hasOverLimit = false;
-                formChildrenSums.forEach((sums, parentId) => {
-                    let limitReg = 0, limitAcad = 0, dbUsedReg = 0, dbUsedAcad = 0;
-                    
-                    if (formValues.has(parentId)) {
-                        limitReg = formValues.get(parentId).reg;
-                        limitAcad = formValues.get(parentId).acad;
-                    } else if (dbItems[parentId]) {
-                        limitReg = dbItems[parentId].amount_regular;
-                        limitAcad = dbItems[parentId].amount_academic;
-                        dbUsedReg = dbItems[parentId].children_sum_regular;
-                        dbUsedAcad = dbItems[parentId].children_sum_academic;
-                    } else {
-                        return; // Parent not selected natively handling
-                    }
-                    
-                    const totalChildReg = sums.reg + dbUsedReg;
-                    const totalChildAcad = sums.acad + dbUsedAcad;
-                    
-                    if (totalChildReg > limitReg || totalChildAcad > limitAcad) {
-                        hasOverLimit = true;
-                        formValues.forEach((vals, childId) => {
-                            const acc = accountMap.get(childId);
-                            if (acc && acc.parent_id === parentId) {
-                                const tr = vals.row;
-                                const regInput = tr.querySelector('input[name*="amount_regular"]');
-                                const acadInput = tr.querySelector('input[name*="amount_academic"]');
-                                
-                                if (totalChildReg > limitReg) regInput.classList.add('border-red-500', 'bg-red-50', 'text-red-700');
-                                if (totalChildAcad > limitAcad) acadInput.classList.add('border-red-500', 'bg-red-50', 'text-red-700');
-                            }
-                        });
-                    }
-                });
                 
                 // Allow Submit only if no errors
                 const btnSubmit = document.querySelector('#bulkForm button[type="submit"]');
                 if (btnSubmit) {
-                    btnSubmit.disabled = hasDuplicates || hasOverLimit;
-                    btnSubmit.classList.toggle('opacity-50', hasDuplicates || hasOverLimit);
-                    btnSubmit.classList.toggle('cursor-not-allowed', hasDuplicates || hasOverLimit);
+                    btnSubmit.disabled = hasDuplicates;
+                    btnSubmit.classList.toggle('opacity-50', hasDuplicates);
+                    btnSubmit.classList.toggle('cursor-not-allowed', hasDuplicates);
                 }
             }
 
