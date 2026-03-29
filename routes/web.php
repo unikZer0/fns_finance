@@ -23,6 +23,7 @@ Route::middleware(['auth', 'check.active'])->group(function () {
             'accountant' => redirect()->route('accountant.home'),
             'deputy_head_of_faculty' => redirect()->route('deputy_head_of_faculty.home'),
             'head_of_faculty' => redirect()->route('head_of_faculty.home'),
+            'head_of_department' => redirect()->route('head_of_department.home'),
             default => abort(403, 'ບໍ່ພົບບົດບາດຂອງທ່ານ.'),
         };
     })->name('dashboard');
@@ -41,3 +42,4 @@ require __DIR__ . '/head_of_finance.php';
 require __DIR__ . '/accountant.php';
 require __DIR__ . '/deputy_head_of_faculty.php';
 require __DIR__ . '/head_of_faculty.php';
+require __DIR__ . '/head_of_department.php';

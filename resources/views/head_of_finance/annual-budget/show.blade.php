@@ -17,9 +17,11 @@
             </a>
             @php
                 $statusMap = [
-                    'draft' => ['label' => 'ຮ່າງ', 'class' => 'bg-gray-100 text-gray-700'],
-                    'submitted' => ['label' => 'ສົ່ງແລ້ວ', 'class' => 'bg-yellow-100 text-yellow-700'],
-                    'approved' => ['label' => 'ອະນຸມັດ', 'class' => 'bg-green-100 text-green-700'],
+                    'DRAFT' => ['label' => 'ຮ່າງ', 'class' => 'bg-gray-100 text-gray-700'],
+                    'PENDING_REVIEW' => ['label' => 'ລໍຖ້າຫົວໜ້າພາກສ່ວນ', 'class' => 'bg-yellow-100 text-yellow-700'],
+                    'PENDING_FINAL_APPROVAL' => ['label' => 'ລໍຖ້າຮອງຄະນະບໍດີ', 'class' => 'bg-blue-100 text-blue-700'],
+                    'APPROVED' => ['label' => 'ອະນຸມັດ', 'class' => 'bg-green-100 text-green-700'],
+                    'MODIFYING' => ['label' => 'ກຳລັງແກ້ໄຂ', 'class' => 'bg-orange-100 text-orange-700'],
                 ];
                 $s = $statusMap[$annualBudget->status] ?? ['label' => $annualBudget->status, 'class' => 'bg-gray-100 text-gray-700'];
             @endphp
@@ -36,12 +38,37 @@
                 </svg>
                 ພາບລວມ
             </a>
-            <a href="{{ route('head_of_finance.annual-budget.edit', $annualBudget) }}"
-                class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white text-sm font-medium rounded-lg hover:bg-yellow-600">
-                ແກ້ໄຂ
-            </a>
+            @if(in_array($annualBudget->status, ['DRAFT', 'MODIFYING']))
+            <form action="{{ route('head_of_finance.annual-budget.submit', $annualBudget) }}" method="POST" class="inline"
+                onsubmit="return confirm('ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການສົ່ງແຜນນີ້ໃຫ້ຫົວໜ້າພາກສ່ວນກວດສອບ?')">
+                @csrf
+                <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700">
+                     {{ $annualBudget->status === 'MODIFYING' ? 'ສົ່ງໃໝ່ (Resubmit)' : 'ສົ່ງແບບຟອມ (Submit)' }}
+                </button>
+            </form>
+            @endif
+            @if($annualBudget->status === 'PENDING_REVIEW')
+            <form action="{{ route('head_of_finance.annual-budget.unsubmit', $annualBudget) }}" method="POST" class="inline"
+                onsubmit="return confirm('ຍົກເລີກການສົ່ງ ແລະ ກັບໄປແກ້ໄຂບໍ?')">
+                @csrf
+                <button type="submit" class="inline-flex items-center px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600">
+                    ↩ ຍົກເລີກການສົ່ງ 
+                </button>
+            </form>
+            @endif
         </div>
     </div>
+
+    {{-- ── MODIFYING warning banner ── --}}
+    @if($annualBudget->status === 'MODIFYING')
+    <div class="mb-4 p-4 bg-orange-50 border border-orange-300 rounded-lg flex items-start gap-3">
+        <span class="text-orange-500 text-xl">⚠️</span>
+        <div>
+            <p class="font-semibold text-orange-700">ແຜນນີ້ຖືກສົ່ງກັບໃຫ້ແກ້ໄຂ</p>
+            <p class="text-sm text-orange-600 mt-0.5">ກະລຸນາກວດສອບຄຳເຫັນຂ້າງລຸ່ມ, ແກ້ໄຂລາຍການ, ແລ້ວກົດ <strong>ສົ່ງໃໝ່ (Resubmit)</strong> ເພື່ອສົ່ງກັບໄປໃຫ້ຫົວໜ້າພາກສ່ວນ.</p>
+        </div>
+    </div>
+    @endif
 
     {{-- ── Budget Table (matches image layout) ────────────────────────────── --}}
     <div class="bg-white rounded-lg shadow-sm overflow-hidden" id="budget-table-wrapper">
@@ -116,6 +143,7 @@
                             </td>
                             <td class="border border-gray-200 px-3 py-2 text-center">
                                 @if(!($item->is_parent ?? false))
+                                    @if(in_array($annualBudget->status, ['DRAFT', 'MODIFYING']))
                                     <div class="flex items-center justify-center gap-2">
                                         {{-- Edit inline via modal --}}
                                         <button type="button"
@@ -138,6 +166,7 @@
                                             </button>
                                         </form>
                                     </div>
+                                    @endif
                                 @endif
                             </td>
                         </tr>
@@ -172,6 +201,7 @@
         </div>
 
         {{-- ── Bulk Add Items Form ─────────────────────────────────────────── --}}
+        @if(in_array($annualBudget->status, ['DRAFT', 'MODIFYING']))
         <div class="p-6 border-t border-gray-200 bg-gray-50">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-sm font-semibold text-gray-700">➕ ເພີ່ມລາຍການງົບປະມານ</h3>
@@ -218,7 +248,85 @@
                 </div>
             </form>
         </div>
+        @endif
     </div>
+
+    {{-- ── Comments Section ─────────────────────────────────────────────── --}}
+    @if($annualBudget->comments->count() > 0)
+    @php
+        $commentsByRound = $annualBudget->comments->groupBy('submission_round')->sortKeysDesc();
+        $roundColors = ['bg-blue-600','bg-purple-600','bg-green-600','bg-orange-500','bg-red-500','bg-teal-600'];
+    @endphp
+    <div class="mt-8 p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">ຄວາມຄິດເຫັນ / ການຕອບກັບ</h3>
+        <div class="space-y-6 max-h-[500px] overflow-y-auto pr-2">
+            @foreach($commentsByRound as $round => $roundComments)
+            @php $color = $roundColors[($round - 1) % count($roundColors)] ?? 'bg-gray-600'; @endphp
+            <div>
+                {{-- Round header --}}
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold text-white {{ $color }}">
+                        ຮອບທີ {{ $round > 0 ? $round : '—' }}
+                    </span>
+                    <div class="flex-1 border-t border-gray-200"></div>
+                    <span class="text-xs text-gray-400">{{ $roundComments->count() }} ຄຳເຫັນ</span>
+                </div>
+                {{-- Comments in this round --}}
+                <div class="space-y-3 pl-2">
+                    @foreach($roundComments as $comment)
+                    @php $isMarked = $comment->isMarked(); @endphp
+                    <div id="comment-card-{{ $comment->id }}"
+                        data-marked="{{ $isMarked ? 'true' : 'false' }}"
+                        class="comment-card p-4 rounded-lg transition-colors duration-300
+                        {{ $isMarked ? 'bg-green-50 border border-green-200' : ($comment->user_id === auth()->id() ? 'bg-blue-50 border border-blue-100 ml-6' : 'bg-gray-50 border border-gray-100 mr-6') }}">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-semibold text-sm text-gray-700">
+                                    {{ $comment->user->full_name ?? 'User' }}
+                                    <span class="font-normal text-gray-400 text-xs">({{ $comment->user->role->role_name ?? '' }})</span>
+                                </span>
+                                {{-- Acknowledged badge (toggles via JS) --}}
+                                <span id="badge-{{ $comment->id }}"
+                                    class="ack-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 transition-all duration-200
+                                    {{ $isMarked ? '' : 'hidden' }}">
+                                    ✓ ຮັບຮູ້ແລ້ວ
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0 ml-2">
+                                <span class="text-xs text-gray-400">{{ $comment->created_at->format('d/m/Y H:i') }}</span>
+                                {{-- AJAX mark button --}}
+                                <button type="button"
+                                    id="mark-btn-{{ $comment->id }}"
+                                    data-comment-id="{{ $comment->id }}"
+                                    data-url="{{ route('head_of_finance.annual-budget.comments.mark', [$annualBudget, $comment]) }}"
+                                    data-csrf="{{ csrf_token() }}"
+                                    onclick="toggleMark(this)"
+                                    class="mark-btn inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-all duration-200
+                                    {{ $isMarked ? 'bg-green-100 text-green-700 hover:bg-red-50 hover:text-red-500' : 'bg-gray-100 text-gray-500 hover:bg-green-100 hover:text-green-700' }}">
+                                    <span class="mark-icon">{{ $isMarked ? '✓' : '○' }}</span>
+                                    <span class="mark-label">{{ $isMarked ? 'ໝາຍແລ້ວ' : 'ໝາຍ' }}</span>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 whitespace-pre-line mt-1">{{ $comment->comment }}</p>
+                        {{-- Footer ack line (toggles via JS) --}}
+                        <p id="ack-footer-{{ $comment->id }}"
+                            class="ack-footer text-xs text-green-600 mt-2 transition-all duration-200
+                            {{ $isMarked ? '' : 'hidden' }}">
+                            ✓ ຮັບຮູ້ໂດຍ
+                            <span class="ack-by">{{ $isMarked ? ($comment->markedBy->full_name ?? 'HoF') : '' }}</span>
+                            ·
+                            <span class="ack-at">{{ $isMarked ? $comment->marked_at->format('d/m/Y H:i') : '' }}</span>
+                        </p>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
 
     {{-- ── Edit Item Modal ────────────────────────────────────────────────── --}}
     <div id="editItemModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40">
@@ -479,5 +587,66 @@
                 }
             }
         </style>
+
+<script>
+async function toggleMark(btn) {
+    const id       = btn.dataset.commentId;
+    const url      = btn.dataset.url;
+    const csrf     = btn.dataset.csrf;
+    const card     = document.getElementById('comment-card-' + id);
+    const badge    = document.getElementById('badge-'        + id);
+    const footer   = document.getElementById('ack-footer-'  + id);
+    const icon     = btn.querySelector('.mark-icon');
+    const label    = btn.querySelector('.mark-label');
+
+    // Disable & show loading
+    btn.disabled = true;
+    const origIcon = icon.textContent;
+    icon.textContent = '⏳';
+
+    try {
+        const res  = await fetch(url, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+        });
+        const data = await res.json();
+
+        if (data.marked) {
+            // ── Mark ON ────────────────────────────────────────
+            card.classList.remove('bg-blue-50','border-blue-100','bg-gray-50','border-gray-100','ml-6','mr-6');
+            card.classList.add('bg-green-50','border-green-200');
+
+            badge.classList.remove('hidden');
+
+            icon.textContent  = '✓';
+            label.textContent = 'ໝາຍແລ້ວ';
+            btn.classList.remove('bg-gray-100','text-gray-500','hover:bg-green-100','hover:text-green-700');
+            btn.classList.add('bg-green-100','text-green-700','hover:bg-red-50','hover:text-red-500');
+
+            footer.querySelector('.ack-by').textContent = data.markedBy;
+            footer.querySelector('.ack-at').textContent = data.markedAt;
+            footer.classList.remove('hidden');
+        } else {
+            // ── Mark OFF ───────────────────────────────────────
+            card.classList.remove('bg-green-50','border-green-200');
+            card.classList.add('bg-gray-50','border-gray-100');
+
+            badge.classList.add('hidden');
+
+            icon.textContent  = '○';
+            label.textContent = 'ໝາຍ';
+            btn.classList.remove('bg-green-100','text-green-700','hover:bg-red-50','hover:text-red-500');
+            btn.classList.add('bg-gray-100','text-gray-500','hover:bg-green-100','hover:text-green-700');
+
+            footer.classList.add('hidden');
+        }
+    } catch (e) {
+        icon.textContent = origIcon;
+        alert('ເກີດຂໍ້ຜິດພາດ, ກະລຸນາລອງໃໝ່.');
+    }
+
+    btn.disabled = false;
+}
+</script>
     @endpush
 @endsection

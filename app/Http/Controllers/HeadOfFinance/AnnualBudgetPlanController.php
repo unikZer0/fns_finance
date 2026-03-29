@@ -5,6 +5,7 @@ namespace App\Http\Controllers\HeadOfFinance;
 use App\Http\Controllers\Controller;
 use App\Models\BudgetLineItem;
 use App\Models\BudgetPlan;
+use App\Models\BudgetPlanComment;
 use App\Models\ChartOfAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -33,7 +34,7 @@ class AnnualBudgetPlanController extends Controller
 
         BudgetPlan::create([
             'fiscal_year' => $request->fiscal_year,
-            'status' => 'draft',
+            'status' => 'DRAFT',
             'created_by' => auth()->id(),
         ]);
 
@@ -44,7 +45,7 @@ class AnnualBudgetPlanController extends Controller
     public function show(BudgetPlan $annualBudget)
     {
         $accounts = ChartOfAccount::orderBy('account_code')->get();
-        $annualBudget->load(['lineItems.account', 'lineItems.periodAllocations']);
+        $annualBudget->load(['lineItems.account', 'lineItems.periodAllocations', 'comments.user.role', 'comments.markedBy']);
         $annualBudget->setRelation('lineItems', $this->sortLineItemsHierarchically($annualBudget->lineItems));
         return view('head_of_finance.annual-budget.show', compact('annualBudget', 'accounts'));
     }
@@ -109,7 +110,7 @@ class AnnualBudgetPlanController extends Controller
     {
         $request->validate([
             'fiscal_year' => 'required|integer|min:2000|max:2100|unique:budget_plans,fiscal_year,' . $annualBudget->id,
-            'status' => 'required|in:draft,submitted,approved',
+            'status' => 'required|in:DRAFT,PENDING_REVIEW,MODIFYING,PENDING_FINAL_APPROVAL,APPROVED',
         ]);
 
         $annualBudget->update($request->only('fiscal_year', 'status'));
@@ -128,6 +129,59 @@ class AnnualBudgetPlanController extends Controller
 
         return redirect()->route('head_of_finance.annual-budget.index')
             ->with('success', 'ລຶບແຜນງົບປະມານສຳເລັດ!');
+    }
+
+    public function submit(BudgetPlan $annualBudget)
+    {
+        $allowed = ['DRAFT', 'MODIFYING'];
+        if (!in_array(strtoupper($annualBudget->status), $allowed)) {
+            return back()->with('error', 'ສະຖານະບໍ່ຖືກຕ້ອງ');
+        }
+
+        $annualBudget->update([
+            'status' => 'PENDING_REVIEW',
+            'submission_round' => $annualBudget->submission_round + 1,
+        ]);
+
+        return back()->with('success', 'ສົ່ງແຜນງົບປະມານສຳເລັດ!');
+    }
+
+    public function unsubmit(BudgetPlan $annualBudget)
+    {
+        if (strtoupper($annualBudget->status) !== 'PENDING_REVIEW') {
+            return back()->with('error', 'ສາມາດຍົກເລີກການສົ່ງໄດ້ສະເພາະແຜນທີ່ກຳລັງລໍຖ້າກວດສອບເທົ່ານັ້ນ');
+        }
+
+        $annualBudget->update(['status' => 'MODIFYING']);
+
+        return back()->with('success', 'ຍົກເລີກການສົ່ງສຳເລັດ! ທ່ານສາມາດແກ້ໄຂແຜນໄດ້ແລ້ວ.');
+    }
+
+    public function markComment(BudgetPlan $annualBudget, BudgetPlanComment $comment)
+    {
+        if ($comment->budget_plan_id !== $annualBudget->id) {
+            return response()->json(['error' => 'ຂໍ້ມູນບໍ່ຖືກຕ້ອງ'], 403);
+        }
+
+        if ($comment->isMarked()) {
+            $comment->update(['marked_at' => null, 'marked_by' => null]);
+            return response()->json([
+                'marked'    => false,
+                'markedBy'  => null,
+                'markedAt'  => null,
+            ]);
+        } else {
+            $comment->update([
+                'marked_at' => now(),
+                'marked_by' => auth()->id(),
+            ]);
+            $comment->load('markedBy');
+            return response()->json([
+                'marked'   => true,
+                'markedBy' => $comment->markedBy->full_name ?? 'HoF',
+                'markedAt' => $comment->marked_at->format('d/m/Y H:i'),
+            ]);
+        }
     }
 
     // ─── Line Item CRUD ───────────────────────────────────────────────────

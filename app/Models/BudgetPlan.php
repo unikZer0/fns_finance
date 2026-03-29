@@ -15,6 +15,7 @@ class BudgetPlan extends Model
         'fiscal_year',
         'status',
         'created_by',
+        'submission_round',
     ];
 
     /**
@@ -23,5 +24,13 @@ class BudgetPlan extends Model
     public function lineItems(): HasMany
     {
         return $this->hasMany(BudgetLineItem::class, 'budget_plan_id');
+    }
+
+    /**
+     * Get the comments for this budget plan.
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(BudgetPlanComment::class, 'budget_plan_id')->orderBy('created_at', 'desc');
     }
 }

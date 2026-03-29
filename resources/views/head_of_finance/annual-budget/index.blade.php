@@ -39,8 +39,11 @@
                                 @php
                                     $statusMap = [
                                         'draft' => ['label' => 'ຮ່າງ', 'class' => 'bg-gray-100 text-gray-700'],
-                                        'submitted' => ['label' => 'ສົ່ງແລ້ວ', 'class' => 'bg-yellow-100 text-yellow-700'],
-                                        'approved' => ['label' => 'ອະນຸມັດແລ້ວ', 'class' => 'bg-green-100 text-green-700'],
+                                        'DRAFT' => ['label' => 'ຮ່າງ', 'class' => 'bg-gray-100 text-gray-700'],
+                                        'PENDING_REVIEW' => ['label' => 'ລໍຖ້າຫົວໜ້າພາກສ່ວນ', 'class' => 'bg-yellow-100 text-yellow-700'],
+                                        'PENDING_FINAL_APPROVAL' => ['label' => 'ລໍຖ້າຮອງຄະນະບໍດີ', 'class' => 'bg-blue-100 text-blue-700'],
+                                        'APPROVED' => ['label' => 'ອະນຸມັດແລ້ວ', 'class' => 'bg-green-100 text-green-700'],
+                                        'MODIFYING' => ['label' => 'ຖືກຍົກເລີກ / ປະຕິເສດ', 'class' => 'bg-red-100 text-red-700'],
                                     ];
                                     $s = $statusMap[$plan->status] ?? ['label' => $plan->status, 'class' => 'bg-gray-100 text-gray-700'];
                                 @endphp
@@ -64,6 +67,18 @@
                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </a>
+                                    @if(in_array($plan->status, ['draft', 'DRAFT']))
+                                    <form action="{{ route('head_of_finance.annual-budget.submit', $plan) }}" method="POST"
+                                        class="inline" onsubmit="return confirm('ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການສົ່ງແຜນນີ້ໃຫ້ຫົວໜ້າພາກສ່ວນກວດສອບ?')">
+                                        @csrf
+                                        <button type="submit" class="text-green-600 hover:text-green-900" title="ສົ່ງແບບຟອມ (Submit)">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                    @endif
                                     <form action="{{ route('head_of_finance.annual-budget.destroy', $plan) }}" method="POST"
                                         class="inline" onsubmit="return confirm('ທ່ານແນ່ໃຈບໍ່ວ່າຈະລຶບແຜນນີ້?')">
                                         @csrf @method('DELETE')

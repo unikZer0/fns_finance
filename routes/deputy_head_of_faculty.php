@@ -6,6 +6,7 @@
 // ─────────────────────────────────────────────────────
 
 use App\Http\Controllers\DeputyHeadOfFaculty\HomeController;
+use App\Http\Controllers\DeputyHeadOfFaculty\BudgetReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'check.active', 'role:deputy_head_of_faculty'])
@@ -15,5 +16,7 @@ Route::middleware(['auth', 'check.active', 'role:deputy_head_of_faculty'])
 
         Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-        // Add more deputy_head_of_faculty routes here
+        Route::get('/annual-budget', [BudgetReviewController::class, 'index'])->name('annual-budget.index');
+        Route::get('/annual-budget/{annualBudget}', [BudgetReviewController::class, 'show'])->name('annual-budget.show');
+        Route::post('/annual-budget/{annualBudget}/review', [BudgetReviewController::class, 'review'])->name('annual-budget.review');
     });
