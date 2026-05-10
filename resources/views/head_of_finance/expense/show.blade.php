@@ -31,6 +31,10 @@ function fmtE($n) { return number_format((float)$n, 0, '.', ','); }
                 class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 gap-2">
                 ເບິ່ງສັງລວມ
             </a>
+            <a href="{{ route('head_of_finance.expense.balance', $plan) }}"
+                class="inline-flex items-center px-3 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 gap-2">
+                ⚖ ດຸ່ນດ່ຽງ
+            </a>
             @if ($plan->status === 'DRAFT')
                 <button type="button" onclick="document.getElementById('approveModal').style.display='flex'"
                     class="inline-flex items-center px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 gap-2">

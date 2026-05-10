@@ -58,6 +58,7 @@ Route::middleware(['auth', 'check.active', 'role:head_of_finance'])
         Route::post('expense/{plan}/revert-draft',               [ExpenseController::class, 'revertDraft'])  ->name('expense.revert_draft');
         Route::post('expense/{plan}/save-all',                   [ExpenseController::class, 'saveAll'])      ->name('expense.save_all');
         Route::post('expense/{plan}/auto-fill-25',               [ExpenseController::class, 'autoFill25'])   ->name('expense.auto_fill_25');
+        Route::get('expense/{plan}/balance',                     [ExpenseController::class, 'balance'])      ->name('expense.balance');
 
         // ── Annual Budget Plans ──────────────────────────────────────────
         Route::resource('annual-budget', AnnualBudgetPlanController::class);

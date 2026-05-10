@@ -309,6 +309,87 @@ class ExpenseController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    // ─── Balance (ດຸ່ນດ່ຽງ) ──────────────────────────────────────────────────
+
+    public function balance(ExpensePlan $plan)
+    {
+        $plan->load(['items.children']);
+
+        // Expense side — sum parent items per category
+        $expenseRows  = [];
+        $totalExpense = 0;
+        foreach ($this->categoryTitles as $cat => $label) {
+            $catTotal = $plan->items
+                ->where('category_code', $cat)
+                ->whereNull('parent_id')
+                ->sum(fn($i) => $i->amount_per_month * $i->num_months);
+            $expenseRows[$cat] = ['label' => $label, 'total' => $catTotal];
+            $totalExpense += $catTotal;
+        }
+
+        // Income side — kawtIncome from AcademicIncomePlan for same fiscal year
+        $incomePlan  = AcademicIncomePlan::where('fiscal_year', $plan->fiscal_year)
+            ->with('items')
+            ->first();
+
+        $incomeRows  = [];
+        $totalIncome = 0;
+
+        if ($incomePlan) {
+            $ppc = (float) AppSetting::get('price_per_credit', 35000);
+
+            $sectionCodes = ['1.1', '1.2', '1.3', '1.4', '3.0', '4.0', '5.0', '6.0'];
+            $sections = [];
+            foreach ($sectionCodes as $code) {
+                $sections[$code] = $incomePlan->items->where('section_code', $code)->values();
+            }
+
+            $incomeRows['reg_year1']  = ['label' => 'ນັກສຶກສາ ປີທີ 1 (ຄ່າລົງທະບຽນ)',     'kawt' => $this->aggKawt($sections['1.4'], $ppc)];
+            $incomeRows['reg_year24'] = ['label' => 'ນັກສຶກສາ ປີທີ 2,3,4 (ຄ່າລົງທະບຽນ)', 'kawt' => $this->aggKawt($sections['1.2'], $ppc)];
+
+            $allCreditItems = $sections['1.1']->concat($sections['1.3']);
+            $creditLabels = [
+                '1'           => 'ນັກສຶກສາ ປີທີ 1 (ຄ່າໜ່ວຍກິດ)',
+                '2'           => 'ນັກສຶກສາ ປີທີ 2 (ຄ່າໜ່ວຍກິດ)',
+                '3'           => 'ນັກສຶກສາ ປີທີ 3 (ຄ່າໜ່ວຍກິດ)',
+                '4'           => 'ນັກສຶກສາ ປີທີ 4 (ຄ່າໜ່ວຍກິດ)',
+                'masters_phd' => 'ນັກສຶກສາ ປ.ໂທ + ເອກ (ຄ່າໜ່ວຍກິດ)',
+            ];
+            foreach ($creditLabels as $yr => $lbl) {
+                $items = $allCreditItems->filter(fn($i) => (string)$i->student_year === $yr);
+                $incomeRows['credit_' . $yr] = ['label' => $lbl, 'kawt' => $this->aggKawt($items, $ppc)];
+            }
+
+            $extraLabels = [
+                '3.0' => 'ຄ່າລົງທະບຽນ ເທີມ 3',
+                '4.0' => 'ຄ່າບູລະນະຫ້ອງທົດລອງຄອມພິວເຕີ',
+                '5.0' => 'ຄ່າບຳລຸງອຸປະກອນຫ້ອງທົດລອງ',
+                '6.0' => 'ຄ່າບໍລິການວິຊາການ ແລະ ຄ່າບໍລິການອື່ນໆ',
+            ];
+            foreach ($extraLabels as $code => $lbl) {
+                $key = 'extra_' . str_replace('.', '_', $code);
+                $incomeRows[$key] = ['label' => $lbl, 'kawt' => $this->aggKawt($sections[$code], $ppc)];
+            }
+
+            $totalIncome = array_sum(array_column($incomeRows, 'kawt'));
+        }
+
+        $balance = $totalIncome - $totalExpense;
+
+        return view('head_of_finance.expense.balance', compact(
+            'plan', 'incomeRows', 'expenseRows', 'totalIncome', 'totalExpense', 'balance', 'incomePlan'
+        ));
+    }
+
+    private function aggKawt($items, float $ppc): float
+    {
+        $total = 0.0;
+        foreach ($items as $item) {
+            $total += $item->kawtIncome($ppc);
+        }
+        return $total;
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
     private function seedDefaults(ExpensePlan $plan): void
