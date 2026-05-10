@@ -7,6 +7,7 @@
 
 use App\Http\Controllers\HeadOfFinance\AcademicIncomeController;
 use App\Http\Controllers\HeadOfFinance\AnnualBudgetPlanController;
+use App\Http\Controllers\HeadOfFinance\ExpenseController;
 use App\Http\Controllers\HeadOfFinance\HomeController;
 use App\Http\Controllers\HeadOfFinance\PlansCtrl;
 use Illuminate\Support\Facades\Route;
@@ -39,6 +40,21 @@ Route::middleware(['auth', 'check.active', 'role:head_of_finance'])
         Route::post('academic-income/{plan}/items',                         [AcademicIncomeController::class, 'storeItem'])      ->name('academic_income.items.store');
         Route::put('academic-income/{plan}/items/{item}',                   [AcademicIncomeController::class, 'updateItem'])     ->name('academic_income.items.update');
         Route::delete('academic-income/{plan}/items/{item}',                [AcademicIncomeController::class, 'destroyItem'])    ->name('academic_income.items.destroy');
+
+        // ── Expense Plans (ລາຍຈ່າຍວິຊາການ) ─────────────────────────────────
+        Route::get('expense',                                    [ExpenseController::class, 'index'])        ->name('expense.index');
+        Route::post('expense',                                   [ExpenseController::class, 'store'])        ->name('expense.store');
+        Route::get('expense/defaults',                           [ExpenseController::class, 'defaults'])     ->name('expense.defaults');
+        Route::post('expense/defaults',                          [ExpenseController::class, 'storeDefault']) ->name('expense.defaults.store');
+        Route::delete('expense/defaults/{default}',              [ExpenseController::class, 'destroyDefault'])->name('expense.defaults.destroy');
+        Route::get('expense/{plan}',                             [ExpenseController::class, 'show'])         ->name('expense.show');
+        Route::delete('expense/{plan}',                          [ExpenseController::class, 'destroy'])      ->name('expense.destroy');
+        Route::get('expense/{plan}/summary',                     [ExpenseController::class, 'summary'])      ->name('expense.summary');
+        Route::get('expense/{plan}/pdf',                         [ExpenseController::class, 'exportPdf'])   ->name('expense.pdf');
+        Route::post('expense/{plan}/approve',                    [ExpenseController::class, 'approve'])      ->name('expense.approve');
+        Route::post('expense/{plan}/revert-draft',               [ExpenseController::class, 'revertDraft'])  ->name('expense.revert_draft');
+        Route::post('expense/{plan}/save-all',                   [ExpenseController::class, 'saveAll'])      ->name('expense.save_all');
+        Route::post('expense/{plan}/auto-fill-25',               [ExpenseController::class, 'autoFill25'])   ->name('expense.auto_fill_25');
 
         // ── Annual Budget Plans ──────────────────────────────────────────
         Route::resource('annual-budget', AnnualBudgetPlanController::class);

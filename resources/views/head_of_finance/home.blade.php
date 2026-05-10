@@ -41,6 +41,13 @@
             <div class="card-desc">ປ້ອນລາຍຮັບ ແລະ ສ້າງຮ່າງສັງລວມ</div>
             <div class="card-link">ເປີດໜ້າ Academic Income →</div>
         </a>
+
+        <a href="{{ route('head_of_finance.expense.index') }}" class="card">
+            <div class="card-badge" style="background:#dc2626;color:#fff;">EXPENSE</div>
+            <div class="card-title">ລາຍຈ່າຍວິຊາການ</div>
+            <div class="card-desc">ແຜນງົບປະມານລາຍຈ່າຍ 2.1–2.6</div>
+            <div class="card-link">ເປີດໜ້າ Expense →</div>
+        </a>
     </div>
 </div>
 @endsection
