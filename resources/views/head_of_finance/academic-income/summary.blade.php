@@ -166,6 +166,10 @@ $sectionTitles = [
     '1.2' => '1.2  ຄ່າລົງທະບຽນ ປີ 2-4 ຂອງ ຄວທ',
     '1.3' => '1.3  ລາຍຮັບຄ່າໜ່ວຍກິດ ປີ 1 ລະບົບຈ່າຍເງິນ',
     '1.4' => '1.4  ຄ່າລົງທະບຽນ ປີ 1 ລະບົບຈ່າຍເງິນ ຂອງ ຄວທ',
+    '3.0' => '3.0  ຄ່າລົງທະບຽນ ເທີມ 3',
+    '4.0' => '4.0  ຄ່າບູລະນະຫ້ອງທົດລອງຄອມພິວເຕີ',
+    '5.0' => '5.0  ຄ່າບຳລຸງອຸປະກອນຫ້ອງທົດລອງ',
+    '6.0' => '6.0  ຄ່າບໍລິການວິຊາການ ແລະ ຄ່າບໍລິການອື່ນໆ',
 ];
 @endphp
 
@@ -278,6 +282,30 @@ $sectionTitles = [
                 <td class="num"><strong>{{ fmtN($creditTeaching) }}</strong></td>
                 <td class="num"><strong>{{ fmtN($creditRemainder) }}</strong></td>
             </tr>
+
+            {{-- Extra sections 3–6 --}}
+            @php
+            $extraRowDefs = [
+                'extra_3_0' => ['seq' => '3.',  'label' => 'ຄ່າລົງທະບຽນ ເທີມ 3'],
+                'extra_4_0' => ['seq' => '4.',  'label' => 'ຄ່າບູລະນະຫ້ອງທົດລອງຄອມພິວເຕີ'],
+                'extra_5_0' => ['seq' => '5.',  'label' => 'ຄ່າບຳລຸງອຸປະກອນຫ້ອງທົດລອງ'],
+                'extra_6_0' => ['seq' => '6.',  'label' => 'ຄ່າບໍລິການວິຊາການ ແລະ ຄ່າບໍລິການອື່ນໆ'],
+            ];
+            @endphp
+            @foreach ($extraRowDefs as $key => $def)
+            @php $r = $allRows[$key] ?? []; @endphp
+            <tr>
+                <td class="center">{{ $def['seq'] }}</td>
+                <td>{{ $def['label'] }}</td>
+                <td class="num">{{ fmtN($r['totalPersons'] ?? 0) }}</td>
+                <td class="num"></td>
+                <td class="num">{{ fmtN($r['totalIncome'] ?? 0) }}</td>
+                <td class="num">{{ fmtN($r['nuolObligation'] ?? 0) }}</td>
+                <td class="num">{{ fmtN($r['kawtIncome'] ?? 0) }}</td>
+                <td class="num"></td>
+                <td class="num">{{ fmtN($r['kawtIncome'] ?? 0) }}</td>
+            </tr>
+            @endforeach
         </tbody>
     </table>
 
@@ -297,15 +325,13 @@ $sectionTitles = [
 {{-- ═══════════════════════════════════
      PAGES 2–5 — Detail Sections 1.1–1.4
      ═══════════════════════════════════ --}}
-@foreach (['1.1','1.2','1.3','1.4'] as $code)
+@foreach (['1.1','1.2','1.3','1.4','3.0','4.0','5.0','6.0'] as $code)
 @php
     $items   = $sections[$code];
     $isCredit = in_array($code, ['1.1','1.3']);
     $secTotal = $secNuol = $secKawt = 0;
     foreach ($items as $it) {
-        $rate = $isCredit
-            ? ($it->num_credits * $pricePerCredit)
-            : (float)$it->rate_per_person;
+        $rate = $it->effectiveRate($pricePerCredit);
         $t = $rate * $it->num_persons;
         $secTotal += $t;
         $secNuol  += $t * $it->nuol_percentage;
@@ -338,9 +364,7 @@ $sectionTitles = [
         <tbody>
             @forelse ($items as $item)
             @php
-                $rate = $isCredit
-                    ? ($item->num_credits * $pricePerCredit)
-                    : (float)$item->rate_per_person;
+                $rate = $item->effectiveRate($pricePerCredit);
                 $tot  = $rate * $item->num_persons;
                 $nuol = $tot * $item->nuol_percentage;
                 $kawt = $tot * (1 - $item->nuol_percentage);

@@ -54,6 +54,10 @@ class AcademicIncomeController extends Controller
             '1.2' => $plan->items->where('section_code', '1.2')->sortBy('sort_order')->values(),
             '1.3' => $plan->items->where('section_code', '1.3')->sortBy('sort_order')->values(),
             '1.4' => $plan->items->where('section_code', '1.4')->sortBy('sort_order')->values(),
+            '3.0' => $plan->items->where('section_code', '3.0')->sortBy('sort_order')->values(),
+            '4.0' => $plan->items->where('section_code', '4.0')->sortBy('sort_order')->values(),
+            '5.0' => $plan->items->where('section_code', '5.0')->sortBy('sort_order')->values(),
+            '6.0' => $plan->items->where('section_code', '6.0')->sortBy('sort_order')->values(),
         ];
 
         $pricePerCredit = (float) AppSetting::get('price_per_credit', 35000);
@@ -77,7 +81,7 @@ class AcademicIncomeController extends Controller
         $isCredit = in_array($request->section_code, ['1.1', '1.3']);
 
         $rules = [
-            'section_code'    => 'required|in:1.1,1.2,1.3,1.4',
+            'section_code'    => 'required|in:1.1,1.2,1.3,1.4,3.0,4.0,5.0,6.0',
             'item_name'       => 'required|string|max:255',
             'num_persons'     => 'required|integer|min:0',
             'nuol_percentage' => 'required|numeric|min:0|max:1',
@@ -177,6 +181,10 @@ class AcademicIncomeController extends Controller
             '1.2' => $plan->items->where('section_code', '1.2')->sortBy('sort_order')->values(),
             '1.3' => $plan->items->where('section_code', '1.3')->sortBy('sort_order')->values(),
             '1.4' => $plan->items->where('section_code', '1.4')->sortBy('sort_order')->values(),
+            '3.0' => $plan->items->where('section_code', '3.0')->sortBy('sort_order')->values(),
+            '4.0' => $plan->items->where('section_code', '4.0')->sortBy('sort_order')->values(),
+            '5.0' => $plan->items->where('section_code', '5.0')->sortBy('sort_order')->values(),
+            '6.0' => $plan->items->where('section_code', '6.0')->sortBy('sort_order')->values(),
         ];
 
         // Build summary rows: keyed by student_year for credit sections, by section for registration
@@ -201,6 +209,10 @@ class AcademicIncomeController extends Controller
             '1.2' => $plan->items->where('section_code', '1.2')->sortBy('sort_order')->values(),
             '1.3' => $plan->items->where('section_code', '1.3')->sortBy('sort_order')->values(),
             '1.4' => $plan->items->where('section_code', '1.4')->sortBy('sort_order')->values(),
+            '3.0' => $plan->items->where('section_code', '3.0')->sortBy('sort_order')->values(),
+            '4.0' => $plan->items->where('section_code', '4.0')->sortBy('sort_order')->values(),
+            '5.0' => $plan->items->where('section_code', '5.0')->sortBy('sort_order')->values(),
+            '6.0' => $plan->items->where('section_code', '6.0')->sortBy('sort_order')->values(),
         ];
 
         $summaryRows = $this->buildSummaryRows($sections, $pricePerCredit, $teachingRateBsc, $teachingRateMscPhd);
@@ -285,6 +297,10 @@ class AcademicIncomeController extends Controller
             '1.2' => '1.2  ຄ່າລົງທະບຽນ ປີ 2-4',
             '1.3' => '1.3  ລາຍຮັບຄ່າໜ່ວຍກິດ ປີ 1 ແລະ ປ.ໂທ/ເອກ',
             '1.4' => '1.4  ຄ່າລົງທະບຽນ ປີ 1',
+            '3.0' => '3.0  ຄ່າລົງທະບຽນ ເທີມ 3',
+            '4.0' => '4.0  ຄ່າບູລະນະຫ້ອງທົດລອງຄອມພິວເຕີ',
+            '5.0' => '5.0  ຄ່າບຳລຸງອຸປະກອນຫ້ອງທົດລອງ',
+            '6.0' => '6.0  ຄ່າບໍລິການວິຊາການ ແລະ ຄ່າບໍລິການອື່ນໆ',
         ];
         $yearLabels = [
             '1'           => 'ປີ 1',
@@ -304,7 +320,7 @@ class AcademicIncomeController extends Controller
     {
         $isCredit = in_array($request->section_code, ['1.1', '1.3']);
         $rules = [
-            'section_code'    => 'required|in:1.1,1.2,1.3,1.4',
+            'section_code'    => 'required|in:1.1,1.2,1.3,1.4,3.0,4.0,5.0,6.0',
             'item_name'       => 'required|string|max:255',
             'nuol_percentage' => 'required|numeric|min:0|max:1',
         ];
@@ -315,6 +331,8 @@ class AcademicIncomeController extends Controller
             } else {
                 $rules['num_credits'] = 'required|integer|min:0';
             }
+        } else {
+            $rules['rate_per_person'] = 'nullable|numeric|min:0';
         }
         $request->validate($rules);
 
@@ -326,7 +344,7 @@ class AcademicIncomeController extends Controller
             'sort_order'      => $maxOrder + 1,
             'item_name'       => $request->item_name,
             'num_credits'     => ($isCredit && !$isMasters) ? $request->num_credits : null,
-            'rate_per_person' => $isMasters ? $request->rate_per_person : null,
+            'rate_per_person' => (!$isCredit || $isMasters) ? $request->rate_per_person : null,
             'nuol_percentage' => $request->nuol_percentage,
             'student_year'    => $isCredit ? $request->student_year : null,
         ]);
@@ -415,11 +433,11 @@ class AcademicIncomeController extends Controller
         $rows['reg_year24'] = array_merge($reg24, ['label' => 'ນັກສຶກສາ ປີທີ 2,3,4 (ຄ່າລົງທະບຽນ)',   'type' => 'registration']);
 
         // ─ Credit fees grouped by student_year ─
-        $creditYears = ['1' => '1', '2' => '2', '3' => '3', '4' => '4', 'masters_phd' => 'masters_phd'];
+        $creditYears = ['1', '2', '3', '4', 'masters_phd'];
         $allCreditItems = $sections['1.1']->concat($sections['1.3']);
 
-        foreach ($creditYears as $year => $key) {
-            $yearItems = $allCreditItems->filter(fn($i) => $i->student_year === $year);
+        foreach ($creditYears as $year) {
+            $yearItems = $allCreditItems->filter(fn($i) => (string)$i->student_year === $year);
             $agg = $this->aggregateItems($yearItems, $ppc);
 
             $teachingRate = ($year === 'masters_phd') ? $rateMsc : $rateBsc;
@@ -441,6 +459,19 @@ class AcademicIncomeController extends Controller
                 'teaching'  => $teaching,
                 'remainder' => $remainder,
             ]);
+        }
+
+        // Extra income sections 3.0–6.0
+        $extraLabels = [
+            '3.0' => 'ຄ່າລົງທະບຽນ ເທີມ 3',
+            '4.0' => 'ຄ່າບູລະນະຫ້ອງທົດລອງຄອມພິວເຕີ',
+            '5.0' => 'ຄ່າບຳລຸງອຸປະກອນຫ້ອງທົດລອງ',
+            '6.0' => 'ຄ່າບໍລິການວິຊາການ ແລະ ຄ່າບໍລິການອື່ນໆ',
+        ];
+        foreach ($extraLabels as $code => $label) {
+            $key = 'extra_' . str_replace('.', '_', $code);
+            $agg = $this->aggregateItems($sections[$code] ?? collect(), $ppc);
+            $rows[$key] = array_merge($agg, ['label' => $label, 'type' => 'extra']);
         }
 
         return $rows;

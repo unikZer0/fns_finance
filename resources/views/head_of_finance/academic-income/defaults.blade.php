@@ -38,7 +38,7 @@
         </div>
     @endif
 
-    @foreach (['1.1','1.2','1.3','1.4'] as $code)
+    @foreach (['1.1','1.2','1.3','1.4','3.0','4.0','5.0','6.0'] as $code)
     @php
         $codeId   = str_replace('.', '_', $code);
         $items    = $grouped[$code] ?? collect();
@@ -60,6 +60,8 @@
                         @if ($isCredit)
                             <th class="px-3 py-2 text-center">ປະເພດ</th>
                             <th class="px-3 py-2 text-right">ໜ່ວຍກິດ / ຄ່າສອນ (ກີບ)</th>
+                        @else
+                            <th class="px-3 py-2 text-right">ອັດຕາ/ຄົນ (ກີບ)</th>
                         @endif
                         <th class="px-3 py-2 text-center">% ມຊ</th>
                         <th class="px-3 py-2 text-center w-16">ລຶບ</th>
@@ -100,6 +102,10 @@
                                     {{ $item->num_credits !== null ? $item->num_credits : '—' }}
                                 @endif
                             </td>
+                        @else
+                            <td class="px-3 py-2 text-right text-gray-600">
+                                {{ $item->rate_per_person !== null ? number_format($item->rate_per_person, 0) : '—' }}
+                            </td>
                         @endif
                         <td class="px-3 py-2 text-center text-gray-600">
                             {{ ($item->nuol_percentage * 100) }}%
@@ -117,7 +123,7 @@
                     </tr>
                     @empty
                         <tr class="empty-row">
-                            <td colspan="{{ $isCredit ? 7 : 5 }}"
+                            <td colspan="{{ $isCredit ? 7 : 6 }}"
                                 class="px-4 py-4 text-center text-gray-400 italic text-xs">
                                 ຍັງບໍ່ມີ default ລາຍການ
                             </td>
@@ -139,6 +145,14 @@
                     <input type="text" name="item_name" required placeholder="ຊື່ລາຍການ"
                         class="px-2 py-1.5 border border-gray-300 rounded text-xs w-56 focus:ring-1 focus:ring-blue-400">
                 </div>
+
+                @if (!$isCredit)
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500">ອັດຕາ/ຄົນ (ກີບ)</label>
+                        <input type="number" name="rate_per_person" min="0" step="1000" placeholder="0"
+                            class="px-2 py-1.5 border border-gray-300 rounded text-xs w-32 focus:ring-1 focus:ring-blue-400">
+                    </div>
+                @endif
 
                 @if ($isCredit)
                     <div class="flex flex-col gap-1">
