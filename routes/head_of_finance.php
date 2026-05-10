@@ -42,6 +42,9 @@ Route::middleware(['auth', 'check.active', 'role:head_of_finance'])
         Route::put('academic-income/{plan}/items/{item}',                   [AcademicIncomeController::class, 'updateItem'])     ->name('academic_income.items.update');
         Route::delete('academic-income/{plan}/items/{item}',                [AcademicIncomeController::class, 'destroyItem'])    ->name('academic_income.items.destroy');
 
+        // ── Balance (ດຸ່ນດ່ຽງ) ─────────────────────────────────────────────────
+        Route::get('balance',                                    [ExpenseController::class, 'balanceIndex']) ->name('balance.index');
+
         // ── Expense Plans (ລາຍຈ່າຍວິຊາການ) ─────────────────────────────────
         Route::get('expense',                                    [ExpenseController::class, 'index'])        ->name('expense.index');
         Route::post('expense',                                   [ExpenseController::class, 'store'])        ->name('expense.store');

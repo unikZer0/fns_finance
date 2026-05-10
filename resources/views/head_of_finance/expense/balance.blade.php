@@ -2,7 +2,7 @@
 <html lang="lo">
 <head>
     <meta charset="UTF-8">
-    <title>ຮ່າງດຸ່ນດ່ຽງລາຍຮັບ-ລາຍຈ່າຍ ສົກ {{ $plan->fiscal_year }}</title>
+    <title>ແຜນງົບປະມານດຸ່ນດ່ຽງ ສົກ {{ $plan->fiscal_year }}</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'NotoSansLao','Noto Sans Lao','Phetsarath OT',Arial,sans-serif; font-size:11px; color:#000; background:#f0f0f0; }
@@ -16,32 +16,30 @@
         .page { background:#fff; width:277mm; min-height:190mm; margin:70px auto 20px; padding:12mm 14mm; box-shadow:0 2px 8px rgba(0,0,0,.15); }
 
         .letterhead { text-align:center; margin-bottom:8px; }
-        .letterhead p { font-size:11px; }
-        .letterhead .main-org { font-size:12px; font-weight:bold; }
-        .letterhead .doc-title { font-size:14px; font-weight:bold; margin-top:4px; }
+        .letterhead p { font-size:11px; line-height:1.6; }
+        .letterhead .title-main { font-size:13px; font-weight:bold; margin-top:6px; }
 
         table { width:100%; border-collapse:collapse; font-size:10px; }
-        th, td { border:1px solid #000; padding:3px 5px; }
-        th { font-weight:bold; text-align:center; }
+        th, td { border:1px solid #000; padding:3px 5px; vertical-align:middle; }
+        th { font-weight:bold; text-align:center; background:#fff; }
 
-        .bg-income-header  { background:#86efac; }
-        .bg-expense-header { background:#fca5a5; }
-        .bg-income-total   { background:#bbf7d0; }
-        .bg-expense-total  { background:#fecaca; }
-        .bg-balance-pos    { background:#d1fae5; }
-        .bg-balance-neg    { background:#fee2e2; }
-        .bg-section        { background:#e0e7ff; }
+        .bg-income   { background:#d1fae5; }
+        .bg-expense  { background:#fecaca; }
+        .bg-balance  { background:#dbeafe; }
+        .bg-total    { background:#f3f4f6; font-weight:bold; }
+        .bg-pos      { background:#bbf7d0; }
+        .bg-neg      { background:#fca5a5; }
 
-        td.num, th.num { text-align:right; white-space:nowrap; }
-        td.center       { text-align:center; }
+        td.num { text-align:right; white-space:nowrap; }
+        td.ctr { text-align:center; }
 
-        .warn-box { background:#fef3c7; border:1px solid #f59e0b; padding:8px 14px; border-radius:6px; margin-bottom:10px; font-size:11px; color:#92400e; }
+        .warn-box { background:#fef3c7; border:1px solid #f59e0b; padding:6px 12px; border-radius:4px; margin-bottom:8px; font-size:10px; color:#92400e; }
 
         .signatures { display:flex; justify-content:space-between; margin-top:18px; }
         .sig-block { text-align:center; width:22%; font-size:10px; }
-        .sig-block .sig-date { margin-bottom:4px; }
-        .sig-block .sig-role { font-weight:bold; }
-        .sig-space { height:30px; }
+        .sig-date { margin-bottom:4px; }
+        .sig-space { height:28px; }
+        .sig-role { font-weight:bold; }
 
         @media print {
             body { background:#fff; }
@@ -54,102 +52,115 @@
 <body>
 
 <div class="toolbar">
-    <a href="{{ route('head_of_finance.expense.show', $plan) }}" class="btn-back">← ກັບຄືນ</a>
+    <a href="{{ route('head_of_finance.balance.index') }}" class="btn-back">← ກັບຄືນ</a>
     <button onclick="window.print()" class="btn-print">🖨 ພິມ</button>
-    <span class="toolbar-title">ຮ່າງດຸ່ນດ່ຽງລາຍຮັບ-ລາຍຈ່າຍ ສົກ {{ $plan->fiscal_year }}</span>
+    <span class="toolbar-title">ແຜນງົບປະມານດຸ່ນດ່ຽງລາຍຮັບ-ລາຍຈ່າຍ ສົກ {{ $plan->fiscal_year }}</span>
 </div>
 
 @php
-function fmtB($n) { return number_format((float)$n, 0, '.', ','); }
+function fmtBal($n) { return number_format((float)$n, 0, '.', ','); }
 @endphp
 
 <div class="page">
     <div class="letterhead">
         <p>ສາທາລະນະລັດ ປະຊາທິປະໄຕ ປະຊາຊົນລາວ</p>
         <p>ສັນຕິພາບ ເອກະລາດ ປະຊາທິປະໄຕ ເອກະພາບ ວັດທະນາຖາວອນ</p>
-        <p class="main-org">ມະຫາວິທະຍາໄລແຫ່ງຊາດ</p>
-        <p class="main-org">ຄະນະວິທະຍາສາດທຳມະຊາດ</p>
-        <p class="doc-title">ຮ່າງດຸ່ນດ່ຽງລາຍຮັບ-ລາຍຈ່າຍ ສົກ {{ $plan->fiscal_year }}</p>
+        <p>ມະຫາວິທະຍາໄລແຫ່ງຊາດ</p>
+        <p>ຄະນະວິທະຍາສາດທຳມະຊາດ</p>
+        <p class="title-main">ແຜນງົບປະມານດຸ່ນດ່ຽງລາຍຮັບ ແລະ ລາຍຈ່າຍວິຊາການ ຂອງ ຄວທ ປະຈຳ ສົກຮຽນ {{ $plan->fiscal_year }}</p>
     </div>
 
     @if (!$incomePlan)
-    <div class="warn-box">
-        ⚠ ບໍ່ພົບແຜນລາຍຮັບວິຊາການ ສົກ {{ $plan->fiscal_year }} — ສະແດງດ້ານລາຍຈ່າຍເທົ່ານັ້ນ.
-    </div>
+    <div class="warn-box">⚠ ບໍ່ພົບແຜນລາຍຮັບ ສົກ {{ $plan->fiscal_year }} — ລາຍຮັບສະແດງ 0.</div>
     @endif
 
     <table>
         <thead>
             <tr>
-                <th colspan="3" class="bg-income-header">ລາຍຮັບ (ຄ່າຮຽນສຸດທິ)</th>
-                <th style="width:2%;border:none;background:#fff;"></th>
-                <th colspan="3" class="bg-expense-header">ລາຍຈ່າຍ</th>
+                <th rowspan="2" style="width:3%">ລ/ດ</th>
+                <th colspan="3" class="bg-income">ລາຍຮັບ</th>
+                <th colspan="3" class="bg-expense">ລາຍຈ່າຍ</th>
+                <th colspan="2" class="bg-balance">ດຸ່ນດ່ຽງ</th>
             </tr>
             <tr>
-                <th style="width:4%" class="bg-income-header">ລ/ດ</th>
-                <th class="bg-income-header">ລາຍການ</th>
-                <th class="num bg-income-header" style="width:18%">ຈຳນວນ (ກີບ)</th>
-                <th style="border:none;background:#fff;"></th>
-                <th style="width:4%" class="bg-expense-header">ລ/ດ</th>
-                <th class="bg-expense-header">ລາຍການ</th>
-                <th class="num bg-expense-header" style="width:18%">ຈຳນວນ (ກີບ)</th>
+                <th class="bg-income" style="width:22%">ລາຍການລາຍຮັບຈາກພາກສ່ວນຕ່າງໆ</th>
+                <th class="bg-income num" style="width:12%">ງົບປະມານ/ປີ</th>
+                <th class="bg-income num" style="width:10%">ງົບປະມານ/ເດືອນ</th>
+                <th class="bg-expense" style="width:16%">ເນື້ອໃນລາຍຈ່າຍ</th>
+                <th class="bg-expense num" style="width:12%">ລາຍຈ່າຍ/ປີ</th>
+                <th class="bg-expense num" style="width:10%">ລາຍຈ່າຍ/ເດືອນ</th>
+                <th class="bg-balance num" style="width:10%">ດຸ່ນດ່ຽງ/ປີ</th>
+                <th class="bg-balance num" style="width:10%">ດຸ່ນດ່ຽງ/ເດືອນ</th>
             </tr>
         </thead>
         <tbody>
             @php
-                $incomeList  = array_values($incomeRows ?? []);
-                $expenseList = array_values($expenseRows);
-                $maxRows = max(count($incomeList), count($expenseList));
+                $maxRows = max(count($incomeRows), count($expenseRows));
             @endphp
             @for ($i = 0; $i < $maxRows; $i++)
+            @php
+                $inc = $incomeRows[$i]  ?? null;
+                $exp = $expenseRows[$i] ?? null;
+            @endphp
             <tr>
-                @if (isset($incomeList[$i]))
-                <td class="center">{{ $i + 1 }}</td>
-                <td>{{ $incomeList[$i]['label'] }}</td>
-                <td class="num">{{ $incomeList[$i]['kawt'] > 0 ? fmtB($incomeList[$i]['kawt']) : '' }}</td>
+                <td class="ctr">{{ $i + 1 }}</td>
+                {{-- Income --}}
+                @if ($inc)
+                <td>{{ $inc['label'] }}</td>
+                <td class="num">{{ $inc['kawt'] > 0 ? fmtBal($inc['kawt']) : '' }}</td>
+                <td class="num">{{ $inc['kawt'] > 0 ? fmtBal($inc['kawt'] / 12) : '' }}</td>
                 @else
                 <td></td><td></td><td></td>
                 @endif
-                <td style="border:none;background:#fff;"></td>
-                @if (isset($expenseList[$i]))
-                <td class="center">{{ $i + 1 }}</td>
-                <td>{{ str_replace(array_keys([]), [], $expenseList[$i]['label']) }}</td>
-                <td class="num">{{ $expenseList[$i]['total'] > 0 ? fmtB($expenseList[$i]['total']) : '' }}</td>
+                {{-- Expense --}}
+                @if ($exp)
+                <td>{{ $exp['label'] }}</td>
+                <td class="num">{{ $exp['total'] > 0 ? fmtBal($exp['total']) : '' }}</td>
+                <td class="num">{{ $exp['total'] > 0 ? fmtBal($exp['total'] / 12) : '' }}</td>
                 @else
                 <td></td><td></td><td></td>
                 @endif
+                {{-- Balance per row: empty (only total row shows balance) --}}
+                <td></td><td></td>
             </tr>
             @endfor
         </tbody>
         <tfoot>
-            <tr class="bg-income-total">
-                <td colspan="2" style="text-align:center;font-weight:bold;">ລວມລາຍຮັບສຸດທິ</td>
-                <td class="num"><strong>{{ fmtB($totalIncome) }}</strong></td>
-                <td style="border:none;background:#fff;"></td>
-                <td colspan="2" class="bg-expense-total" style="text-align:center;font-weight:bold;">ລວມລາຍຈ່າຍທັງໝົດ</td>
-                <td class="num bg-expense-total"><strong>{{ fmtB($totalExpense) }}</strong></td>
-            </tr>
-            <tr class="{{ $balance >= 0 ? 'bg-balance-pos' : 'bg-balance-neg' }}">
-                <td colspan="7" style="text-align:center;font-weight:bold;font-size:12px;padding:5px;">
-                    ດຸ່ນດ່ຽງ (ລາຍຮັບ − ລາຍຈ່າຍ) = <strong>{{ fmtB($balance) }}</strong> ກີບ
-                    @if ($balance >= 0)
-                        &nbsp;✔ ລາຍຮັບຄຸ້ມລາຍຈ່າຍ
-                    @else
-                        &nbsp;✘ ລາຍຮັບບໍ່ຄຸ້ມລາຍຈ່າຍ (ຂາດ {{ fmtB(abs($balance)) }} ກີບ)
-                    @endif
-                </td>
+            <tr class="bg-total">
+                <td></td>
+                <td style="text-align:center;font-weight:bold;">ລວມ</td>
+                <td class="num">{{ fmtBal($totalIncome) }}</td>
+                <td class="num">{{ fmtBal($totalIncome / 12) }}</td>
+                <td></td>
+                <td class="num">{{ fmtBal($totalExpense) }}</td>
+                <td class="num">{{ fmtBal($totalExpense / 12) }}</td>
+                <td class="num {{ $balance >= 0 ? 'bg-pos' : 'bg-neg' }}">{{ fmtBal($balance) }}</td>
+                <td class="num {{ $balance >= 0 ? 'bg-pos' : 'bg-neg' }}">{{ fmtBal($balance / 12) }}</td>
             </tr>
         </tfoot>
     </table>
 
     <div class="signatures">
-        @foreach (['ຄະນະບໍດີ','ຫົວໜ້າພະແນກຈັດຕັ້ງ-ສັງລວມ','ຫົວໜ້າພະແນກວິຊາການ','ຫົວໜ້າພະແນກການເງິນ-ຊັບສິນ'] as $role)
         <div class="sig-block">
             <div class="sig-date">ວັນທີ ......../......../{{ $plan->fiscal_year }}</div>
             <div class="sig-space"></div>
-            <div class="sig-role">{{ $role }}</div>
+            <div class="sig-role">ຄະນະບໍດີ</div>
         </div>
-        @endforeach
+        <div class="sig-block">
+            <div class="sig-date">ວັນທີ ......../......../{{ $plan->fiscal_year }}</div>
+            <div class="sig-space"></div>
+            <div class="sig-role">ຫົວໜ້າພະແນກຈັດຕັ້ງ-ສັງລວມ</div>
+        </div>
+        <div class="sig-block">
+            <div class="sig-date">ວັນທີ ......../......../{{ $plan->fiscal_year }}</div>
+            <div class="sig-space"></div>
+            <div class="sig-role">ຫົວໜ້າພະແນກວິຊາການ</div>
+        </div>
+        <div class="sig-block">
+            <div class="sig-date">ວັນທີ ......../......../{{ $plan->fiscal_year }}</div>
+            <div class="sig-space"></div>
+            <div class="sig-role">ຫົວໜ້າພະແນກການເງິນ-ຊັບສິນ</div>
+        </div>
     </div>
 </div>
 
