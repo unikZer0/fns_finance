@@ -369,6 +369,34 @@ class AcademicIncomeController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    public function updateDefault(Request $request, AcademicIncomeDefault $default)
+    {
+        $isCredit = in_array($default->section_code, ['1.1', '1.3']);
+        $rules = [
+            'item_name'       => 'required|string|max:255',
+            'nuol_percentage' => 'required|numeric|min:0|max:1',
+        ];
+        if ($isCredit) {
+            if ($default->student_year === 'masters_phd') {
+                $rules['rate_per_person'] = 'required|numeric|min:0';
+            } else {
+                $rules['num_credits'] = 'required|integer|min:0';
+            }
+        } else {
+            $rules['rate_per_person'] = 'nullable|numeric|min:0';
+        }
+        $request->validate($rules);
+
+        $default->update([
+            'item_name'       => $request->item_name,
+            'num_credits'     => $request->num_credits ?? $default->num_credits,
+            'rate_per_person' => $request->rate_per_person ?? $default->rate_per_person,
+            'nuol_percentage' => $request->nuol_percentage,
+        ]);
+
+        return back()->with('success', 'ອັບເດດ Default ສຳເລັດ!');
+    }
+
     // ─── Bulk save all items in a plan ───────────────────────────────────────
 
     public function saveAll(Request $request, AcademicIncomePlan $plan)

@@ -64,7 +64,7 @@
                             <th class="px-3 py-2 text-right">ອັດຕາ/ຄົນ (ກີບ)</th>
                         @endif
                         <th class="px-3 py-2 text-center">% ມຊ</th>
-                        <th class="px-3 py-2 text-center w-16">ລຶບ</th>
+                        <th class="px-3 py-2 text-center w-20">ຈັດການ</th>
                     </tr>
                 </thead>
                 <tbody id="sortable_{{ $codeId }}"
@@ -111,14 +111,24 @@
                             {{ ($item->nuol_percentage * 100) }}%
                         </td>
                         <td class="px-3 py-2 text-center">
-                            <button type="button"
-                                onclick="openDeleteModal('{{ route('head_of_finance.academic_income.defaults.destroy', $item) }}', '{{ addslashes($item->item_name) }}')"
-                                class="text-red-500 hover:text-red-700">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            </button>
+                            <div class="flex items-center justify-center gap-2">
+                                <button type="button"
+                                    onclick="openEditModal({{ $item->id }}, {{ json_encode($item->item_name) }}, {{ json_encode($item->student_year) }}, {{ $item->num_credits ?? 'null' }}, {{ $item->rate_per_person ?? 'null' }}, {{ $item->nuol_percentage }}, '{{ route('head_of_finance.academic_income.defaults.update', $item) }}')"
+                                    class="text-blue-500 hover:text-blue-700">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <button type="button"
+                                    onclick="openDeleteModal('{{ route('head_of_finance.academic_income.defaults.destroy', $item) }}', '{{ addslashes($item->item_name) }}')"
+                                    class="text-red-500 hover:text-red-700">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     @empty
@@ -200,6 +210,45 @@
 
 </div>
 
+{{-- Edit Modal --}}
+<div id="editModal" class="modal-overlay" style="display:none;">
+    <div class="modal" style="max-width:480px;">
+        <div class="modal-header" style="padding:20px 24px 16px;">
+            <h3 style="font-size:var(--font-size-lg);font-weight:600;">ແກ້ໄຂ Default</h3>
+        </div>
+        <form id="editForm" method="POST">
+            @csrf
+            @method('PATCH')
+            <div class="modal-body" style="padding:0 24px 20px;display:flex;flex-direction:column;gap:14px;">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ລາຍການ / ຫຼັກສູດ <span class="text-red-500">*</span></label>
+                    <input type="text" id="edit_item_name" name="item_name" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div id="edit_credits_wrap">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ໜ່ວຍກິດ <span class="text-red-500">*</span></label>
+                    <input type="number" id="edit_num_credits" name="num_credits" min="0"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div id="edit_rate_wrap">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ອັດຕາ/ຄົນ (ກີບ)</label>
+                    <input type="number" id="edit_rate_per_person" name="rate_per_person" min="0"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">% ມຊ (0–1) <span class="text-red-500">*</span></label>
+                    <input type="number" id="edit_nuol_percentage" name="nuol_percentage" min="0" max="1" step="0.01" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="document.getElementById('editModal').style.display='none'" class="btn btn-secondary">ຍົກເລີກ</button>
+                <button type="submit" class="btn btn-primary" style="background:#2563eb;">ບັນທຶກ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{-- Delete Modal --}}
 <div id="deleteModal" class="modal-overlay" style="display:none;">
     <div class="modal" style="max-width:400px;">
@@ -228,6 +277,29 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 <script>
+function openEditModal(id, itemName, studentYear, numCredits, ratePerson, nuolPct, url) {
+    document.getElementById('edit_item_name').value      = itemName || '';
+    document.getElementById('edit_num_credits').value    = numCredits ?? '';
+    document.getElementById('edit_rate_per_person').value = ratePerson ?? '';
+    document.getElementById('edit_nuol_percentage').value = nuolPct ?? '';
+    document.getElementById('editForm').action           = url;
+
+    // show/hide fields based on what this item uses
+    const creditsWrap = document.getElementById('edit_credits_wrap');
+    const rateWrap    = document.getElementById('edit_rate_wrap');
+    if (studentYear === 'masters_phd') {
+        creditsWrap.style.display = 'none';
+        rateWrap.style.display    = '';
+    } else if (numCredits !== null) {
+        creditsWrap.style.display = '';
+        rateWrap.style.display    = 'none';
+    } else {
+        creditsWrap.style.display = 'none';
+        rateWrap.style.display    = '';
+    }
+    document.getElementById('editModal').style.display = 'flex';
+}
+
 function openDeleteModal(url, name) {
     document.getElementById('deleteForm').action = url;
     document.getElementById('deleteItemName').textContent = name;
@@ -236,10 +308,6 @@ function openDeleteModal(url, name) {
 function closeDeleteModal() {
     document.getElementById('deleteModal').style.display = 'none';
 }
-document.getElementById('deleteModal')?.addEventListener('click', function(e) {
-    if (e.target === this) closeDeleteModal();
-});
-
 function toggleCreditOrMoney(codeId, yearValue) {
     const creditsWrap = document.getElementById('credits_wrap_' + codeId);
     const moneyWrap   = document.getElementById('money_wrap_' + codeId);

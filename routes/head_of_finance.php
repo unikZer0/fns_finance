@@ -29,6 +29,7 @@ Route::middleware(['auth', 'check.active', 'role:head_of_finance'])
         Route::get('academic-income/defaults',                              [AcademicIncomeController::class, 'defaults'])       ->name('academic_income.defaults');
         Route::post('academic-income/defaults',                             [AcademicIncomeController::class, 'storeDefault'])   ->name('academic_income.defaults.store');
         Route::delete('academic-income/defaults/{default}',                 [AcademicIncomeController::class, 'destroyDefault']) ->name('academic_income.defaults.destroy');
+        Route::patch('academic-income/defaults/{default}',                  [AcademicIncomeController::class, 'updateDefault'])  ->name('academic_income.defaults.update');
         Route::post('academic-income/defaults/reorder',                      [AcademicIncomeController::class, 'reorderDefaults'])->name('academic_income.defaults.reorder');
         Route::get('academic-income/{plan}',                                [AcademicIncomeController::class, 'show'])           ->name('academic_income.show');
         Route::delete('academic-income/{plan}',                             [AcademicIncomeController::class, 'destroy'])        ->name('academic_income.destroy');
@@ -46,7 +47,9 @@ Route::middleware(['auth', 'check.active', 'role:head_of_finance'])
         Route::post('expense',                                   [ExpenseController::class, 'store'])        ->name('expense.store');
         Route::get('expense/defaults',                           [ExpenseController::class, 'defaults'])     ->name('expense.defaults');
         Route::post('expense/defaults',                          [ExpenseController::class, 'storeDefault']) ->name('expense.defaults.store');
-        Route::delete('expense/defaults/{default}',              [ExpenseController::class, 'destroyDefault'])->name('expense.defaults.destroy');
+        Route::delete('expense/defaults/{default}',              [ExpenseController::class, 'destroyDefault']) ->name('expense.defaults.destroy');
+        Route::patch('expense/defaults/{default}',               [ExpenseController::class, 'updateDefault'])  ->name('expense.defaults.update');
+        Route::post('expense/defaults/reorder',                  [ExpenseController::class, 'reorderDefaults'])->name('expense.defaults.reorder');
         Route::get('expense/{plan}',                             [ExpenseController::class, 'show'])         ->name('expense.show');
         Route::delete('expense/{plan}',                          [ExpenseController::class, 'destroy'])      ->name('expense.destroy');
         Route::get('expense/{plan}/summary',                     [ExpenseController::class, 'summary'])      ->name('expense.summary');

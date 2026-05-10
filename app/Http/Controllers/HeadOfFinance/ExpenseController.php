@@ -250,6 +250,30 @@ class ExpenseController extends Controller
         return back()->with('success', 'ລຶບ Default ສຳເລັດ!');
     }
 
+    public function updateDefault(Request $request, ExpenseDefault $default)
+    {
+        $request->validate([
+            'item_name'        => 'required|string|max:255',
+            'reference'        => 'nullable|string|max:10',
+            'amount_per_month' => 'required|numeric|min:0',
+            'num_months'       => 'required|numeric|min:0',
+            'notes'            => 'nullable|string|max:255',
+        ]);
+
+        $default->update($request->only(['item_name', 'reference', 'amount_per_month', 'num_months', 'notes']));
+
+        return back()->with('success', 'ອັບເດດ Default ສຳເລັດ!');
+    }
+
+    public function reorderDefaults(Request $request)
+    {
+        $request->validate(['items' => 'required|array', 'items.*' => 'integer']);
+        foreach ($request->items as $order => $id) {
+            ExpenseDefault::where('id', $id)->update(['sort_order' => $order]);
+        }
+        return response()->json(['ok' => true]);
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
     private function seedDefaults(ExpensePlan $plan): void
