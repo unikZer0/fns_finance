@@ -156,16 +156,40 @@ function fmtS($n) { return number_format((float)$n, 0, '.', ','); }
         </thead>
         <tbody>
             @forelse ($items as $item)
-            @php $t = $item->amount_per_month * $item->num_months; @endphp
-            <tr>
-                <td class="center">{{ $loop->iteration }}</td>
-                <td>{{ $item->item_name }}</td>
-                <td class="center">{{ $item->reference }}</td>
+            @php
+                $t           = $item->amount_per_month * $item->num_months;
+                $hasChildren = $item->relationLoaded('children') && $item->children->isNotEmpty();
+            @endphp
+            {{-- Parent row --}}
+            <tr style="{{ $hasChildren ? 'background:#f8fafc;' : '' }}">
+                <td class="center" style="font-weight:{{ $hasChildren ? 'bold' : 'normal' }}">{{ $loop->iteration }}</td>
+                <td style="font-weight:{{ $hasChildren ? 'bold' : 'normal' }}">{{ $item->item_name }}</td>
+                <td class="center" style="font-weight:bold;color:#1d4ed8;">{{ $item->reference }}</td>
                 <td class="num">{{ $item->amount_per_month > 0 ? fmtS($item->amount_per_month) : '' }}</td>
-                <td class="center">{{ $item->num_months != 12 ? $item->num_months : 12 }}</td>
-                <td class="num">{{ fmtS($t) }}</td>
+                <td class="center">{{ $item->num_months }}</td>
+                <td class="num" style="font-weight:{{ $hasChildren ? 'bold' : 'normal' }}">{{ fmtS($t) }}</td>
                 <td>{{ $item->notes }}</td>
             </tr>
+            {{-- Sub-item rows --}}
+            @if ($hasChildren)
+                @foreach ($item->children as $child)
+                @php $ct = $child->amount_per_month * $child->num_months; @endphp
+                <tr style="background:#eff6ff;">
+                    <td class="center" style="color:#93c5fd;font-size:9px;">{{ $loop->iteration }}</td>
+                    <td style="padding-left:18px;color:#374151;">
+                        <span style="color:#bfdbfe;margin-right:4px;">└</span>{{ $child->item_name }}
+                        @if ($child->notes)
+                        <span style="font-size:8px;color:#9ca3af;font-style:italic;">({{ $child->notes }})</span>
+                        @endif
+                    </td>
+                    <td class="center" style="color:#6b7280;">{{ $child->reference }}</td>
+                    <td class="num" style="color:#4b5563;">{{ $child->amount_per_month > 0 ? fmtS($child->amount_per_month) : '' }}</td>
+                    <td class="center" style="color:#4b5563;">{{ $child->num_months }}</td>
+                    <td class="num" style="color:#4b5563;">{{ $ct > 0 ? fmtS($ct) : '' }}</td>
+                    <td style="color:#6b7280;">{{ $child->notes }}</td>
+                </tr>
+                @endforeach
+            @endif
             @empty
             <tr><td colspan="7" style="text-align:center;padding:8px;color:#666;">ຍັງບໍ່ມີລາຍການ</td></tr>
             @endforelse

@@ -72,8 +72,8 @@ function fmtE($n) { return number_format((float)$n, 0, '.', ','); }
 
         @foreach (array_keys($categoryTitles) as $cat)
         @php
-            $catId = str_replace('.', '_', $cat);
-            $items = $sections[$cat];
+            $catId    = str_replace('.', '_', $cat);
+            $items    = $sections[$cat];
             $secTotal = $items->sum(fn($i) => $i->amount_per_month * $i->num_months);
         @endphp
 
@@ -110,13 +110,47 @@ function fmtE($n) { return number_format((float)$n, 0, '.', ','); }
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse ($items as $item)
-                        @php $rowTotal = $item->amount_per_month * $item->num_months; @endphp
-                        <tr class="hover:bg-gray-50"
+                        @php
+                            $hasChildren = $item->children->isNotEmpty();
+                            $rowTotal    = $item->amount_per_month * $item->num_months;
+                            $childrenId  = 'ci_' . $item->id;
+                        @endphp
+
+                        {{-- Parent row --}}
+                        <tr class="hover:bg-gray-50 {{ $hasChildren ? 'bg-slate-50/60' : '' }}"
                             data-id="{{ $item->id }}"
-                            data-section="{{ $catId }}">
+                            data-section="{{ $catId }}"
+                            data-has-children="{{ $hasChildren ? 'true' : 'false' }}">
                             <td class="px-3 py-1.5 text-center text-gray-400">{{ $loop->iteration }}</td>
-                            <td class="px-3 py-1.5 text-gray-800">{{ $item->item_name }}</td>
-                            <td class="px-3 py-1.5 text-center text-gray-400 text-xs">{{ $item->reference }}</td>
+                            <td class="px-3 py-1.5 text-gray-800 font-medium">
+                                <div class="flex items-center gap-1.5">
+                                    @if ($hasChildren)
+                                    <button type="button"
+                                        onclick="toggleChildren('{{ $childrenId }}')"
+                                        id="toggle_{{ $childrenId }}"
+                                        class="text-blue-400 hover:text-blue-600 flex-shrink-0"
+                                        title="ຂະຫຍາຍ/ຍຸບ">
+                                        <svg class="w-3.5 h-3.5 rotate-90 transition-transform duration-150" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </button>
+                                    @endif
+                                    {{ $item->item_name }}
+                                </div>
+                            </td>
+                            <td class="px-3 py-1.5 text-center text-blue-600 font-semibold text-xs">{{ $item->reference }}</td>
+
+                            @if ($hasChildren)
+                            {{-- Parent with children: display computed total (no editable inputs) --}}
+                            <td class="px-3 py-1.5 text-right text-gray-400 italic text-xs" colspan="2">
+                                (ລວມຈາກລາຍລະອຽດ)
+                            </td>
+                            <td class="px-3 py-1.5 text-right font-semibold text-gray-800"
+                                id="row_total_{{ $item->id }}" data-v="{{ $rowTotal }}">
+                                {{ fmtE($rowTotal) }}
+                            </td>
+                            @else
+                            {{-- Parent without children: editable inputs --}}
                             <td class="px-2 py-1.5 text-right">
                                 <input type="number" min="0" step="1"
                                     name="items[{{ $item->id }}][amount_per_month]"
@@ -135,7 +169,55 @@ function fmtE($n) { return number_format((float)$n, 0, '.', ','); }
                                 id="row_total_{{ $item->id }}" data-v="{{ $rowTotal }}">
                                 {{ fmtE($rowTotal) }}
                             </td>
+                            @endif
                         </tr>
+
+                        {{-- Sub-item rows (collapsible) --}}
+                        @if ($hasChildren)
+                        <tr id="{{ $childrenId }}" class="children-container">
+                            <td colspan="6" class="p-0">
+                                <table class="w-full text-xs">
+                                    <tbody class="divide-y divide-blue-50">
+                                    @foreach ($item->children as $child)
+                                    @php $childTotal = $child->amount_per_month * $child->num_months; @endphp
+                                    <tr class="bg-blue-50/30 hover:bg-blue-50/60"
+                                        data-id="{{ $child->id }}"
+                                        data-parent-id="{{ $item->id }}"
+                                        data-section="{{ $catId }}">
+                                        <td class="w-8 px-3 py-1 text-center text-blue-200">{{ $loop->iteration }}</td>
+                                        <td class="px-3 py-1 pl-8 text-gray-600">
+                                            <span class="text-blue-300 mr-1">└</span>{{ $child->item_name }}
+                                            @if ($child->notes)
+                                            <span class="ml-1 text-[10px] text-gray-400 italic">({{ $child->notes }})</span>
+                                            @endif
+                                        </td>
+                                        <td class="w-20 px-3 py-1 text-center text-gray-400">{{ $child->reference }}</td>
+                                        <td class="w-36 px-2 py-1 text-right">
+                                            <input type="number" min="0" step="1"
+                                                name="items[{{ $child->id }}][amount_per_month]"
+                                                value="{{ $child->amount_per_month }}"
+                                                oninput="calcChild({{ $child->id }}, {{ $item->id }})"
+                                                class="w-32 px-2 py-0.5 border border-blue-200 rounded text-right text-xs focus:ring-1 focus:ring-blue-400 bg-white">
+                                        </td>
+                                        <td class="w-24 px-2 py-1 text-right">
+                                            <input type="number" min="0" step="0.5"
+                                                name="items[{{ $child->id }}][num_months]"
+                                                value="{{ $child->num_months }}"
+                                                oninput="calcChild({{ $child->id }}, {{ $item->id }})"
+                                                class="w-16 px-2 py-0.5 border border-blue-200 rounded text-right text-xs focus:ring-1 focus:ring-blue-400 bg-white">
+                                        </td>
+                                        <td class="w-36 px-3 py-1 text-right text-gray-600"
+                                            id="row_total_{{ $child->id }}" data-v="{{ $childTotal }}">
+                                            {{ fmtE($childTotal) }}
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        @endif
+
                         @empty
                         <tr>
                             <td colspan="6" class="px-4 py-6 text-center text-gray-400 italic text-xs">ຍັງບໍ່ມີລາຍການ</td>
@@ -217,24 +299,59 @@ function fmtJS(n) {
     return new Intl.NumberFormat().format(Math.round(n));
 }
 
+function toggleChildren(id) {
+    const el  = document.getElementById(id);
+    const btn = document.getElementById('toggle_' + id);
+    if (!el) return;
+    const isHidden = el.classList.toggle('hidden');
+    if (btn) {
+        btn.querySelector('svg').style.transform = isHidden ? 'rotate(0deg)' : 'rotate(90deg)';
+    }
+}
+
+// Called when a leaf (no-children parent) row changes
 function calcRow(id) {
-    const tr = document.querySelector(`tr[data-id="${id}"]`);
+    const tr = document.querySelector(`tr[data-id="${id}"][data-has-children="false"]`);
     if (!tr) return;
     const section = tr.dataset.section;
-
     const amt    = parseFloat(tr.querySelector(`[name="items[${id}][amount_per_month]"]`)?.value) || 0;
     const months = parseFloat(tr.querySelector(`[name="items[${id}][num_months]"]`)?.value)       || 0;
     const total  = amt * months;
-
     const cell = document.getElementById(`row_total_${id}`);
     if (cell) { cell.textContent = fmtJS(total); cell.dataset.v = total; }
+    calcSectionTotal(section);
+}
 
+// Called when a sub-item (child) row changes
+function calcChild(childId, parentId) {
+    // Recalc child total
+    const tr   = document.querySelector(`tr[data-id="${childId}"]`);
+    if (!tr) return;
+    const amt    = parseFloat(tr.querySelector(`[name="items[${childId}][amount_per_month]"]`)?.value) || 0;
+    const months = parseFloat(tr.querySelector(`[name="items[${childId}][num_months]"]`)?.value)       || 0;
+    const total  = amt * months;
+    const cell = document.getElementById(`row_total_${childId}`);
+    if (cell) { cell.textContent = fmtJS(total); cell.dataset.v = total; }
+
+    // Recompute parent total from all its children
+    let parentTotal = 0;
+    document.querySelectorAll(`tr[data-parent-id="${parentId}"]`).forEach(childTr => {
+        parentTotal += parseFloat(document.getElementById(`row_total_${childTr.dataset.id}`)?.dataset.v || 0);
+    });
+    const parentCell = document.getElementById(`row_total_${parentId}`);
+    if (parentCell) { parentCell.textContent = fmtJS(parentTotal); parentCell.dataset.v = parentTotal; }
+
+    // Recompute section total
+    const section = tr.dataset.section;
     calcSectionTotal(section);
 }
 
 function calcSectionTotal(sectionId) {
     let total = 0;
-    document.querySelectorAll(`tr[data-section="${sectionId}"]`).forEach(tr => {
+    // Only count parent rows (not child rows)
+    document.querySelectorAll(`tr[data-section="${sectionId}"][data-id]`).forEach(tr => {
+        // Skip if this is a child row (has data-parent-id)
+        if (tr.dataset.parentId) return;
         const id = tr.dataset.id;
         total += parseFloat(document.getElementById(`row_total_${id}`)?.dataset.v || 0);
     });

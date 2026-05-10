@@ -52,12 +52,13 @@ class ExpenseController extends Controller
 
     public function show(ExpensePlan $plan)
     {
-        $plan->load('items');
+        $plan->load(['items.children']);
 
         $sections = [];
         foreach (array_keys($this->categoryTitles) as $cat) {
             $sections[$cat] = $plan->items
                 ->where('category_code', $cat)
+                ->whereNull('parent_id')
                 ->sortBy('sort_order')
                 ->values();
         }
@@ -89,6 +90,19 @@ class ExpenseController extends Controller
                 'num_months'       => max(0, (float) ($data['num_months']       ?? 12)),
             ]);
         }
+
+        // Recompute parent amounts from children sums
+        ExpenseItem::where('plan_id', $plan->id)
+            ->whereNull('parent_id')
+            ->with('children')
+            ->get()
+            ->each(function ($parent) {
+                if ($parent->children->isNotEmpty()) {
+                    $childrenTotal = $parent->children->sum(fn($c) => $c->amount_per_month * $c->num_months);
+                    $months        = $parent->num_months > 0 ? $parent->num_months : 12;
+                    $parent->update(['amount_per_month' => round($childrenTotal / $months, 2)]);
+                }
+            });
 
         return back()->with('success', 'ບັນທຶກສຳເລັດ!');
     }
@@ -157,7 +171,7 @@ class ExpenseController extends Controller
 
     public function summary(ExpensePlan $plan)
     {
-        $plan->load('items');
+        $plan->load(['items.children']);
         [$sections, $rows, $grandTotal] = $this->buildSummaryData($plan);
 
         return view('head_of_finance.expense.summary', compact(
@@ -167,7 +181,7 @@ class ExpenseController extends Controller
 
     public function exportPdf(ExpensePlan $plan)
     {
-        $plan->load('items');
+        $plan->load(['items.children']);
         [$sections, $rows, $grandTotal] = $this->buildSummaryData($plan);
 
         $html = view('head_of_finance.expense.summary', compact(
@@ -300,12 +314,19 @@ class ExpenseController extends Controller
     private function seedDefaults(ExpensePlan $plan): void
     {
         $counters = [];
-        foreach (ExpenseDefault::whereNull('parent_id')->orderBy('category_code')->orderBy('sort_order')->get() as $d) {
+        $parents  = ExpenseDefault::whereNull('parent_id')
+            ->with('children')
+            ->orderBy('category_code')
+            ->orderBy('sort_order')
+            ->get();
+
+        foreach ($parents as $d) {
             $cat = $d->category_code;
             $counters[$cat] = ($counters[$cat] ?? -1) + 1;
 
-            ExpenseItem::create([
+            $parentItem = ExpenseItem::create([
                 'plan_id'          => $plan->id,
+                'parent_id'        => null,
                 'category_code'    => $cat,
                 'sort_order'       => $counters[$cat],
                 'item_name'        => $d->item_name,
@@ -314,6 +335,20 @@ class ExpenseController extends Controller
                 'num_months'       => $d->num_months,
                 'notes'            => $d->notes,
             ]);
+
+            foreach ($d->children as $i => $child) {
+                ExpenseItem::create([
+                    'plan_id'          => $plan->id,
+                    'parent_id'        => $parentItem->id,
+                    'category_code'    => $cat,
+                    'sort_order'       => $i,
+                    'item_name'        => $child->item_name,
+                    'reference'        => $child->reference,
+                    'amount_per_month' => $child->amount_per_month,
+                    'num_months'       => $child->num_months,
+                    'notes'            => $child->notes,
+                ]);
+            }
         }
     }
 
@@ -323,7 +358,12 @@ class ExpenseController extends Controller
         $rows     = [];
 
         foreach (array_keys($this->categoryTitles) as $cat) {
-            $items = $plan->items->where('category_code', $cat)->sortBy('sort_order')->values();
+            // Only top-level (parent) items count toward totals
+            $items = $plan->items
+                ->where('category_code', $cat)
+                ->whereNull('parent_id')
+                ->sortBy('sort_order')
+                ->values();
             $total = $items->sum(fn($i) => $i->amount_per_month * $i->num_months);
             $sections[$cat] = $items;
             $rows[$cat]     = [
