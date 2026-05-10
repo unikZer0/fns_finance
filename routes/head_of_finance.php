@@ -10,6 +10,7 @@ use App\Http\Controllers\HeadOfFinance\AnnualBudgetPlanController;
 use App\Http\Controllers\HeadOfFinance\ExpenseController;
 use App\Http\Controllers\HeadOfFinance\HomeController;
 use App\Http\Controllers\HeadOfFinance\PlansCtrl;
+use App\Http\Controllers\HeadOfFinance\SalaryPlanController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'check.active', 'role:head_of_finance'])
@@ -41,6 +42,17 @@ Route::middleware(['auth', 'check.active', 'role:head_of_finance'])
         Route::post('academic-income/{plan}/items',                         [AcademicIncomeController::class, 'storeItem'])      ->name('academic_income.items.store');
         Route::put('academic-income/{plan}/items/{item}',                   [AcademicIncomeController::class, 'updateItem'])     ->name('academic_income.items.update');
         Route::delete('academic-income/{plan}/items/{item}',                [AcademicIncomeController::class, 'destroyItem'])    ->name('academic_income.items.destroy');
+
+        // ── Salary Plans (ແຜນເງິນເດືອນ) ─────────────────────────────────────
+        Route::get('salary',                                    [SalaryPlanController::class, 'index'])       ->name('salary.index');
+        Route::post('salary',                                   [SalaryPlanController::class, 'store'])       ->name('salary.store');
+        Route::get('salary/{plan}',                             [SalaryPlanController::class, 'show'])        ->name('salary.show');
+        Route::delete('salary/{plan}',                          [SalaryPlanController::class, 'destroy'])     ->name('salary.destroy');
+        Route::get('salary/{plan}/summary',                     [SalaryPlanController::class, 'summary'])     ->name('salary.summary');
+        Route::get('salary/{plan}/pdf',                         [SalaryPlanController::class, 'exportPdf'])  ->name('salary.pdf');
+        Route::post('salary/{plan}/approve',                    [SalaryPlanController::class, 'approve'])     ->name('salary.approve');
+        Route::post('salary/{plan}/revert-draft',               [SalaryPlanController::class, 'revertDraft'])->name('salary.revert_draft');
+        Route::post('salary/{plan}/save-all',                   [SalaryPlanController::class, 'saveAll'])     ->name('salary.save_all');
 
         // ── Balance (ດຸ່ນດ່ຽງ) ─────────────────────────────────────────────────
         Route::get('balance',                                    [ExpenseController::class, 'balanceIndex']) ->name('balance.index');
