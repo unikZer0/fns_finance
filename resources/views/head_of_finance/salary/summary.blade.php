@@ -15,6 +15,8 @@
         .toolbar-title { color:#94a3b8; font-size:13px; margin-left:auto; }
 
         .page { background:#fff; width:277mm; min-height:190mm; margin:70px auto 20px; padding:12mm 14mm; box-shadow:0 2px 8px rgba(0,0,0,.15); }
+        .page + .page { margin-top:20px; }
+        @media print { .page { page-break-after: always; } .page:last-child { page-break-after: avoid; } }
 
         .letterhead { text-align:center; margin-bottom:8px; }
         .letterhead p { font-size:11px; line-height:1.6; }
@@ -195,30 +197,95 @@ function fmtG($n) { return number_format((float)$n, 0, '.', ','); }
         </tbody>
     </table>
 
-    {{-- gov1: headcount table --}}
-    <table class="gov1-table" style="width:40%;">
+    <div class="signatures">
+        @foreach (['ຄະນະບໍດີ','ຫົວໜ້າພະແນກຈັດຕັ້ງ-ສັງລວມ','ຫົວໜ້າພະແນກວິຊາການ','ຫົວໜ້າພະແນກການເງິນ-ຊັບສິນ'] as $role)
+        <div class="sig-block">
+            <div class="sig-date">ວັນທີ ......../......../{{ $plan->fiscal_year }}</div>
+            <div class="sig-space"></div>
+            <div class="sig-role">{{ $role }}</div>
+        </div>
+        @endforeach
+    </div>
+</div>
+
+{{-- ════════════════════ PAGE 2: ຕາຕະລາງສັງລວມຈໍານວນພົນ ════════════════════ --}}
+<div class="page">
+    <div class="letterhead">
+        <p>ສາທາລະນະລັດ ປະຊາທິປະໄຕ ປະຊາຊົນລາວ</p>
+        <p>ສັນຕິພາບ ເອກະລາດ ປະຊາທິປະໄຕ ເອກະພາບ ວັດທະນາຖາວອນ</p>
+        <p class="bold">ມະຫາວິທະຍາໄລແຫ່ງຊາດ — ຄະນະວິທະຍາສາດທຳມະຊາດ</p>
+        <p class="title">ຕາຕະລາງສັງລວມຈໍານວນພົນ</p>
+        <p style="font-size:10px;margin-top:2px;">ສົກປີ {{ $plan->fiscal_year }}</p>
+    </div>
+
+    @php
+        $sec6010 = $sections['60.10']['items'] ?? collect();
+        $sec6020 = $sections['60.20']['items'] ?? collect();
+        $sec6150 = $sections['61.50']['items'] ?? collect();
+
+        $byCode = fn($sec, $code) => $sec->firstWhere('account_code', $code)?->num_persons ?? 0;
+
+        // Section 60.10 headcount
+        $active    = $byCode($sec6010, '60.10.01');
+        $promotion = $byCode($sec6010, '60.10.02');
+        $newStaff  = $byCode($sec6010, '60.10.03');
+        $domestic  = $byCode($sec6010, '60.10.04');
+        $abroad    = $byCode($sec6010, '60.10.05');
+        $contract  = $byCode($sec6010, '60.10.06');
+        $totalStaff = $active + $promotion + $newStaff + $domestic + $abroad + $contract;
+
+        // Section 61.50 headcount
+        $stuDomestic   = $byCode($sec6150, '61.50.01');
+        $stuForeign    = $byCode($sec6150, '61.50.02');
+        $stuInternship = $byCode($sec6150, '61.50.03');
+        $totalStu      = $stuDomestic + $stuForeign + $stuInternship;
+    @endphp
+
+    <table style="width:60%;">
         <thead>
-            <tr><th colspan="3" style="background:#e0e7ff;">ຕາຕະລາງສັງລວມຈໍານວນພົນ</th></tr>
             <tr>
-                <th>ລ/ດ</th><th style="text-align:left;">ເນື້ອໃນ</th>
-                <th class="num">ຈໍານວນ (ຄົນ)</th>
+                <th style="width:6%">ລ/ດ</th>
+                <th style="text-align:left;">ເນື້ອໃນ</th>
+                <th class="num" style="width:18%">ຈໍານວນ (ຄົນ)</th>
             </tr>
         </thead>
         <tbody>
-            @php
-                $regular  = $sections['60.10']['items']->firstWhere('account_code', '60.10.01')?->num_persons ?? 0;
-                $domestic = $sections['60.10']['items']->firstWhere('account_code', '60.10.04')?->num_persons ?? 0;
-                $abroad   = $sections['60.10']['items']->firstWhere('account_code', '60.10.05')?->num_persons ?? 0;
-            @endphp
-            <tr><td colspan="3" class="bg-subsec" style="font-weight:bold;">I. ຈໍານວນພົນພະນັກງານ-ອາຈານ</td></tr>
-            <tr><td class="ctr">1</td><td>ພະນັກງານ-ອາຈານປະຈໍາການ</td><td class="num">{{ $regular }}</td></tr>
-            <tr><td class="ctr">2</td><td>ພະນັກງານຮຽນຕໍ່ພາຍໃນ</td><td class="num">{{ $domestic }}</td></tr>
-            <tr><td class="ctr">3</td><td>ພະນັກງານຮຽນຕໍ່ຕ່າງປະເທດ</td><td class="num">{{ $abroad }}</td></tr>
-            <tr class="bg-total"><td></td><td style="font-weight:bold;">ລວມ</td><td class="num">{{ $regular + $domestic + $abroad }}</td></tr>
+            {{-- Staff --}}
+            <tr class="bg-sec60 section-header">
+                <td colspan="3">I. ຈໍານວນພົນພະນັກງານ-ອາຈານ (ຮ/ຄ 60.10)</td>
+            </tr>
+            <tr><td class="ctr">1</td><td class="ind">ພ/ງ-ອາຈານ ພວມປະຕິບັດງານ 100%</td><td class="num">{{ $active ?: '' }}</td></tr>
+            <tr><td class="ctr">2</td><td class="ind">ພ/ງ ເພື່ອເລື່ອນຊັ້ນ</td><td class="num">{{ $promotion ?: '' }}</td></tr>
+            <tr><td class="ctr">3</td><td class="ind">ພ/ງ ເຂົ້າໃໝ່ 95%</td><td class="num">{{ $newStaff ?: '' }}</td></tr>
+            <tr><td class="ctr">4</td><td class="ind">ພ/ງ ຮຽນຕໍ່ພາຍໃນ</td><td class="num">{{ $domestic ?: '' }}</td></tr>
+            <tr><td class="ctr">5</td><td class="ind">ພ/ງ ຮຽນຕໍ່ຕ່າງປະເທດ</td><td class="num">{{ $abroad ?: '' }}</td></tr>
+            <tr><td class="ctr">6</td><td class="ind">ພ/ງ ຕາມສັນຍາ</td><td class="num">{{ $contract ?: '' }}</td></tr>
+            <tr class="bg-total">
+                <td></td><td style="font-weight:bold;">ລວມ I</td>
+                <td class="num">{{ $totalStaff ?: '' }}</td>
+            </tr>
+
+            {{-- Students --}}
+            <tr class="bg-sec61 section-header">
+                <td colspan="3">II. ຈໍານວນນັກຮຽນ-ນັກສຶກສາ (ຮ/ຄ 61.50)</td>
+            </tr>
+            <tr><td class="ctr">1</td><td class="ind">ນັກຮຽນ ປ.ຕີ ພາຍໃນ</td><td class="num">{{ $stuDomestic ?: '' }}</td></tr>
+            <tr><td class="ctr">2</td><td class="ind">ນັກຮຽນ ຕ່າງປະເທດ</td><td class="num">{{ $stuForeign ?: '' }}</td></tr>
+            <tr><td class="ctr">3</td><td class="ind">ນັກຮຽນ ໄປຝຶກງານ</td><td class="num">{{ $stuInternship ?: '' }}</td></tr>
+            <tr class="bg-total">
+                <td></td><td style="font-weight:bold;">ລວມ II</td>
+                <td class="num">{{ $totalStu ?: '' }}</td>
+            </tr>
+
+            {{-- Grand --}}
+            <tr class="bg-grand">
+                <td></td><td style="text-align:center;">ລວມທັງໝົດ (I + II)</td>
+                <td class="num">{{ ($totalStaff + $totalStu) ?: '' }}</td>
+            </tr>
         </tbody>
     </table>
 
-    <div class="signatures">
+    <div class="signatures" style="margin-top:24px;">
         @foreach (['ຄະນະບໍດີ','ຫົວໜ້າພະແນກຈັດຕັ້ງ-ສັງລວມ','ຫົວໜ້າພະແນກວິຊາການ','ຫົວໜ້າພະແນກການເງິນ-ຊັບສິນ'] as $role)
         <div class="sig-block">
             <div class="sig-date">ວັນທີ ......../......../{{ $plan->fiscal_year }}</div>
