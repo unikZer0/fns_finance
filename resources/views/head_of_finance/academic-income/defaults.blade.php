@@ -59,7 +59,7 @@
                         <th class="px-3 py-2 text-left">ລາຍການ / ຫຼັກສູດ</th>
                         @if ($isCredit)
                             <th class="px-3 py-2 text-center">ປະເພດ</th>
-                            <th class="px-3 py-2 text-right">ໜ່ວຍກິດ</th>
+                            <th class="px-3 py-2 text-right">ໜ່ວຍກິດ / ຄ່າສອນ (ກີບ)</th>
                         @endif
                         <th class="px-3 py-2 text-center">% ມຊ</th>
                         <th class="px-3 py-2 text-center w-16">ລຶບ</th>
@@ -94,7 +94,11 @@
                                 @endif
                             </td>
                             <td class="px-3 py-2 text-right text-gray-600">
-                                {{ $item->num_credits !== null ? $item->num_credits : '—' }}
+                                @if ($item->student_year === 'masters_phd')
+                                    {{ $item->rate_per_person !== null ? number_format($item->rate_per_person, 0) : '—' }}
+                                @else
+                                    {{ $item->num_credits !== null ? $item->num_credits : '—' }}
+                                @endif
                             </td>
                         @endif
                         <td class="px-3 py-2 text-center text-gray-600">
@@ -137,21 +141,27 @@
                 </div>
 
                 @if ($isCredit)
-                    <div class="flex flex-col gap-1" id="credits_wrap_{{ $codeId }}">
-                        <label class="text-xs text-gray-500">ໜ່ວຍກິດ</label>
-                        <input type="number" name="num_credits" min="0" placeholder="0"
-                            id="credits_input_{{ $codeId }}"
-                            class="px-2 py-1.5 border border-gray-300 rounded text-xs w-20 focus:ring-1 focus:ring-blue-400">
-                    </div>
                     <div class="flex flex-col gap-1">
                         <label class="text-xs text-gray-500">ປະເພດ *</label>
                         <select name="student_year" required
-                            onchange="toggleCreditsField('{{ $codeId }}', this.value)"
+                            onchange="toggleCreditOrMoney('{{ $codeId }}', this.value)"
                             class="px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-400">
                             @foreach ($yearLabels as $val => $lbl)
                                 <option value="{{ $val }}">{{ $lbl }}</option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="flex flex-col gap-1" id="credits_wrap_{{ $codeId }}">
+                        <label class="text-xs text-gray-500">ໜ່ວຍກິດ</label>
+                        <input type="number" name="num_credits" min="0" placeholder="0"
+                            id="credits_input_{{ $codeId }}"
+                            class="px-2 py-1.5 border border-gray-300 rounded text-xs w-24 focus:ring-1 focus:ring-blue-400">
+                    </div>
+                    <div class="flex flex-col gap-1 hidden" id="money_wrap_{{ $codeId }}">
+                        <label class="text-xs text-gray-500">ຄ່າສອນຕໍ່ຄົນ (ກີບ)</label>
+                        <input type="number" name="rate_per_person" min="0" step="1000" placeholder="0"
+                            id="money_input_{{ $codeId }}"
+                            class="px-2 py-1.5 border border-gray-300 rounded text-xs w-32 focus:ring-1 focus:ring-blue-400">
                     </div>
                 @endif
 
@@ -216,17 +226,20 @@ document.getElementById('deleteModal')?.addEventListener('click', function(e) {
     if (e.target === this) closeDeleteModal();
 });
 
-function toggleCreditsField(codeId, yearValue) {
-    const wrap = document.getElementById('credits_wrap_' + codeId);
-    const inp  = document.getElementById('credits_input_' + codeId);
-    if (!wrap) return;
+function toggleCreditOrMoney(codeId, yearValue) {
+    const creditsWrap = document.getElementById('credits_wrap_' + codeId);
+    const moneyWrap   = document.getElementById('money_wrap_' + codeId);
+    const creditsInp  = document.getElementById('credits_input_' + codeId);
+    const moneyInp    = document.getElementById('money_input_' + codeId);
+    if (!creditsWrap || !moneyWrap) return;
     if (yearValue === 'masters_phd') {
-        wrap.style.opacity = '0.4';
-        wrap.style.pointerEvents = 'none';
-        if (inp) inp.value = '';
+        creditsWrap.classList.add('hidden');
+        moneyWrap.classList.remove('hidden');
+        if (creditsInp) creditsInp.value = '';
     } else {
-        wrap.style.opacity = '1';
-        wrap.style.pointerEvents = '';
+        creditsWrap.classList.remove('hidden');
+        moneyWrap.classList.add('hidden');
+        if (moneyInp) moneyInp.value = '';
     }
 }
 

@@ -13,7 +13,13 @@ class AcademicIncomeDefault extends Model
         'sort_order',
         'item_name',
         'num_credits',
+        'rate_per_person',
         'nuol_percentage',
         'student_year',
+    ];
+
+    protected $casts = [
+        'rate_per_person' => 'float',
+        'nuol_percentage' => 'float',
     ];
 }

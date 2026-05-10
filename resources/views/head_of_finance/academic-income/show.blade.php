@@ -208,31 +208,32 @@ $yearLabels = [
                             </td>
 
                             @if ($credit)
-                                {{-- ໜ່ວຍກິດ: input for bachelor, em-dash for masters --}}
-                                <td class="px-2 py-1.5 text-right">
-                                    @if (!$isMasters)
+                                @if ($isMasters)
+                                    {{-- ປ.ໂທ/ເອກ: colspan=2 direct money input --}}
+                                    <td colspan="2" class="px-2 py-1.5">
+                                        <div class="flex items-center justify-end gap-1.5">
+                                            <span class="text-gray-400 text-xs whitespace-nowrap">ຄ່າສອນ/ຄົນ (ກີບ):</span>
+                                            <input type="number" min="0" step="1000"
+                                                name="items[{{ $item->id }}][rate_per_person]"
+                                                value="{{ $item->rate_per_person }}"
+                                                oninput="calcRow({{ $item->id }})"
+                                                class="w-32 px-2 py-1 border border-purple-300 rounded text-right text-xs focus:ring-1 focus:ring-purple-400">
+                                        </div>
+                                    </td>
+                                @else
+                                    {{-- ປ.ຕີ: credits input + computed rate --}}
+                                    <td class="px-2 py-1.5 text-right">
                                         <input type="number" min="0"
                                             name="items[{{ $item->id }}][num_credits]"
                                             value="{{ $item->num_credits }}"
                                             oninput="calcRow({{ $item->id }})"
                                             class="w-20 px-2 py-1 border border-gray-300 rounded text-right text-xs focus:ring-1 focus:ring-blue-400">
-                                    @else
-                                        <span class="text-gray-300">—</span>
-                                    @endif
-                                </td>
-                                {{-- ອັດຕາ/ຄົນ: computed for bachelor, input for masters --}}
-                                <td class="px-2 py-1.5 text-right text-gray-600"
-                                    @if (!$isMasters) id="row_rate_{{ $item->id }}" data-v="{{ $rate }}" @endif>
-                                    @if (!$isMasters)
+                                    </td>
+                                    <td class="px-2 py-1.5 text-right text-gray-600"
+                                        id="row_rate_{{ $item->id }}" data-v="{{ $rate }}">
                                         {{ fmtNum($rate) }}
-                                    @else
-                                        <input type="number" min="0"
-                                            name="items[{{ $item->id }}][rate_per_person]"
-                                            value="{{ $item->rate_per_person }}"
-                                            oninput="calcRow({{ $item->id }})"
-                                            class="w-28 px-2 py-1 border border-gray-300 rounded text-right text-xs focus:ring-1 focus:ring-blue-400">
-                                    @endif
-                                </td>
+                                    </td>
+                                @endif
                             @else
                                 {{-- Registration: ອັດຕາ/ຄົນ input --}}
                                 <td class="px-2 py-1.5 text-right">

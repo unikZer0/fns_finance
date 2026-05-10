@@ -310,19 +310,23 @@ class AcademicIncomeController extends Controller
         ];
         if ($isCredit) {
             $rules['student_year'] = 'required|in:1,2,3,4,masters_phd';
-            if ($request->student_year !== 'masters_phd') {
+            if ($request->student_year === 'masters_phd') {
+                $rules['rate_per_person'] = 'required|numeric|min:0';
+            } else {
                 $rules['num_credits'] = 'required|integer|min:0';
             }
         }
         $request->validate($rules);
 
+        $isMasters = $isCredit && $request->student_year === 'masters_phd';
         $maxOrder = AcademicIncomeDefault::where('section_code', $request->section_code)->max('sort_order') ?? -1;
 
         AcademicIncomeDefault::create([
             'section_code'    => $request->section_code,
             'sort_order'      => $maxOrder + 1,
             'item_name'       => $request->item_name,
-            'num_credits'     => ($isCredit && $request->student_year !== 'masters_phd') ? $request->num_credits : null,
+            'num_credits'     => ($isCredit && !$isMasters) ? $request->num_credits : null,
+            'rate_per_person' => $isMasters ? $request->rate_per_person : null,
             'nuol_percentage' => $request->nuol_percentage,
             'student_year'    => $isCredit ? $request->student_year : null,
         ]);
@@ -388,7 +392,7 @@ class AcademicIncomeController extends Controller
                 'sort_order'      => $counters[$code],
                 'item_name'       => $d->item_name,
                 'num_credits'     => $d->num_credits,
-                'rate_per_person' => null,
+                'rate_per_person' => $d->rate_per_person,
                 'num_persons'     => 0,
                 'nuol_percentage' => $d->nuol_percentage,
                 'student_year'    => $d->student_year,
@@ -419,8 +423,8 @@ class AcademicIncomeController extends Controller
             $agg = $this->aggregateItems($yearItems, $ppc);
 
             $teachingRate = ($year === 'masters_phd') ? $rateMsc : $rateBsc;
-            $teaching     = $agg['kawt_income'] * $teachingRate;
-            $remainder    = $agg['kawt_income'] - $teaching;
+            $teaching     = $agg['kawtIncome'] * $teachingRate;
+            $remainder    = $agg['kawtIncome'] - $teaching;
 
             $label = match($year) {
                 '1'           => 'ນັກສຶກສາ ປີທີ 1 (ຄ່າໜ່ວຍກິດ)',
