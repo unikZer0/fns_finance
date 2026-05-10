@@ -427,7 +427,9 @@ class AcademicIncomeController extends Controller
 
         // ─ Registration fees (1.4 = year 1, 1.2 = year 2-4) ─
         $reg1  = $this->aggregateItems($sections['1.4'], $ppc);
+        $reg1['totalPersons']  = (int)($sections['1.4']->first()?->num_persons ?? 0);
         $reg24 = $this->aggregateItems($sections['1.2'], $ppc);
+        $reg24['totalPersons'] = (int)($sections['1.2']->first()?->num_persons ?? 0);
 
         $rows['reg_year1']  = array_merge($reg1,  ['label' => 'ນັກສຶກສາ ປີທີ 1 (ຄ່າລົງທະບຽນ)',       'type' => 'registration']);
         $rows['reg_year24'] = array_merge($reg24, ['label' => 'ນັກສຶກສາ ປີທີ 2,3,4 (ຄ່າລົງທະບຽນ)',   'type' => 'registration']);

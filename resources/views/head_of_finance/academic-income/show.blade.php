@@ -139,6 +139,7 @@ $yearLabels = [
             $codeId  = str_replace('.', '_', $code);
             $items   = $sections[$code];
             $credit  = $isCredit($code);
+            $isReg   = in_array($code, ['1.2', '1.4']);
             $secTotal = 0; $secNuol = 0; $secKawt = 0;
             foreach ($items as $it) {
                 $isMst = $credit && $it->student_year === 'masters_phd';
@@ -155,6 +156,30 @@ $yearLabels = [
             <div class="px-5 py-3 bg-slate-700 text-white text-sm font-semibold">
                 {{ $sectionTitles[$code] }}
             </div>
+
+            @if ($isReg)
+            <div class="px-4 py-2 bg-amber-50 border-b border-amber-200 flex items-center gap-3">
+                <span class="text-sm font-medium text-amber-800">ຈຳນວນນັກສຶກສາທັງໝົດ:</span>
+                <input type="number" min="0"
+                    id="shared_persons_{{ $codeId }}"
+                    value="{{ $items->first()?->num_persons ?? 0 }}"
+                    oninput="propagateShared('{{ $codeId }}')"
+                    {{ $plan->status === 'APPROVED' ? 'disabled' : '' }}
+                    class="w-24 px-2 py-1 border border-amber-400 rounded text-right text-sm font-semibold">
+                <span class="text-xs text-amber-600">ຄ່ານີ້ໃຊ້ຮ່ວມກັນທຸກລາຍການໃນໝວດນີ້</span>
+            </div>
+            @endif
+
+            @if (in_array($code, ['4.0', '5.0']))
+            <div class="px-4 py-2 bg-teal-50 border-b border-teal-200 flex items-center gap-3">
+                <button type="button" onclick="autoFillFromReg('{{ $codeId }}')"
+                    {{ $plan->status === 'APPROVED' ? 'disabled' : '' }}
+                    class="px-3 py-1 text-xs bg-teal-100 text-teal-700 border border-teal-300 rounded hover:bg-teal-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    ອັດຕະໂນມັດ: ຈຳນວນ = ປີ 1 + ປີ 2-4
+                </button>
+                <span class="text-xs text-teal-600">ກົດເພື່ອຕັ້ງຄ່າ ນ/ສ = ປີ 1 (1.4) + ປີ 2-4 (1.2)</span>
+            </div>
+            @endif
 
             <div class="overflow-x-auto">
                 <table class="w-full text-xs" id="sec_table_{{ $codeId }}">
@@ -204,11 +229,19 @@ $yearLabels = [
 
                             {{-- ນ/ສ input --}}
                             <td class="px-2 py-1.5 text-right">
-                                <input type="number" min="0"
-                                    name="items[{{ $item->id }}][num_persons]"
-                                    value="{{ $item->num_persons }}"
-                                    oninput="calcRow({{ $item->id }})"
-                                    class="w-20 px-2 py-1 border border-gray-300 rounded text-right text-xs focus:ring-1 focus:ring-blue-400">
+                                @if ($isReg)
+                                    <span id="disp_persons_{{ $item->id }}" class="text-gray-600 text-xs">{{ $item->num_persons }}</span>
+                                    <input type="hidden"
+                                        name="items[{{ $item->id }}][num_persons]"
+                                        id="inp_persons_{{ $item->id }}"
+                                        value="{{ $item->num_persons }}">
+                                @else
+                                    <input type="number" min="0"
+                                        name="items[{{ $item->id }}][num_persons]"
+                                        value="{{ $item->num_persons }}"
+                                        oninput="calcRow({{ $item->id }})"
+                                        class="w-20 px-2 py-1 border border-gray-300 rounded text-right text-xs focus:ring-1 focus:ring-blue-400">
+                                @endif
                             </td>
 
                             @if ($credit)
@@ -483,6 +516,32 @@ document.querySelectorAll('#saveAllForm input').forEach(el => {
     el.classList.add('bg-gray-50', 'cursor-not-allowed');
 });
 @endif
+
+function propagateShared(sectionId) {
+    const shared = document.getElementById(`shared_persons_${sectionId}`);
+    if (!shared) return;
+    const val = parseInt(shared.value) || 0;
+    document.querySelectorAll(`tr[data-section="${sectionId}"]`).forEach(tr => {
+        const id = parseInt(tr.dataset.id);
+        const inp  = document.getElementById(`inp_persons_${id}`);
+        const disp = document.getElementById(`disp_persons_${id}`);
+        if (inp)  inp.value       = val;
+        if (disp) disp.textContent = val;
+        calcRow(id);
+    });
+}
+
+function autoFillFromReg(sectionId) {
+    const reg14 = parseInt(document.getElementById('shared_persons_1_4')?.value) || 0;
+    const reg12 = parseInt(document.getElementById('shared_persons_1_2')?.value) || 0;
+    const total = reg14 + reg12;
+    document.querySelectorAll(`tr[data-section="${sectionId}"]`).forEach(tr => {
+        const id = parseInt(tr.dataset.id);
+        const inp = tr.querySelector(`[name="items[${id}][num_persons]"]`);
+        if (inp) inp.value = total;
+        calcRow(id);
+    });
+}
 
 function openApproveModal() {
     document.getElementById('approveModal').style.display = 'flex';
