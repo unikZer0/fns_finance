@@ -209,30 +209,50 @@ class ExpenseController extends Controller
 
     public function defaults()
     {
-        $grouped = ExpenseDefault::orderBy('category_code')->orderBy('sort_order')
-            ->get()->groupBy('category_code');
+        $parents = ExpenseDefault::whereNull('parent_id')
+            ->with(['children'])
+            ->orderBy('category_code')
+            ->orderBy('sort_order')
+            ->get()
+            ->groupBy('category_code');
 
         return view('head_of_finance.expense.defaults', [
-            'grouped'        => $grouped,
+            'grouped'        => $parents,
             'categoryTitles' => $this->categoryTitles,
         ]);
     }
 
     public function storeDefault(Request $request)
     {
-        $request->validate([
-            'category_code'    => 'required|in:2.1,2.2,2.3,2.4,2.5,2.6',
-            'item_name'        => 'required|string|max:255',
-            'reference'        => 'nullable|string|max:10',
-            'amount_per_month' => 'required|numeric|min:0',
-            'num_months'       => 'required|numeric|min:0',
-            'notes'            => 'nullable|string|max:255',
-        ]);
+        $parentId = $request->input('parent_id') ? (int) $request->input('parent_id') : null;
 
-        $maxOrder = ExpenseDefault::where('category_code', $request->category_code)->max('sort_order') ?? -1;
+        if ($parentId) {
+            $parent = ExpenseDefault::findOrFail($parentId);
+            $categoryCode = $parent->category_code;
+            $request->validate([
+                'item_name'        => 'required|string|max:255',
+                'reference'        => 'nullable|string|max:20',
+                'amount_per_month' => 'required|numeric|min:0',
+                'num_months'       => 'required|numeric|min:0',
+                'notes'            => 'nullable|string|max:255',
+            ]);
+            $maxOrder = ExpenseDefault::where('parent_id', $parentId)->max('sort_order') ?? -1;
+        } else {
+            $request->validate([
+                'category_code'    => 'required|in:2.1,2.2,2.3,2.4,2.5,2.6',
+                'item_name'        => 'required|string|max:255',
+                'reference'        => 'nullable|string|max:20',
+                'amount_per_month' => 'required|numeric|min:0',
+                'num_months'       => 'required|numeric|min:0',
+                'notes'            => 'nullable|string|max:255',
+            ]);
+            $categoryCode = $request->category_code;
+            $maxOrder = ExpenseDefault::where('category_code', $categoryCode)->whereNull('parent_id')->max('sort_order') ?? -1;
+        }
 
         ExpenseDefault::create([
-            'category_code'    => $request->category_code,
+            'parent_id'        => $parentId,
+            'category_code'    => $categoryCode,
             'sort_order'       => $maxOrder + 1,
             'item_name'        => $request->item_name,
             'reference'        => $request->reference,
@@ -246,6 +266,7 @@ class ExpenseController extends Controller
 
     public function destroyDefault(ExpenseDefault $default)
     {
+        $default->children()->delete();
         $default->delete();
         return back()->with('success', 'ລຶບ Default ສຳເລັດ!');
     }
@@ -254,7 +275,7 @@ class ExpenseController extends Controller
     {
         $request->validate([
             'item_name'        => 'required|string|max:255',
-            'reference'        => 'nullable|string|max:10',
+            'reference'        => 'nullable|string|max:20',
             'amount_per_month' => 'required|numeric|min:0',
             'num_months'       => 'required|numeric|min:0',
             'notes'            => 'nullable|string|max:255',
@@ -279,7 +300,7 @@ class ExpenseController extends Controller
     private function seedDefaults(ExpensePlan $plan): void
     {
         $counters = [];
-        foreach (ExpenseDefault::orderBy('category_code')->orderBy('sort_order')->get() as $d) {
+        foreach (ExpenseDefault::whereNull('parent_id')->orderBy('category_code')->orderBy('sort_order')->get() as $d) {
             $cat = $d->category_code;
             $counters[$cat] = ($counters[$cat] ?? -1) + 1;
 
