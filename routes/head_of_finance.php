@@ -46,6 +46,10 @@ Route::middleware(['auth', 'check.active', 'role:head_of_finance'])
         // ── Salary Plans (ແຜນເງິນເດືອນ) ─────────────────────────────────────
         Route::get('salary',                                    [SalaryPlanController::class, 'index'])       ->name('salary.index');
         Route::post('salary',                                   [SalaryPlanController::class, 'store'])       ->name('salary.store');
+        Route::get('salary/defaults',                           [SalaryPlanController::class, 'defaults'])    ->name('salary.defaults');
+        Route::post('salary/defaults',                          [SalaryPlanController::class, 'storeDefault'])->name('salary.defaults.store');
+        Route::patch('salary/defaults/{default}',               [SalaryPlanController::class, 'updateDefault'])->name('salary.defaults.update');
+        Route::delete('salary/defaults/{default}',              [SalaryPlanController::class, 'destroyDefault'])->name('salary.defaults.destroy');
         Route::get('salary/{plan}',                             [SalaryPlanController::class, 'show'])        ->name('salary.show');
         Route::delete('salary/{plan}',                          [SalaryPlanController::class, 'destroy'])     ->name('salary.destroy');
         Route::get('salary/{plan}/summary',                     [SalaryPlanController::class, 'summary'])     ->name('salary.summary');

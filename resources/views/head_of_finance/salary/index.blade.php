@@ -7,7 +7,7 @@
 <div class="space-y-4">
 
     {{-- Create form --}}
-    <div class="bg-white rounded-lg shadow-sm p-4">
+    <div class="bg-white rounded-lg shadow-sm p-4 flex flex-wrap items-start justify-between gap-4">
         <form method="POST" action="{{ route('head_of_finance.salary.store') }}" class="flex items-end gap-3">
             @csrf
             <div>
@@ -24,6 +24,10 @@
         @error('fiscal_year')
             <p class="text-red-600 text-xs mt-2">{{ $message }}</p>
         @enderror
+        <a href="{{ route('head_of_finance.salary.defaults') }}"
+            class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 gap-2 self-start mt-5">
+            ⚙ ຈັດການ Defaults
+        </a>
     </div>
 
     @if (session('success'))

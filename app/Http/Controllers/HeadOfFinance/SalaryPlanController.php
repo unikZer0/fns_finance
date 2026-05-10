@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\HeadOfFinance;
 
 use App\Http\Controllers\Controller;
+use App\Models\ChartOfAccount;
+use App\Models\SalaryDefault;
 use App\Models\SalaryPlan;
 use App\Models\SalaryPlanItem;
 use Illuminate\Http\Request;
@@ -19,33 +21,6 @@ class SalaryPlanController extends Controller
         '61.50' => 'ເບ້ຍລ້ຽງນັກຮຽນ',
     ];
 
-    private array $defaults = [
-        ['code' => '60.10.01', 'sec' => '60.10', 'name' => 'ເງິນເດືອນ ພ/ງ ພວມປະຕິບັດງານ 100%'],
-        ['code' => '60.10.02', 'sec' => '60.10', 'name' => 'ເງິນເດືອນເພື່ອເລື່ອນຊັ້ນ'],
-        ['code' => '60.10.03', 'sec' => '60.10', 'name' => 'ເງິນເດືອນ ພ/ງ ເຂົ້າໃໝ່ 95%'],
-        ['code' => '60.10.04', 'sec' => '60.10', 'name' => 'ເງິນເດືອນ ພ/ງ ຮຽນຕໍ່ພາຍໃນ'],
-        ['code' => '60.10.05', 'sec' => '60.10', 'name' => 'ເງິນເດືອນ ພ/ງ ຮຽນຕໍ່ຕ່າງປະເທດ'],
-        ['code' => '60.10.06', 'sec' => '60.10', 'name' => 'ເງິນເດືອນ ພ/ງ ຕາມສັນຍາ'],
-        ['code' => '60.20.01', 'sec' => '60.20', 'name' => 'ອຸດໜູນຕໍາແໜ່ງ'],
-        ['code' => '60.20.02', 'sec' => '60.20', 'name' => 'ອຸດໜູນອາຊີບ'],
-        ['code' => '60.20.03', 'sec' => '60.20', 'name' => 'ອຸດໜູນອາຍຸການ'],
-        ['code' => '60.20.04', 'sec' => '60.20', 'name' => 'ອຸດໜູນວຽກໜັກ-ທາງເບື່ອ'],
-        ['code' => '60.20.05', 'sec' => '60.20', 'name' => 'ອຸດໜູນສອນຫ້ອງຄວບ'],
-        ['code' => '60.20.06', 'sec' => '60.20', 'name' => 'ອຸດໜູນຄ່າຄອງຊີບ'],
-        ['code' => '61.20.01', 'sec' => '61.20', 'name' => 'ອຸດໜູນລູກພະນັກງານ'],
-        ['code' => '61.20.02', 'sec' => '61.20', 'name' => 'ອຸດໜູນເມຍພະນັກງານ'],
-        ['code' => '61.30.01', 'sec' => '61.30', 'name' => 'ກ່ອນອອກການ'],
-        ['code' => '61.30.02', 'sec' => '61.30', 'name' => 'ກ່ອນອອກບໍານານ'],
-        ['code' => '61.40.01', 'sec' => '61.40', 'name' => 'ເຮັດວຽກນອກໂມງລັດຖະການ'],
-        ['code' => '61.40.02', 'sec' => '61.40', 'name' => 'ແປພາສາ'],
-        ['code' => '61.40.03', 'sec' => '61.40', 'name' => 'ຄົ້ນຄວ້າ ແລະ ວິໄຈ'],
-        ['code' => '61.40.04', 'sec' => '61.40', 'name' => 'ຂຽນບົດ ແລະ ຮຽບຮຽງ'],
-        ['code' => '61.40.05', 'sec' => '61.40', 'name' => 'ສອນພິເສດ'],
-        ['code' => '61.40.06', 'sec' => '61.40', 'name' => 'ຄ່າເວັນຍາມ (ປ້ອງກັນ)'],
-        ['code' => '61.50.01', 'sec' => '61.50', 'name' => 'ເບ້ຍລ້ຽງນັກຮຽນ ປ.ຕີ (ພາຍໃນ)'],
-        ['code' => '61.50.02', 'sec' => '61.50', 'name' => 'ຄ່າອັດຕາກິນ-ຝຶກງານ'],
-        ['code' => '61.50.03', 'sec' => '61.50', 'name' => 'ຄ່າເດີນທາງ-ຝຶກງານ'],
-    ];
 
     // ─── Plans CRUD ───────────────────────────────────────────────────────────
 
@@ -183,22 +158,112 @@ class SalaryPlanController extends Controller
             ->header('Content-Disposition', 'inline; filename="ແຜນເງິນເດືອນ_' . $plan->fiscal_year . '.pdf"');
     }
 
+    // ─── Defaults management ──────────────────────────────────────────────────
+
+    public function defaults()
+    {
+        // All parent accounts from chart_of_accounts (any that have children)
+        $sectionAccounts = ChartOfAccount::whereHas('children')
+            ->with(['children' => fn($q) => $q->orderBy('account_code')])
+            ->orderBy('account_code')
+            ->get();
+
+        // Index by dot-notation section_code for label lookups in the view
+        $sectionIndex = $sectionAccounts->keyBy(
+            fn($a) => substr($a->account_code, 0, 2) . '.' . substr($a->account_code, 2, 2)
+        );
+
+        $grouped = SalaryDefault::orderBy('section_code')->orderBy('sort_order')
+            ->get()
+            ->groupBy('section_code');
+
+        return view('head_of_finance.salary.defaults', [
+            'grouped'         => $grouped,
+            'sectionIndex'    => $sectionIndex,
+            'sectionAccounts' => $sectionAccounts,
+        ]);
+    }
+
+    public function storeDefault(Request $request)
+    {
+        $request->validate([
+            'section_coa'  => 'required|string|size:8',
+            'account_code' => 'required|string|max:20',
+            'item_name'    => 'required|string|max:255',
+        ]);
+
+        if (!ChartOfAccount::where('account_code', $request->section_coa)->whereHas('children')->exists()) {
+            return back()->withErrors(['section_coa' => 'ໝວດທີ່ເລືອກບໍ່ຖືກຕ້ອງ']);
+        }
+
+        $sectionCode = $this->coaToSection($request->section_coa);
+
+        // Convert 8-digit chart_of_accounts code → dot-notation; pass text input through as-is
+        $rawCode     = $request->account_code;
+        $accountCode = (strlen($rawCode) === 8 && ctype_digit($rawCode))
+            ? $this->coaToAccount($rawCode)
+            : $rawCode;
+
+        $maxOrder = SalaryDefault::where('section_code', $sectionCode)->max('sort_order') ?? -1;
+
+        SalaryDefault::create([
+            'section_code' => $sectionCode,
+            'account_code' => $accountCode,
+            'sort_order'   => $maxOrder + 1,
+            'item_name'    => $request->item_name,
+        ]);
+
+        return back()->with('success', 'ເພີ່ມ Default ສຳເລັດ!');
+    }
+
+    public function updateDefault(Request $request, SalaryDefault $default)
+    {
+        $request->validate([
+            'account_code' => 'required|string|max:20',
+            'item_name'    => 'required|string|max:255',
+        ]);
+
+        $default->update($request->only(['account_code', 'item_name']));
+
+        return back()->with('success', 'ແກ້ໄຂ Default ສຳເລັດ!');
+    }
+
+    public function destroyDefault(SalaryDefault $default)
+    {
+        $default->delete();
+        return back()->with('success', 'ລຶບ Default ສຳເລັດ!');
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
     private function seedDefaults(SalaryPlan $plan): void
     {
-        foreach ($this->defaults as $i => $d) {
-            SalaryPlanItem::create([
-                'plan_id'      => $plan->id,
-                'account_code' => $d['code'],
-                'section_code' => $d['sec'],
-                'sort_order'   => $i,
-                'item_name'    => $d['name'],
-                'num_persons'  => 0,
-                'amount_atm'   => 0,
-                'amount_cash'  => 0,
-            ]);
-        }
+        SalaryDefault::orderBy('section_code')->orderBy('sort_order')
+            ->get()
+            ->each(function ($d, $i) use ($plan) {
+                SalaryPlanItem::create([
+                    'plan_id'      => $plan->id,
+                    'account_code' => $d->account_code,
+                    'section_code' => $d->section_code,
+                    'sort_order'   => $d->sort_order,
+                    'item_name'    => $d->item_name,
+                    'num_persons'  => 0,
+                    'amount_atm'   => 0,
+                    'amount_cash'  => 0,
+                ]);
+            });
+    }
+
+    // "60100000" → "60.10"  |  "61400000" → "61.40"
+    private function coaToSection(string $code8): string
+    {
+        return substr($code8, 0, 2) . '.' . substr($code8, 2, 2);
+    }
+
+    // "60100100" → "60.10.01"
+    private function coaToAccount(string $code8): string
+    {
+        return substr($code8, 0, 2) . '.' . substr($code8, 2, 2) . '.' . substr($code8, 4, 2);
     }
 
     private function buildSections($items): array
