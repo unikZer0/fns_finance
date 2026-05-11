@@ -89,6 +89,7 @@ Route::middleware(['auth', 'check.active', 'role:head_of_finance'])
         Route::post('annual-budget/{annualBudget}/unsubmit', [AnnualBudgetPlanController::class, 'unsubmit'])->name('annual-budget.unsubmit');
         Route::post('annual-budget/{annualBudget}/start-modifying', [AnnualBudgetPlanController::class, 'startModifying'])->name('annual-budget.start-modifying');
         Route::post('annual-budget/{annualBudget}/submit-final', [AnnualBudgetPlanController::class, 'submitForFinalApproval'])->name('annual-budget.submit-final');
+        Route::post('annual-budget/{annualBudget}/auto-populate', [AnnualBudgetPlanController::class, 'autoPopulate'])->name('annual-budget.auto-populate');
 
         // Comments
         Route::post('annual-budget/{annualBudget}/comments/{comment}/mark', [AnnualBudgetPlanController::class, 'markComment'])->name('annual-budget.comments.mark');

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\ChartOfAccount;
 
 class ExpenseDefault extends Model
 {
@@ -14,6 +15,7 @@ class ExpenseDefault extends Model
         'parent_id', 'category_code', 'sort_order',
         'item_name', 'reference',
         'amount_per_month', 'num_months', 'notes',
+        'chart_of_account_id',
     ];
 
     protected $casts = [
@@ -29,5 +31,10 @@ class ExpenseDefault extends Model
     public function children(): HasMany
     {
         return $this->hasMany(ExpenseDefault::class, 'parent_id')->orderBy('sort_order');
+    }
+
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(ChartOfAccount::class, 'chart_of_account_id');
     }
 }

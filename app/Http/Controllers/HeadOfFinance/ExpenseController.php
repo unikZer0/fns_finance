@@ -224,15 +224,20 @@ class ExpenseController extends Controller
     public function defaults()
     {
         $parents = ExpenseDefault::whereNull('parent_id')
-            ->with(['children'])
+            ->with(['children.account', 'account'])
             ->orderBy('category_code')
             ->orderBy('sort_order')
             ->get()
             ->groupBy('category_code');
 
+        $leafAccounts = \App\Models\ChartOfAccount::doesntHave('children')
+            ->orderBy('account_code')
+            ->get(['id', 'account_code', 'account_name']);
+
         return view('head_of_finance.expense.defaults', [
             'grouped'        => $parents,
             'categoryTitles' => $this->categoryTitles,
+            'leafAccounts'   => $leafAccounts,
         ]);
     }
 
@@ -244,35 +249,38 @@ class ExpenseController extends Controller
             $parent = ExpenseDefault::findOrFail($parentId);
             $categoryCode = $parent->category_code;
             $request->validate([
-                'item_name'        => 'required|string|max:255',
-                'reference'        => 'nullable|string|max:20',
-                'amount_per_month' => 'required|numeric|min:0',
-                'num_months'       => 'required|numeric|min:0',
-                'notes'            => 'nullable|string|max:255',
+                'item_name'            => 'required|string|max:255',
+                'reference'            => 'nullable|string|max:20',
+                'amount_per_month'     => 'required|numeric|min:0',
+                'num_months'           => 'required|numeric|min:0',
+                'notes'                => 'nullable|string|max:255',
+                'chart_of_account_id'  => 'nullable|exists:chart_of_accounts,id',
             ]);
             $maxOrder = ExpenseDefault::where('parent_id', $parentId)->max('sort_order') ?? -1;
         } else {
             $request->validate([
-                'category_code'    => 'required|in:2.1,2.2,2.3,2.4,2.5,2.6',
-                'item_name'        => 'required|string|max:255',
-                'reference'        => 'nullable|string|max:20',
-                'amount_per_month' => 'required|numeric|min:0',
-                'num_months'       => 'required|numeric|min:0',
-                'notes'            => 'nullable|string|max:255',
+                'category_code'        => 'required|in:2.1,2.2,2.3,2.4,2.5,2.6',
+                'item_name'            => 'required|string|max:255',
+                'reference'            => 'nullable|string|max:20',
+                'amount_per_month'     => 'required|numeric|min:0',
+                'num_months'           => 'required|numeric|min:0',
+                'notes'                => 'nullable|string|max:255',
+                'chart_of_account_id'  => 'nullable|exists:chart_of_accounts,id',
             ]);
             $categoryCode = $request->category_code;
             $maxOrder = ExpenseDefault::where('category_code', $categoryCode)->whereNull('parent_id')->max('sort_order') ?? -1;
         }
 
         ExpenseDefault::create([
-            'parent_id'        => $parentId,
-            'category_code'    => $categoryCode,
-            'sort_order'       => $maxOrder + 1,
-            'item_name'        => $request->item_name,
-            'reference'        => $request->reference,
-            'amount_per_month' => $request->amount_per_month,
-            'num_months'       => $request->num_months,
-            'notes'            => $request->notes,
+            'parent_id'           => $parentId,
+            'category_code'       => $categoryCode,
+            'sort_order'          => $maxOrder + 1,
+            'item_name'           => $request->item_name,
+            'reference'           => $request->reference,
+            'amount_per_month'    => $request->amount_per_month,
+            'num_months'          => $request->num_months,
+            'notes'               => $request->notes,
+            'chart_of_account_id' => $request->chart_of_account_id ?: null,
         ]);
 
         return back()->with('success', 'ເພີ່ມ Default ສຳເລັດ!');
@@ -288,14 +296,22 @@ class ExpenseController extends Controller
     public function updateDefault(Request $request, ExpenseDefault $default)
     {
         $request->validate([
-            'item_name'        => 'required|string|max:255',
-            'reference'        => 'nullable|string|max:20',
-            'amount_per_month' => 'required|numeric|min:0',
-            'num_months'       => 'required|numeric|min:0',
-            'notes'            => 'nullable|string|max:255',
+            'item_name'           => 'required|string|max:255',
+            'reference'           => 'nullable|string|max:20',
+            'amount_per_month'    => 'required|numeric|min:0',
+            'num_months'          => 'required|numeric|min:0',
+            'notes'               => 'nullable|string|max:255',
+            'chart_of_account_id' => 'nullable|exists:chart_of_accounts,id',
         ]);
 
-        $default->update($request->only(['item_name', 'reference', 'amount_per_month', 'num_months', 'notes']));
+        $default->update([
+            'item_name'           => $request->item_name,
+            'reference'           => $request->reference,
+            'amount_per_month'    => $request->amount_per_month,
+            'num_months'          => $request->num_months,
+            'notes'               => $request->notes,
+            'chart_of_account_id' => $request->chart_of_account_id ?: null,
+        ]);
 
         return back()->with('success', 'ອັບເດດ Default ສຳເລັດ!');
     }
@@ -405,28 +421,30 @@ class ExpenseController extends Controller
             $counters[$cat] = ($counters[$cat] ?? -1) + 1;
 
             $parentItem = ExpenseItem::create([
-                'plan_id'          => $plan->id,
-                'parent_id'        => null,
-                'category_code'    => $cat,
-                'sort_order'       => $counters[$cat],
-                'item_name'        => $d->item_name,
-                'reference'        => $d->reference,
-                'amount_per_month' => $d->amount_per_month,
-                'num_months'       => $d->num_months,
-                'notes'            => $d->notes,
+                'plan_id'             => $plan->id,
+                'parent_id'           => null,
+                'category_code'       => $cat,
+                'sort_order'          => $counters[$cat],
+                'item_name'           => $d->item_name,
+                'reference'           => $d->reference,
+                'amount_per_month'    => $d->amount_per_month,
+                'num_months'          => $d->num_months,
+                'notes'               => $d->notes,
+                'chart_of_account_id' => $d->chart_of_account_id,
             ]);
 
             foreach ($d->children as $i => $child) {
                 ExpenseItem::create([
-                    'plan_id'          => $plan->id,
-                    'parent_id'        => $parentItem->id,
-                    'category_code'    => $cat,
-                    'sort_order'       => $i,
-                    'item_name'        => $child->item_name,
-                    'reference'        => $child->reference,
-                    'amount_per_month' => $child->amount_per_month,
-                    'num_months'       => $child->num_months,
-                    'notes'            => $child->notes,
+                    'plan_id'             => $plan->id,
+                    'parent_id'           => $parentItem->id,
+                    'category_code'       => $cat,
+                    'sort_order'          => $i,
+                    'item_name'           => $child->item_name,
+                    'reference'           => $child->reference,
+                    'amount_per_month'    => $child->amount_per_month,
+                    'num_months'          => $child->num_months,
+                    'notes'               => $child->notes,
+                    'chart_of_account_id' => $child->chart_of_account_id,
                 ]);
             }
         }

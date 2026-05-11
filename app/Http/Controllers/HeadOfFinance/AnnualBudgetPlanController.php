@@ -7,6 +7,8 @@ use App\Models\BudgetLineItem;
 use App\Models\BudgetPlan;
 use App\Models\BudgetPlanComment;
 use App\Models\ChartOfAccount;
+use App\Models\ExpensePlan;
+use App\Models\SalaryPlan;
 use App\Models\User;
 use App\Notifications\BudgetPlanReviewRequested;
 use App\Notifications\BudgetPlanFinalApprovalRequested;
@@ -417,22 +419,27 @@ class AnnualBudgetPlanController extends Controller
         }
 
         $computeSum = function ($accountId) use (&$computeSum, &$aggregated, $childrenMap) {
-            $reg = $aggregated[$accountId]['amount_regular'] ?? 0;
-            $acad = $aggregated[$accountId]['amount_academic'] ?? 0;
+            $reg      = $aggregated[$accountId]['amount_regular']  ?? 0;
+            $acad     = $aggregated[$accountId]['amount_academic'] ?? 0;
             $hasItems = isset($aggregated[$accountId]['original_item']);
 
             if (isset($childrenMap[$accountId])) {
-                $reg = 0;
-                $acad = 0; // Parent's own DB amount is overridden by children sum
+                $childReg      = 0;
+                $childAcad     = 0;
+                $childHasItems = false;
                 foreach ($childrenMap[$accountId] as $childId) {
                     $childSums = $computeSum($childId);
-                    $reg += $childSums['reg'];
-                    $acad += $childSums['acad'];
-                    if ($childSums['hasItems']) {
-                        $hasItems = true;
-                    }
+                    $childReg  += $childSums['reg'];
+                    $childAcad += $childSums['acad'];
+                    if ($childSums['hasItems']) $childHasItems = true;
                 }
-                $aggregated[$accountId]['amount_regular'] = $reg;
+                // Only override parent's own DB amount if children actually carry data
+                if ($childHasItems || $childReg > 0 || $childAcad > 0) {
+                    $reg      = $childReg;
+                    $acad     = $childAcad;
+                    $hasItems = $hasItems || $childHasItems;
+                }
+                $aggregated[$accountId]['amount_regular']  = $reg;
                 $aggregated[$accountId]['amount_academic'] = $acad;
             }
 
@@ -480,5 +487,80 @@ class AnnualBudgetPlanController extends Controller
     protected function sortLineItemsHierarchically($lineItems)
     {
         return $this->synthesizeTreeAndRollUp($lineItems);
+    }
+
+    // ─── Auto-populate from Salary & Expense plans ────────────────────────
+
+    public function autoPopulate(Request $request, BudgetPlan $annualBudget)
+    {
+        if (!in_array($annualBudget->status, ['DRAFT', 'MODIFYING'])) {
+            return back()->with('error', 'ສາມາດດຶງຂໍ້ມູນໄດ້ສະເພາະແຜນ DRAFT/MODIFYING');
+        }
+
+        $year = $annualBudget->fiscal_year;
+
+        $salaryPlan  = SalaryPlan::where('fiscal_year', $year)
+            ->orderByRaw("FIELD(status,'APPROVED','DRAFT')")
+            ->first();
+        $expensePlan = ExpensePlan::where('fiscal_year', $year)
+            ->orderByRaw("FIELD(status,'APPROVED','DRAFT')")
+            ->first();
+
+        $amounts  = [];
+        $warnings = [];
+
+        // ── Salary → amount_regular ──────────────────────────────────────
+        if ($salaryPlan) {
+            $salaryPlan->load('items');
+            $coaByCode = ChartOfAccount::all()->keyBy('account_code');
+            foreach ($salaryPlan->items as $item) {
+                $code8 = $this->dotToEightDigit($item->account_code);
+                $coa   = $coaByCode[$code8] ?? null;
+                if (!$coa) {
+                    $warnings[] = $item->account_code;
+                    continue;
+                }
+                $amounts[$coa->id]['regular'] = ($amounts[$coa->id]['regular'] ?? 0) + $item->totalPerYear();
+            }
+        }
+
+        // ── Expense → amount_academic ────────────────────────────────────
+        // Uses items that have chart_of_account_id set (parents OR leaves, never both in same branch).
+        if ($expensePlan) {
+            $expensePlan->load('items');
+            foreach ($expensePlan->items->whereNotNull('chart_of_account_id') as $item) {
+                $id = $item->chart_of_account_id;
+                $amounts[$id]['academic'] = ($amounts[$id]['academic'] ?? 0) + $item->totalPerYear();
+            }
+        }
+
+        DB::transaction(function () use ($annualBudget, $amounts) {
+            $annualBudget->lineItems()->each(fn ($li) => $li->periodAllocations()->delete());
+            $annualBudget->lineItems()->delete();
+            foreach ($amounts as $accountId => $amt) {
+                $annualBudget->lineItems()->create([
+                    'account_id'      => $accountId,
+                    'amount_regular'  => $amt['regular']  ?? 0,
+                    'amount_academic' => $amt['academic'] ?? 0,
+                ]);
+            }
+        });
+
+        $msg = 'ດຶງຂໍ້ມູນສຳເລັດ! (' . count($amounts) . ' ລາຍການ)';
+        if ($warnings) {
+            $msg .= ' | ບໍ່ພົບ CoA ສຳລັບ: ' . implode(', ', $warnings);
+        }
+
+        return back()->with('success', $msg);
+    }
+
+    private function dotToEightDigit(string $dotCode): string
+    {
+        $parts  = explode('.', $dotCode);
+        $result = '';
+        for ($i = 0; $i < 4; $i++) {
+            $result .= str_pad($parts[$i] ?? '00', 2, '0', STR_PAD_LEFT);
+        }
+        return $result;
     }
 }

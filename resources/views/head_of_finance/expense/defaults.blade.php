@@ -90,6 +90,9 @@
                                 </button>
                                 @endif
                                 {{ $d->item_name }}
+                                @if ($d->chart_of_account_id)
+                                <span class="text-[10px] text-teal-600 font-mono bg-teal-50 border border-teal-200 rounded px-1">[{{ $d->account->account_code ?? '?' }}]</span>
+                                @endif
                             </div>
                         </td>
                         <td class="px-3 py-2 text-center text-blue-600 font-semibold">{{ $d->reference }}</td>
@@ -104,7 +107,7 @@
                         <td class="px-3 py-2 text-center">
                             <div class="flex items-center justify-center gap-1.5">
                                 <button type="button"
-                                    onclick="openEditModal({{ $d->id }}, {{ json_encode($d->item_name) }}, {{ json_encode($d->reference) }}, {{ $d->amount_per_month }}, {{ $d->num_months }}, {{ json_encode($d->notes) }}, '{{ route('head_of_finance.expense.defaults.update', $d) }}')"
+                                    onclick="openEditModal({{ $d->id }}, {{ json_encode($d->item_name) }}, {{ json_encode($d->reference) }}, {{ $d->amount_per_month }}, {{ $d->num_months }}, {{ json_encode($d->notes) }}, {{ $d->chart_of_account_id ?? 'null' }}, '{{ route('head_of_finance.expense.defaults.update', $d) }}')"
                                     class="text-blue-500 hover:text-blue-700" title="ແກ້ໄຂ">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -143,6 +146,9 @@
                                     <td class="w-8 px-3 py-1.5 text-center text-blue-300">{{ $loop->iteration }}</td>
                                     <td class="px-3 py-1.5 pl-8 text-gray-600">
                                         <span class="text-blue-300 mr-1">└</span>{{ $sub->item_name }}
+                                        @if ($sub->chart_of_account_id)
+                                        <span class="text-[10px] text-teal-600 font-mono bg-teal-50 border border-teal-200 rounded px-1">[{{ $sub->account->account_code ?? '?' }}]</span>
+                                        @endif
                                         @if ($sub->notes)
                                         <span class="ml-1 text-[10px] text-gray-400 italic">({{ $sub->notes }})</span>
                                         @endif
@@ -154,7 +160,7 @@
                                     <td class="w-28 px-3 py-1.5 text-center">
                                         <div class="flex items-center justify-center gap-1.5">
                                             <button type="button"
-                                                onclick="openEditModal({{ $sub->id }}, {{ json_encode($sub->item_name) }}, {{ json_encode($sub->reference) }}, {{ $sub->amount_per_month }}, {{ $sub->num_months }}, {{ json_encode($sub->notes) }}, '{{ route('head_of_finance.expense.defaults.update', $sub) }}')"
+                                                onclick="openEditModal({{ $sub->id }}, {{ json_encode($sub->item_name) }}, {{ json_encode($sub->reference) }}, {{ $sub->amount_per_month }}, {{ $sub->num_months }}, {{ json_encode($sub->notes) }}, {{ $sub->chart_of_account_id ?? 'null' }}, '{{ route('head_of_finance.expense.defaults.update', $sub) }}')"
                                                 class="text-blue-400 hover:text-blue-600" title="ແກ້ໄຂ">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -219,6 +225,16 @@
                     <input type="text" name="notes" placeholder=""
                         class="px-2 py-1.5 border border-gray-300 rounded text-xs w-32 focus:ring-1 focus:ring-red-400">
                 </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500">CoA (ທາງເລືອກ)</label>
+                    <select name="chart_of_account_id"
+                        class="px-2 py-1.5 border border-gray-300 rounded text-xs w-52 focus:ring-1 focus:ring-red-400">
+                        <option value="">-- ບໍ່ລະບຸ --</option>
+                        @foreach ($leafAccounts as $acc)
+                        <option value="{{ $acc->id }}">{{ $acc->account_code }} — {{ $acc->account_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="flex flex-col justify-end">
                     <button type="submit"
                         class="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700">
@@ -269,6 +285,16 @@
                     <input type="text" id="edit_notes" name="notes"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ສາລະບານ CoA <span class="text-gray-400 font-normal text-xs">(ທາງເລືອກ — ສຳລັບດຶງຂໍ້ມູນງົບປະມານ)</span></label>
+                    <select id="edit_coa_id" name="chart_of_account_id"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="">-- ບໍ່ລະບຸ --</option>
+                        @foreach ($leafAccounts as $acc)
+                        <option value="{{ $acc->id }}">{{ $acc->account_code }} — {{ $acc->account_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="document.getElementById('editModal').style.display='none'" class="btn btn-secondary">ຍົກເລີກ</button>
@@ -311,6 +337,16 @@
                     <input type="text" name="notes" placeholder=""
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ສາລະບານ CoA <span class="text-gray-400 font-normal text-xs">(ທາງເລືອກ)</span></label>
+                    <select name="chart_of_account_id"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="">-- ບໍ່ລະບຸ --</option>
+                        @foreach ($leafAccounts as $acc)
+                        <option value="{{ $acc->id }}">{{ $acc->account_code }} — {{ $acc->account_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="document.getElementById('addSubModal').style.display='none'" class="btn btn-secondary">ຍົກເລີກ</button>
@@ -352,12 +388,13 @@ function toggleChildren(id) {
     }
 }
 
-function openEditModal(id, itemName, reference, amount, months, notes, url) {
+function openEditModal(id, itemName, reference, amount, months, notes, coaId, url) {
     document.getElementById('edit_item_name').value        = itemName || '';
     document.getElementById('edit_reference').value        = reference || '';
     document.getElementById('edit_amount_per_month').value = amount || 0;
     document.getElementById('edit_num_months').value       = months || 12;
     document.getElementById('edit_notes').value            = notes || '';
+    document.getElementById('edit_coa_id').value           = coaId || '';
     document.getElementById('editForm').action             = url;
     document.getElementById('editModal').style.display     = 'flex';
 }
