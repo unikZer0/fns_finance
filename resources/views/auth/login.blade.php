@@ -1,41 +1,66 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    {{-- Session Status --}}
+    @if (session('status'))
+        <div style="color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.82rem; margin-bottom: 1rem;">
+            {{ session('status') }}
+        </div>
+    @endif
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login') }}" style="display: flex; flex-direction: column; gap: 1.1rem;">
         @csrf
 
-        <!-- Username -->
+        {{-- Username --}}
         <div>
-            <x-input-label for="username" :value="__('Username')" />
-            <x-text-input id="username" class="block mt-1 w-full" type="text" name="username" :value="old('username')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('username')" class="mt-2" />
+            <label for="username" class="fns-form-label">ຊື່ຜູ້ໃຊ້ (Username)</label>
+            <input
+                id="username"
+                type="text"
+                name="username"
+                value="{{ old('username') }}"
+                class="fns-form-input"
+                placeholder="ກະລຸນາໃສ່ຊື່ຜູ້ໃຊ້"
+                required autofocus autocomplete="username"
+            >
+            @error('username')
+                <p style="color: #fca5a5; font-size: 0.75rem; margin-top: 0.35rem;">{{ $message }}</p>
+            @enderror
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        {{-- Password --}}
+        <div>
+            <label for="password" class="fns-form-label">ລະຫັດຜ່ານ (Password)</label>
+            <input
+                id="password"
+                type="password"
+                name="password"
+                class="fns-form-input"
+                placeholder="••••••••"
+                required autocomplete="current-password"
+            >
+            @error('password')
+                <p style="color: #fca5a5; font-size: 0.75rem; margin-top: 0.35rem;">{{ $message }}</p>
+            @enderror
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+        {{-- Remember Me --}}
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <input
+                id="remember_me"
+                type="checkbox"
+                name="remember"
+                style="width: 15px; height: 15px; accent-color: var(--fns-gold); border-radius: 4px;"
+            >
+            <label for="remember_me" style="font-size: 0.78rem; color: rgba(255,255,255,0.45); cursor: pointer;">
+                ຈົດຈຳການເຂົ້າສູ່ລະບົບ
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
+        {{-- Submit --}}
+        <div style="margin-top: 0.5rem;">
+            <button type="submit" class="fns-btn-primary">
+                ເຂົ້າສູ່ລະບົບ
+            </button>
         </div>
     </form>
 </x-guest-layout>
+

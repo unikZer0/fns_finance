@@ -36,8 +36,4 @@ Route::middleware(['auth', 'check.active'])->group(function () {
 // Role-specific routes (each in their own file)
 // ─────────────────────────────────────────────────────────────────
 require __DIR__ . '/auth.php';
-require __DIR__ . '/admin.php';
-require __DIR__ . '/head_of_finance.php';
-require __DIR__ . '/accountant.php';
-require __DIR__ . '/deputy_head_of_faculty.php';
-require __DIR__ . '/head_of_faculty.php';
+require __DIR__ . '/dashboards.php';
