@@ -158,20 +158,21 @@ class AcademicIncomeAssessmentController extends Controller
             );
         }
 
-        // Section 1.3 master/phd — year-1 rate is higher than year-2+ rate.
-        // Store as snap_course_credit_unit=1, snap_credit_unit_price=year1_rate (same as seeder).
+        // Section 1.3 master/phd — year 1 has 60% of total program credits (vs 40% in year 2+).
+        // Use year1_credit_unit × price/unit so pricing stays consistent with section 1.1.
         $inputs13m = $request->input('s13m', []);
         foreach ($programs13_master as $program) {
-            $count     = (int) ($inputs13m[$program->id] ?? 0);
-            $year1Rate = $program->latestCourseCredit?->year1_rate ?? 0;
-            $total     = $count * $year1Rate * (1 - $nuolMasterPhd);
+            $count      = (int) ($inputs13m[$program->id] ?? 0);
+            $creditUnit = $program->latestCourseCredit?->year1_credit_unit ?? 0;
+            $price      = $creditPrices[$program->level]?->credit_unit_price ?? 0;
+            $total      = $count * $creditUnit * $price * (1 - $nuolMasterPhd);
 
             AcademicIncomeItem::updateOrCreate(
                 ['plan_id' => $academicIncome->id, 'section_code' => '1.3', 'degree_program_id' => $program->id],
                 [
                     'student_count'              => $count,
-                    'snap_credit_unit_price'     => $year1Rate,
-                    'snap_course_credit_unit'    => 1,
+                    'snap_credit_unit_price'     => $price,
+                    'snap_course_credit_unit'    => $creditUnit,
                     'snap_registration_fee_rate' => null,
                     'snap_nuol_pct'              => $nuolMasterPhd,
                     'total_income'               => $total,

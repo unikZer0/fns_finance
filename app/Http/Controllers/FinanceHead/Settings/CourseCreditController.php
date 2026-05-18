@@ -38,7 +38,8 @@ class CourseCreditController extends Controller
     {
         $validated = $request->validate([
             'degree_program_id'  => 'required|exists:degree_programs,id',
-            'course_credit_unit' => 'required|integer|min:1|max:999',
+            'course_credit_unit' => 'required|numeric|min:1|max:999',
+            'year1_credit_unit'  => 'nullable|numeric|min:0|max:999',
             'gov_doc_id'         => 'nullable|string|max:255',
             'start_year'         => 'required|integer|min:2000|max:2100',
         ]);
@@ -61,7 +62,8 @@ class CourseCreditController extends Controller
     {
         $validated = $request->validate([
             'degree_program_id'  => 'required|exists:degree_programs,id',
-            'course_credit_unit' => 'required|integer|min:1|max:999',
+            'course_credit_unit' => 'required|numeric|min:1|max:999',
+            'year1_credit_unit'  => 'nullable|numeric|min:0|max:999',
             'gov_doc_id'         => 'nullable|string|max:255',
             'start_year'         => 'required|integer|min:2000|max:2100',
         ]);

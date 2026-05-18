@@ -129,19 +129,23 @@ class CourseCreditSeeder extends Seeder
             'D-BIO'     => 40,  // 24,000,000 / 600,000
         ];
 
-        // Year-1 rates for master/phd (section 1.3) — from Planning 2026.xls row 108-132.
-        // Year 1 has more course-work credits than year 2+, so rate is higher.
-        $year1Rates = [
-            'M-PHYS'  => 15840000,
-            'M-MATH'  => 16560000,
-            'M-BIO'   => 14760000,
-            'M-CHEM'  => 16560000,
-            'M-CS'    => 16560000,
-            'MR-PHYS' => 16560000,
-            'MR-CHEM' => 16560000,
-            'MR-BIO'  => 16560000,
-            'D-PHYS'  => 34200000,
-            'D-BIO'   => 36000000,
+        // Year-1 credit units for master/phd (section 1.3).
+        // Principle: year1 = 60% of total program credits, year2+ = 40%.
+        // So year1_credit_unit = year2+_credit_unit × 1.5  (60/40 ratio).
+        // Formula: year1_credit_unit = year1_rate_from_excel / price_per_unit
+        //   master (240,000/unit): M-PHYS=66, M-MATH=69, M-BIO=61.5, M-CHEM=69, M-CS=69 …
+        //   phd    (600,000/unit): D-PHYS=57, D-BIO=60
+        $year1CreditUnits = [
+            'M-PHYS'  => 66,    // 15,840,000 / 240,000
+            'M-MATH'  => 69,    // 16,560,000 / 240,000
+            'M-BIO'   => 61.5,  // 14,760,000 / 240,000 (non-integer; 0 students, no impact)
+            'M-CHEM'  => 69,    // 16,560,000 / 240,000
+            'M-CS'    => 69,    // 16,560,000 / 240,000
+            'MR-PHYS' => 69,    // 16,560,000 / 240,000
+            'MR-CHEM' => 69,    // 16,560,000 / 240,000
+            'MR-BIO'  => 69,    // 16,560,000 / 240,000
+            'D-PHYS'  => 57,    // 34,200,000 / 600,000
+            'D-BIO'   => 60,    // 36,000,000 / 600,000
         ];
 
         $programIds = DegreeProgram::whereIn('code', array_keys($credits))
@@ -156,7 +160,7 @@ class CourseCreditSeeder extends Seeder
                 ['degree_program_id' => $programId],
                 [
                     'course_credit_unit' => $units,
-                    'year1_rate'         => $year1Rates[$code] ?? null,
+                    'year1_credit_unit'  => $year1CreditUnits[$code] ?? null,
                     'start_year'         => 2026,
                     'updated_at'         => $now,
                 ]

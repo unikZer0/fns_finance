@@ -44,7 +44,12 @@
                     </span>
                     {{ $s->degreeProgram->name }}
                 </td>
-                <td>{{ $s->course_credit_unit }} ໜ່ວຍກິດ</td>
+                <td>
+                    ປີ 2+: {{ $s->course_credit_unit }} ໜ່ວຍ
+                    @if($s->year1_credit_unit)
+                        <br><span style="color:#16a34a; font-size:0.8rem;">ປີ 1: {{ $s->year1_credit_unit }} ໜ່ວຍ ({{ round($s->year1_credit_unit / ($s->year1_credit_unit + $s->course_credit_unit) * 100) }}%)</span>
+                    @endif
+                </td>
                 <td>{{ $s->gov_doc_id ?? '—' }}</td>
                 <td>{{ $s->start_year }}</td>
                 <td>

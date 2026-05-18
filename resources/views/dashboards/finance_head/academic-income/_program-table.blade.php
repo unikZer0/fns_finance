@@ -1,4 +1,4 @@
-@php $useYear1Rate = $useYear1Rate ?? false; @endphp
+@php $useYear1Unit = $useYear1Unit ?? false; @endphp
 <table class="fns-table">
     <thead>
         <tr>
@@ -6,21 +6,18 @@
             <th>ສາຂາວິຊາ</th>
             <th style="width:6rem;">ລະດັບ</th>
             <th class="col-num" style="width:5rem;">ໜ່ວຍກິດ</th>
-            <th class="col-num" style="width:12rem;">{{ $useYear1Rate ? 'ລາຄາ/ຄົນ ປີ 1 (ກີບ)' : 'ລາຄາ/ໜ່ວຍ (ກີບ)' }}</th>
+            <th class="col-num" style="width:12rem;">ລາຄາ/ໜ່ວຍ (ກີບ)</th>
             <th class="col-num" style="width:8rem;">ຈຳນວນ ນ/ສ</th>
         </tr>
     </thead>
     <tbody>
         @forelse($programs as $p)
         @php
-            $creditUnit = $p->latestCourseCredit?->course_credit_unit ?? null;
-            if ($useYear1Rate) {
-                $price = $p->latestCourseCredit?->year1_rate ?? null;
-                $warn  = !$price;
-            } else {
-                $price = $creditPrices[$p->level]?->credit_unit_price ?? null;
-                $warn  = !$creditUnit || !$price;
-            }
+            $creditUnit = $useYear1Unit
+                ? ($p->latestCourseCredit?->year1_credit_unit ?? null)
+                : ($p->latestCourseCredit?->course_credit_unit ?? null);
+            $price    = $creditPrices[$p->level]?->credit_unit_price ?? null;
+            $warn     = !$creditUnit || !$price;
             $existing = $existingItems->get($section . '_' . $p->id);
         @endphp
         <tr @if($warn) style="background:rgba(245,158,11,0.04);" @endif>
@@ -39,9 +36,7 @@
                 </span>
             </td>
             <td class="col-num" style="font-size:0.85rem;">
-                @if($useYear1Rate)
-                    <span style="color:var(--fns-gray-400);">—</span>
-                @elseif($creditUnit)
+                @if($creditUnit)
                     {{ $creditUnit }}
                 @else
                     <span style="color:#d97706;" title="ຍັງບໍ່ຕັ້ງຄ່າ">—</span>

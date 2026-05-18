@@ -88,7 +88,7 @@
             'programs'      => $programs13_master,
             'section'       => '1.3',
             'inputPrefix'   => 's13m',
-            'useYear1Rate'  => true,
+            'useYear1Unit'  => true,
         ])
     </div>
 </div>

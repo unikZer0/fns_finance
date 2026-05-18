@@ -123,38 +123,27 @@ class AcademicIncomePlanSeeder extends Seeder
         // ─────────────────────────────────────────────────────────────────
         // Section 1.3 — ຄ່າໜ່ວຍກິດ ປີ 1 (60% first / 0% second)
         // ─────────────────────────────────────────────────────────────────
-        $items13 = [
-            // Year 1 — bachelor (nuol 17%)
-            ['dp' => 55, 'n' => 60, 'rate' =>  1295000, 'nuol' => 0.17],
-            ['dp' => 56, 'n' => 60, 'rate' =>  1330000, 'nuol' => 0.17],
-            ['dp' => 57, 'n' => 60, 'rate' =>  1330000, 'nuol' => 0.17],
-            ['dp' => 58, 'n' => 10, 'rate' =>  1295000, 'nuol' => 0.17],
-            ['dp' => 59, 'n' => 10, 'rate' =>  1295000, 'nuol' => 0.17],
-            ['dp' => 60, 'n' => 20, 'rate' =>  1260000, 'nuol' => 0.17],
-            ['dp' => 61, 'n' =>  0, 'rate' =>  1260000, 'nuol' => 0.17],
-            ['dp' => 62, 'n' =>  5, 'rate' =>  1295000, 'nuol' => 0.17],
-            ['dp' => 63, 'n' =>  5, 'rate' =>  1295000, 'nuol' => 0.17],
-            ['dp' => 64, 'n' => 10, 'rate' =>  1365000, 'nuol' => 0.17],
-            ['dp' => 65, 'n' => 10, 'rate' =>  1365000, 'nuol' => 0.17],
-            ['dp' => 66, 'n' =>  1, 'rate' =>  1225000, 'nuol' => 0.17],
-            ['dp' => 67, 'n' =>  1, 'rate' =>  1225000, 'nuol' => 0.17],
-            ['dp' => 68, 'n' =>  1, 'rate' =>  1225000, 'nuol' => 0.17],
-            ['dp' => 69, 'n' =>  1, 'rate' =>  1225000, 'nuol' => 0.17],
-            // Master/PhD year 1 (nuol 10%)
-            ['dp' => 44, 'n' =>  4, 'rate' => 15840000, 'nuol' => 0.10],
-            ['dp' => 45, 'n' =>  4, 'rate' => 16560000, 'nuol' => 0.10],
-            ['dp' => 46, 'n' =>  0, 'rate' => 14760000, 'nuol' => 0.10],
-            ['dp' => 47, 'n' =>  0, 'rate' => 16560000, 'nuol' => 0.10],
-            ['dp' => 48, 'n' =>  5, 'rate' => 16560000, 'nuol' => 0.10],
-            ['dp' => 49, 'n' =>  4, 'rate' => 16560000, 'nuol' => 0.10],
-            ['dp' => 50, 'n' =>  5, 'rate' => 16560000, 'nuol' => 0.10],
-            ['dp' => 51, 'n' =>  4, 'rate' => 16560000, 'nuol' => 0.10],
-            ['dp' => 52, 'n' =>  0, 'rate' => 34200000, 'nuol' => 0.10],
-            ['dp' => 53, 'n' =>  0, 'rate' => 36000000, 'nuol' => 0.10],
+        // Bachelor year 1: rate = credit_unit × 35,000 (stored as 1 × full_rate for simplicity)
+        $items13_bach = [
+            ['dp' => 55, 'n' => 60, 'rate' =>  1295000],
+            ['dp' => 56, 'n' => 60, 'rate' =>  1330000],
+            ['dp' => 57, 'n' => 60, 'rate' =>  1330000],
+            ['dp' => 58, 'n' => 10, 'rate' =>  1295000],
+            ['dp' => 59, 'n' => 10, 'rate' =>  1295000],
+            ['dp' => 60, 'n' => 20, 'rate' =>  1260000],
+            ['dp' => 61, 'n' =>  0, 'rate' =>  1260000],
+            ['dp' => 62, 'n' =>  5, 'rate' =>  1295000],
+            ['dp' => 63, 'n' =>  5, 'rate' =>  1295000],
+            ['dp' => 64, 'n' => 10, 'rate' =>  1365000],
+            ['dp' => 65, 'n' => 10, 'rate' =>  1365000],
+            ['dp' => 66, 'n' =>  1, 'rate' =>  1225000],
+            ['dp' => 67, 'n' =>  1, 'rate' =>  1225000],
+            ['dp' => 68, 'n' =>  1, 'rate' =>  1225000],
+            ['dp' => 69, 'n' =>  1, 'rate' =>  1225000],
         ];
 
-        foreach ($items13 as $r) {
-            $total = round($r['n'] * $r['rate'] * (1 - $r['nuol']), 2);
+        foreach ($items13_bach as $r) {
+            $total = round($r['n'] * $r['rate'] * (1 - 0.17), 2);
             AcademicIncomeItem::create([
                 'plan_id'                    => $plan->id,
                 'section_code'               => '1.3',
@@ -163,7 +152,41 @@ class AcademicIncomePlanSeeder extends Seeder
                 'snap_credit_unit_price'     => $r['rate'],
                 'snap_course_credit_unit'    => 1,
                 'snap_registration_fee_rate' => null,
-                'snap_nuol_pct'              => $r['nuol'],
+                'snap_nuol_pct'              => 0.17,
+                'total_income'               => $total,
+                'first_payment_amount'       => round($total * 0.60, 2),
+                'second_payment_amount'      => 0,
+            ]);
+        }
+
+        // Master/PhD year 1: snap_course_credit_unit = year1_credit_unit (60% of total program)
+        // snap_credit_unit_price = price/unit (240,000 master, 600,000 phd)
+        // gross = year1_credit_unit × price/unit × count  (same formula as sec 1.1 yr2+)
+        $items13_master = [
+            // ['dp', 'n', 'year1_cu', 'price_per_unit']
+            ['dp' => 44, 'n' =>  4, 'cu' =>  66,   'price' => 240000],  // M-PHYS:  66×240k=15,840,000
+            ['dp' => 45, 'n' =>  4, 'cu' =>  69,   'price' => 240000],  // M-MATH:  69×240k=16,560,000
+            ['dp' => 46, 'n' =>  0, 'cu' =>  61.5, 'price' => 240000],  // M-BIO: 61.5×240k=14,760,000
+            ['dp' => 47, 'n' =>  0, 'cu' =>  69,   'price' => 240000],  // M-CHEM:  69×240k=16,560,000
+            ['dp' => 48, 'n' =>  5, 'cu' =>  69,   'price' => 240000],  // M-CS:    69×240k=16,560,000
+            ['dp' => 49, 'n' =>  4, 'cu' =>  69,   'price' => 240000],  // MR-PHYS: 69×240k=16,560,000
+            ['dp' => 50, 'n' =>  5, 'cu' =>  69,   'price' => 240000],  // MR-CHEM: 69×240k=16,560,000
+            ['dp' => 51, 'n' =>  4, 'cu' =>  69,   'price' => 240000],  // MR-BIO:  69×240k=16,560,000
+            ['dp' => 52, 'n' =>  0, 'cu' =>  57,   'price' => 600000],  // D-PHYS:  57×600k=34,200,000
+            ['dp' => 53, 'n' =>  0, 'cu' =>  60,   'price' => 600000],  // D-BIO:   60×600k=36,000,000
+        ];
+
+        foreach ($items13_master as $r) {
+            $total = round($r['n'] * $r['cu'] * $r['price'] * (1 - 0.10), 2);
+            AcademicIncomeItem::create([
+                'plan_id'                    => $plan->id,
+                'section_code'               => '1.3',
+                'degree_program_id'          => $r['dp'],
+                'student_count'              => $r['n'],
+                'snap_credit_unit_price'     => $r['price'],
+                'snap_course_credit_unit'    => $r['cu'],
+                'snap_registration_fee_rate' => null,
+                'snap_nuol_pct'              => 0.10,
                 'total_income'               => $total,
                 'first_payment_amount'       => round($total * 0.60, 2),
                 'second_payment_amount'      => 0,
