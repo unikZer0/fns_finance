@@ -5,8 +5,6 @@
             <th style="width:5rem;">ຊັ້ນປີ</th>
             <th>ສາຂາວິຊາ</th>
             <th style="width:6rem;">ລະດັບ</th>
-            <th class="col-num" style="width:5rem;">ໜ່ວຍກິດ</th>
-            <th class="col-num" style="width:12rem;">ລາຄາ/ໜ່ວຍ (ກີບ)</th>
             <th class="col-num" style="width:8rem;">ຈຳນວນ ນ/ສ</th>
         </tr>
     </thead>
@@ -35,20 +33,6 @@
                     {{ $p->level_label }}
                 </span>
             </td>
-            <td class="col-num" style="font-size:0.85rem;">
-                @if($creditUnit)
-                    {{ $creditUnit }}
-                @else
-                    <span style="color:#d97706;" title="ຍັງບໍ່ຕັ້ງຄ່າ">—</span>
-                @endif
-            </td>
-            <td class="col-num" style="font-size:0.85rem;">
-                @if($price)
-                    {{ number_format($price, 0) }}
-                @else
-                    <span style="color:#d97706;" title="ຍັງບໍ່ຕັ້ງລາຄາ">—</span>
-                @endif
-            </td>
             <td>
                 <input type="number" name="{{ $inputPrefix }}[{{ $p->id }}]" min="0"
                     value="{{ old($inputPrefix.'.'.$p->id, $existing?->student_count ?? 0) }}"
@@ -58,7 +42,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="6" style="text-align:center; padding:1.5rem; color:var(--fns-gray-400);">ບໍ່ມີສາຂາວິຊາ — ກະລຸນາຕັ້ງຄ່າ</td>
+            <td colspan="4" style="text-align:center; padding:1.5rem; color:var(--fns-gray-400);">ບໍ່ມີສາຂາວິຊາ — ກະລຸນາຕັ້ງຄ່າ</td>
         </tr>
         @endforelse
     </tbody>

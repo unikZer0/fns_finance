@@ -4,6 +4,7 @@ namespace App\Http\Controllers\FinanceHead\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\CourseCreditSetting;
+use App\Models\CreditUnitPriceSetting;
 use App\Models\DegreeProgram;
 use Illuminate\Http\Request;
 
@@ -30,8 +31,10 @@ class CourseCreditController extends Controller
     public function create()
     {
         $programs = DegreeProgram::where('is_active', true)->orderBy('level')->orderByRaw('study_year IS NULL')->orderBy('study_year')->orderBy('name')->get();
+        $creditPrices = CreditUnitPriceSetting::orderByDesc('start_year')
+            ->get()->groupBy('level')->map(fn($i) => (float) $i->first()->credit_unit_price);
 
-        return view('dashboards.finance_head.settings.course-credits.create', compact('programs'));
+        return view('dashboards.finance_head.settings.course-credits.create', compact('programs', 'creditPrices'));
     }
 
     public function store(Request $request)
@@ -54,8 +57,10 @@ class CourseCreditController extends Controller
     public function edit(CourseCreditSetting $courseCredit)
     {
         $programs = DegreeProgram::orderBy('level')->orderByRaw('study_year IS NULL')->orderBy('study_year')->orderBy('name')->get();
+        $creditPrices = CreditUnitPriceSetting::orderByDesc('start_year')
+            ->get()->groupBy('level')->map(fn($i) => (float) $i->first()->credit_unit_price);
 
-        return view('dashboards.finance_head.settings.course-credits.edit', compact('courseCredit', 'programs'));
+        return view('dashboards.finance_head.settings.course-credits.edit', compact('courseCredit', 'programs', 'creditPrices'));
     }
 
     public function update(Request $request, CourseCreditSetting $courseCredit)

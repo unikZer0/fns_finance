@@ -133,12 +133,12 @@ class CourseCreditSeeder extends Seeder
         // Principle: year1 = 60% of total program credits, year2+ = 40%.
         // So year1_credit_unit = year2+_credit_unit × 1.5  (60/40 ratio).
         // Formula: year1_credit_unit = year1_rate_from_excel / price_per_unit
-        //   master (240,000/unit): M-PHYS=66, M-MATH=69, M-BIO=61.5, M-CHEM=69, M-CS=69 …
+        //   master (240,000/unit): M-PHYS=66, M-MATH=69, M-BIO=62, M-CHEM=69, M-CS=69 …
         //   phd    (600,000/unit): D-PHYS=57, D-BIO=60
         $year1CreditUnits = [
             'M-PHYS'  => 66,    // 15,840,000 / 240,000
             'M-MATH'  => 69,    // 16,560,000 / 240,000
-            'M-BIO'   => 61.5,  // 14,760,000 / 240,000 (non-integer; 0 students, no impact)
+            'M-BIO'   => 62,    // 14,760,000 / 240,000 = 61.5 → ປັດຂຶ້ນ 62
             'M-CHEM'  => 69,    // 16,560,000 / 240,000
             'M-CS'    => 69,    // 16,560,000 / 240,000
             'MR-PHYS' => 69,    // 16,560,000 / 240,000
