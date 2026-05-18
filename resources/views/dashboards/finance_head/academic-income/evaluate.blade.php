@@ -7,37 +7,6 @@
 <form method="POST" action="{{ route('head_of_finance.academic-income.saveEvaluate', $academicIncome) }}">
 @csrf
 
-{{-- NUOL % read-only from settings --}}
-<div class="fns-card" style="margin-bottom:1.25rem;">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem;">
-        <div>
-            <h3 style="font-weight:700; font-size:0.92rem; color:var(--fns-navy);">ຈຳນວນເປີເຊັນ ມຊ (%)</h3>
-            <p style="font-size:0.76rem; color:var(--fns-gray-400); margin-top:0.15rem;">ດຶງຈາກການຕັ້ງຄ່າຫຼ້າສຸດ — ປ.ຕີ ແລະ ຄ່າລົງທະບຽນ ໃຊ້ອັດຕາ ປ.ຕີ</p>
-        </div>
-        <a href="{{ route('head_of_finance.settings.nuol-pct.index') }}" style="font-size:0.78rem; color:var(--fns-navy-light); text-decoration:none; white-space:nowrap;">ແກ້ໄຂການຕັ້ງຄ່າ →</a>
-    </div>
-    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:0.75rem;">
-        <div class="fns-rate-chip">
-            <div class="fns-rate-chip-label">ປ.ຕີ (bachelor)</div>
-            <div class="fns-rate-chip-val">{{ $nuolBachelor ? number_format($nuolBachelor->percentage * 100, 2) : '17.00' }}%</div>
-            <div class="fns-rate-chip-sub">
-                @if($nuolBachelor) ປີ {{ $nuolBachelor->start_year }}
-                @else <span style="color:#d97706;">ໃຊ້ຄ່າເລີ່ມຕົ້ນ — ກະລຸນາຕັ້ງຄ່າ</span>
-                @endif
-            </div>
-        </div>
-        <div class="fns-rate-chip">
-            <div class="fns-rate-chip-label">ປ.ໂທ / ປ.ເອກ (master/phd)</div>
-            <div class="fns-rate-chip-val">{{ $nuolMasterPhd ? number_format($nuolMasterPhd->percentage * 100, 2) : '10.00' }}%</div>
-            <div class="fns-rate-chip-sub">
-                @if($nuolMasterPhd) ປີ {{ $nuolMasterPhd->start_year }}
-                @else <span style="color:#d97706;">ໃຊ້ຄ່າເລີ່ມຕົ້ນ — ກະລຸນາຕັ້ງຄ່າ</span>
-                @endif
-            </div>
-        </div>
-    </div>
-</div>
-
 {{-- Section 1.1 --}}
 <div class="fns-card" style="margin-bottom:1.25rem;">
     <div class="fns-sec-hd">
