@@ -36,8 +36,6 @@
 
 @php
     $grandTotal = 0;
-    $grandFirst = 0;
-    $grandSecond = 0;
 
     $sectionLabels = [
         '1.1' => '1.1 ລາຍຮັບຄ່າໜ່ວຍກິດ ນ/ສ ປີ 2–4 ແລະ ປ.ໂທ',
@@ -50,11 +48,7 @@
 @foreach($grouped as $sectionCode => $items)
 @php
     $secTotal = $items->sum('total_income');
-    $secFirst = $items->sum('first_payment_amount');
-    $secSecond = $items->sum('second_payment_amount');
     $grandTotal += $secTotal;
-    $grandFirst += $secFirst;
-    $grandSecond += $secSecond;
 @endphp
 <div class="fns-card" style="margin-bottom:1.25rem;">
     <h3 style="font-weight:600; margin-bottom:1rem; color:#1e40af;">
@@ -63,32 +57,28 @@
     <table class="fns-table">
         <thead>
             <tr>
+                <th>ຊັ້ນປີ</th>
                 <th>ສາຂາວິຊາ / ລາຍການ</th>
                 <th style="text-align:right;">ຈຳນວນ ນ/ສ</th>
                 <th style="text-align:right;">% ມຊ</th>
                 <th style="text-align:right;">ລວມລາຍຮັບ (ກີບ)</th>
-                <th style="text-align:right;">ງວດ 1</th>
-                <th style="text-align:right;">ງວດ 2</th>
             </tr>
         </thead>
         <tbody>
             @foreach($items as $item)
             <tr>
+                <td>{{ $item->degreeProgram?->study_year ? 'ປີ '.$item->degreeProgram->study_year : '—' }}</td>
                 <td>{{ $item->degreeProgram?->name ?? 'ລວມ' }}</td>
                 <td style="text-align:right;">{{ number_format($item->student_count) }}</td>
                 <td style="text-align:right;">{{ number_format($item->snap_nuol_pct * 100, 2) }}%</td>
                 <td style="text-align:right;">{{ number_format($item->total_income, 2) }}</td>
-                <td style="text-align:right;">{{ number_format($item->first_payment_amount, 2) }}</td>
-                <td style="text-align:right;">{{ number_format($item->second_payment_amount, 2) }}</td>
             </tr>
             @endforeach
         </tbody>
         <tfoot>
             <tr style="background:#eff6ff; font-weight:600;">
-                <td colspan="3">ລວມໝວດ {{ $sectionCode }}</td>
+                <td colspan="4">ລວມໝວດ {{ $sectionCode }}</td>
                 <td style="text-align:right;">{{ number_format($secTotal, 2) }}</td>
-                <td style="text-align:right;">{{ number_format($secFirst, 2) }}</td>
-                <td style="text-align:right;">{{ number_format($secSecond, 2) }}</td>
             </tr>
         </tfoot>
     </table>
@@ -99,10 +89,8 @@
 <div class="fns-card" style="background:#1e3a5f; color:#fff;">
     <table style="width:100%; border-collapse:collapse;">
         <tr>
-            <td style="padding:0.75rem 1rem; font-size:1.05rem; font-weight:700;">ລວມລາຍຮັບວິຊາການທັງໝົດ</td>
+            <td style="padding:0.75rem 1rem; font-size:1.05rem; font-weight:700;" colspan="4">ລວມລາຍຮັບວິຊາການທັງໝົດ</td>
             <td style="padding:0.75rem 1rem; text-align:right; font-size:1.2rem; font-weight:700;">{{ number_format($grandTotal, 2) }} ກີບ</td>
-            <td style="padding:0.75rem 1rem; text-align:right;">ງວດ 1: {{ number_format($grandFirst, 2) }}</td>
-            <td style="padding:0.75rem 1rem; text-align:right;">ງວດ 2: {{ number_format($grandSecond, 2) }}</td>
         </tr>
     </table>
 </div>

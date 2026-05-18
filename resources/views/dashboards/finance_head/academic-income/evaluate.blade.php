@@ -26,7 +26,7 @@
 {{-- Section 1.1 --}}
 <div class="fns-card" style="margin-bottom:1.25rem;">
     <h3 style="font-weight:600; margin-bottom:0.25rem;">1.1 ລາຍຮັບຄ່າໜ່ວຍກິດ ນ/ສ ປີ 2–4 ລະບົບຈ່າຍເງິນ ແລະ ປ.ໂທ</h3>
-    <p style="color:#6b7280; font-size:0.8rem; margin-bottom:1rem;">ສູດ: ນ/ສ × ໜ່ວຍກິດ × ລາຄາ × (1 − % ມຊ) | ງວດ 1 = 60%, ງວດ 2 = 40%</p>
+    <p style="color:#6b7280; font-size:0.8rem; margin-bottom:1rem;">ສູດ: ນ/ສ × ໜ່ວຍກິດ × ລາຄາ × (1 − % ມຊ)</p>
     @include('dashboards.finance_head.academic-income._program-table', [
         'programs'    => $programs11,
         'section'     => '1.1',
@@ -37,7 +37,7 @@
 {{-- Section 1.2 --}}
 <div class="fns-card" style="margin-bottom:1.25rem;">
     <h3 style="font-weight:600; margin-bottom:0.25rem;">1.2 ລາຍຮັບຄ່າລົງທະບຽນ ນ/ສ ປີ 2–4 ຂອງ ຄວທ</h3>
-    <p style="color:#6b7280; font-size:0.8rem; margin-bottom:1rem;">ສູດ: ນ/ສ × ຄ່າລົງທະບຽນ × (1 − % ມຊ) | ງວດ 1 = 100%</p>
+    <p style="color:#6b7280; font-size:0.8rem; margin-bottom:1rem;">ສູດ: ນ/ສ × ຄ່າລົງທະບຽນ × (1 − % ມຊ)</p>
     @if($feeYear2_4)
         <p style="margin-bottom:0.75rem;">ຄ່າລົງທະບຽນ (ລວມ): <strong>{{ number_format($feeYear2_4->total_rate, 2) }} ກີບ</strong> (ປີ {{ $feeYear2_4->start_year }})</p>
     @else
@@ -54,7 +54,7 @@
 {{-- Section 1.3 --}}
 <div class="fns-card" style="margin-bottom:1.25rem;">
     <h3 style="font-weight:600; margin-bottom:0.25rem;">1.3 ລາຍຮັບຄ່າໜ່ວຍກິດ ນ/ສ ປີ 1 ລະບົບຈ່າຍເງິນ</h3>
-    <p style="color:#6b7280; font-size:0.8rem; margin-bottom:1rem;">ສູດ: ນ/ສ × ໜ່ວຍກິດ × ລາຄາ × (1 − % ມຊ) | ງວດ 1 = 60%</p>
+    <p style="color:#6b7280; font-size:0.8rem; margin-bottom:1rem;">ສູດ: ນ/ສ × ໜ່ວຍກິດ × ລາຄາ × (1 − % ມຊ)</p>
     @include('dashboards.finance_head.academic-income._program-table', [
         'programs'    => $programs13,
         'section'     => '1.3',
@@ -65,7 +65,7 @@
 {{-- Section 1.4 --}}
 <div class="fns-card" style="margin-bottom:1.25rem;">
     <h3 style="font-weight:600; margin-bottom:0.25rem;">1.4 ຄ່າລົງທະບຽນ ນ/ສ ປີ 1 ລະບົບຈ່າຍເງິນ ຂອງ ຄວທ</h3>
-    <p style="color:#6b7280; font-size:0.8rem; margin-bottom:1rem;">ສູດ: ນ/ສ × ຄ່າລົງທະບຽນ × (1 − % ມຊ) | ງວດ 1 = 100%</p>
+    <p style="color:#6b7280; font-size:0.8rem; margin-bottom:1rem;">ສູດ: ນ/ສ × ຄ່າລົງທະບຽນ × (1 − % ມຊ)</p>
     @if($feeYear1)
         <p style="margin-bottom:0.75rem;">ຄ່າລົງທະບຽນ (ລວມ): <strong>{{ number_format($feeYear1->total_rate, 2) }} ກີບ</strong> (ປີ {{ $feeYear1->start_year }})</p>
     @else

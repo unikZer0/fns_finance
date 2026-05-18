@@ -52,9 +52,7 @@
                 <th>ສາຂາວິຊາ</th>
                 <th>ນ/ສ</th>
                 <th>% ມຊ</th>
-                <th>ລວມລາຍຮັບ</th>
-                <th>ງວດ 1</th>
-                <th>ງວດ 2</th>
+                <th>ລວມລາຍຮັບ (ກີບ)</th>
             </tr>
         </thead>
         <tbody>
@@ -65,8 +63,6 @@
                 <td>{{ number_format($item->student_count) }}</td>
                 <td>{{ number_format($item->snap_nuol_pct * 100, 2) }}%</td>
                 <td>{{ number_format($item->total_income, 2) }}</td>
-                <td>{{ number_format($item->first_payment_amount, 2) }}</td>
-                <td>{{ number_format($item->second_payment_amount, 2) }}</td>
             </tr>
             @endforeach
         </tbody>

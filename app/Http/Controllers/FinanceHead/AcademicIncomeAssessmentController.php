@@ -135,21 +135,19 @@ class AcademicIncomeAssessmentController extends Controller
                 $price      = $creditPrices[$program->level]?->credit_unit_price ?? 0;
                 $nuol       = $nuolPct[$sectionCode];
 
-                $total   = $count * $creditUnit * $price * (1 - $nuol);
-                $first   = $sectionCode === '1.1' ? $total * 0.60 : $total * 0.60;
-                $second  = $sectionCode === '1.1' ? $total * 0.40 : 0;
+                $total = $count * $creditUnit * $price * (1 - $nuol);
 
                 AcademicIncomeItem::updateOrCreate(
                     ['plan_id' => $academicIncome->id, 'section_code' => $sectionCode, 'degree_program_id' => $program->id],
                     [
-                        'student_count'           => $count,
-                        'snap_credit_unit_price'  => $price,
-                        'snap_course_credit_unit' => $creditUnit,
+                        'student_count'              => $count,
+                        'snap_credit_unit_price'     => $price,
+                        'snap_course_credit_unit'    => $creditUnit,
                         'snap_registration_fee_rate' => null,
-                        'snap_nuol_pct'           => $nuol,
-                        'total_income'            => $total,
-                        'first_payment_amount'    => $first,
-                        'second_payment_amount'   => $second,
+                        'snap_nuol_pct'              => $nuol,
+                        'total_income'               => $total,
+                        'first_payment_amount'       => 0,
+                        'second_payment_amount'      => 0,
                     ]
                 );
             }
@@ -170,7 +168,7 @@ class AcademicIncomeAssessmentController extends Controller
                 'snap_registration_fee_rate' => $feeRate2_4,
                 'snap_nuol_pct'              => $nuol12,
                 'total_income'               => $total12,
-                'first_payment_amount'       => $total12,
+                'first_payment_amount'       => 0,
                 'second_payment_amount'      => 0,
             ]
         );
@@ -190,7 +188,7 @@ class AcademicIncomeAssessmentController extends Controller
                 'snap_registration_fee_rate' => $feeRate1,
                 'snap_nuol_pct'              => $nuol14,
                 'total_income'               => $total14,
-                'first_payment_amount'       => $total14,
+                'first_payment_amount'       => 0,
                 'second_payment_amount'      => 0,
             ]
         );
