@@ -2,20 +2,34 @@
 
 namespace App\Reports\Sections;
 
+use App\Models\ExpensePlan;
+
 class ExpenseSection
 {
     public string $id    = 'expense';
-    public string $title = 'ລາຍຈ່າຍ';
+    public string $title = 'ງົບປະມານລາຍຈ່າຍ';
     public string $view  = 'reports.annual.sections.expense';
 
     public function data(int $year): array
     {
-        // TODO: query expense data when module is built
-        return ['year' => $year];
+        $plan = ExpensePlan::with([
+            'topCategories.children.items',
+            'topCategories.items',
+            'allCategories',
+        ])->where('fiscal_year', $year)->first();
+
+        $topCategories = $plan ? $plan->topCategories : collect();
+
+        return compact('plan', 'topCategories', 'year');
     }
 
     public function totals(int $year): array
     {
-        return ['gross' => 0, 'faculty' => 0, 'p1' => 0, 'p2' => 0];
+        $plan = ExpensePlan::with(['allCategories.items'])
+            ->where('fiscal_year', $year)->first();
+
+        $total = $plan ? (float) $plan->allCategories->flatMap->items->sum('annual_amount') : 0;
+
+        return ['gross' => $total, 'faculty' => $total, 'p1' => $total, 'p2' => 0];
     }
 }
