@@ -99,6 +99,11 @@
                         <x-icons.shield-check />
                         ຄ່າລົງທະບຽນ
                     </a>
+                    <a href="{{ route('head_of_finance.settings.nuol-pct.index') }}"
+                        class="fns-nav-item {{ request()->routeIs('head_of_finance.settings.nuol-pct.*') ? 'active' : '' }}">
+                        <x-icons.shield-check />
+                        ເປີເຊັນ ມຊ (%)
+                    </a>
                 </div>
             </div>
         @endcan

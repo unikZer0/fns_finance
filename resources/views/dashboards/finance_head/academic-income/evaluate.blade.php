@@ -7,19 +7,35 @@
 <form method="POST" action="{{ route('head_of_finance.academic-income.saveEvaluate', $academicIncome) }}">
 @csrf
 
-{{-- NUOL Percentages --}}
+{{-- NUOL Percentages (read-only from settings) --}}
 <div class="fns-card" style="margin-bottom:1.25rem;">
-    <h3 style="font-weight:600; margin-bottom:1rem;">ຈຳນວນເປີເຊັນ ມຊ (%) ຕໍ່ແຕ່ລະໝວດ</h3>
-    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem;">
-        @foreach(['1_1'=>'1.1','1_2'=>'1.2','1_3'=>'1.3','1_4'=>'1.4'] as $key => $label)
-        <div class="fns-form-group">
-            <label class="fns-label">ໝວດ {{ $label }} (%)</label>
-            <input type="number" name="nuol_pct_{{ $key }}" step="0.01" min="0" max="100"
-                value="{{ old('nuol_pct_'.$key, number_format($academicIncome->{'nuol_pct_'.$key} * 100, 2, '.', '')) }}"
-                class="fns-input @error('nuol_pct_'.$key) fns-input-error @enderror" required>
-            @error('nuol_pct_'.$key)<p class="fns-error">{{ $message }}</p>@enderror
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+        <h3 style="font-weight:600;">ຈຳນວນເປີເຊັນ ມຊ (%)</h3>
+        <a href="{{ route('head_of_finance.settings.nuol-pct.index') }}" style="font-size:0.8rem; color:#6366f1;">ແກ້ໄຂການຕັ້ງຄ່າ →</a>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem;">
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:0.5rem; padding:0.75rem 1rem;">
+            <p style="font-size:0.75rem; color:#6b7280; margin-bottom:0.25rem;">ປ.ຕີ (bachelor)</p>
+            <p style="font-size:1.25rem; font-weight:700; color:#1e293b;">
+                {{ $nuolBachelor ? number_format($nuolBachelor->percentage * 100, 2) : '17.00' }} %
+            </p>
+            @if($nuolBachelor)
+                <p style="font-size:0.7rem; color:#94a3b8; margin-top:0.15rem;">ປີເລີ່ມ: {{ $nuolBachelor->start_year }}</p>
+            @else
+                <p style="font-size:0.7rem; color:#f59e0b; margin-top:0.15rem;">ໃຊ້ຄ່າເລີ່ມຕົ້ນ — ກະລຸນາຕັ້ງຄ່າ</p>
+            @endif
         </div>
-        @endforeach
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:0.5rem; padding:0.75rem 1rem;">
+            <p style="font-size:0.75rem; color:#6b7280; margin-bottom:0.25rem;">ປ.ໂທ / ປ.ເອກ (master/phd)</p>
+            <p style="font-size:1.25rem; font-weight:700; color:#1e293b;">
+                {{ $nuolMasterPhd ? number_format($nuolMasterPhd->percentage * 100, 2) : '10.00' }} %
+            </p>
+            @if($nuolMasterPhd)
+                <p style="font-size:0.7rem; color:#94a3b8; margin-top:0.15rem;">ປີເລີ່ມ: {{ $nuolMasterPhd->start_year }}</p>
+            @else
+                <p style="font-size:0.7rem; color:#f59e0b; margin-top:0.15rem;">ໃຊ້ຄ່າເລີ່ມຕົ້ນ — ກະລຸນາຕັ້ງຄ່າ</p>
+            @endif
+        </div>
     </div>
 </div>
 

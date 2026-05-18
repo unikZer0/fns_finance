@@ -9,17 +9,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class AcademicIncomePlan extends Model
 {
     protected $fillable = [
-        'fiscal_year', 'status',
-        'nuol_pct_1_1', 'nuol_pct_1_2', 'nuol_pct_1_3', 'nuol_pct_1_4',
-        'notes', 'created_by',
+        'fiscal_year', 'status', 'notes', 'created_by',
     ];
 
-    protected $casts = [
-        'nuol_pct_1_1' => 'decimal:4',
-        'nuol_pct_1_2' => 'decimal:4',
-        'nuol_pct_1_3' => 'decimal:4',
-        'nuol_pct_1_4' => 'decimal:4',
-    ];
+    protected $casts = [];
 
     public function items(): HasMany
     {
