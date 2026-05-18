@@ -74,7 +74,7 @@
                         @if(!$plan->isApproved())
                             <a href="{{ route('head_of_finance.academic-income.evaluate', $plan) }}" class="fns-btn fns-btn-sm fns-btn-primary">ປ້ອນຂໍ້ມູນ</a>
                         @endif
-                        @if(!$plan->isApproved())
+@if(!$plan->isApproved())
                             <form method="POST" action="{{ route('head_of_finance.academic-income.destroy', $plan) }}" style="display:inline;"
                                 onsubmit="return confirm('ລຶບແຜນປີ {{ $plan->fiscal_year }} ບໍ?\nການລຶບບໍ່ສາມາດກູ້ຄືນໄດ້.')">
                                 @csrf @method('DELETE')
