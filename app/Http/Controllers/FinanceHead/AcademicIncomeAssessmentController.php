@@ -30,11 +30,17 @@ class AcademicIncomeAssessmentController extends Controller
             ->orderBy('level')->orderByRaw('study_year IS NULL')->orderBy('study_year')->orderBy('name')
             ->get();
 
-        $programs13 = DegreeProgram::where('is_active', true)
+        $programs13_bach = DegreeProgram::where('is_active', true)
             ->with('latestCourseCredit')
             ->where('level', 'bachelor')
             ->where(fn($q) => $q->where('study_year', 1)->orWhereNull('study_year'))
             ->orderBy('name')
+            ->get();
+
+        $programs13_master = DegreeProgram::where('is_active', true)
+            ->with('latestCourseCredit')
+            ->whereIn('level', ['master', 'phd'])
+            ->orderBy('level')->orderBy('name')
             ->get();
 
         $creditPrices = CreditUnitPriceSetting::orderByDesc('start_year')
@@ -52,8 +58,9 @@ class AcademicIncomeAssessmentController extends Controller
         $nuolMasterPhd = NuolPctSetting::latestFor('master_phd');
 
         return view('dashboards.finance_head.academic-income.evaluate', compact(
-            'academicIncome', 'programs11', 'programs13', 'creditPrices',
-            'feeYear2_4', 'feeYear1', 'existingItems', 'nuolBachelor', 'nuolMasterPhd'
+            'academicIncome', 'programs11', 'programs13_bach', 'programs13_master',
+            'creditPrices', 'feeYear2_4', 'feeYear1', 'existingItems',
+            'nuolBachelor', 'nuolMasterPhd'
         ));
     }
 
@@ -68,6 +75,8 @@ class AcademicIncomeAssessmentController extends Controller
             's11.*'        => 'nullable|integer|min:0',
             's13'          => 'nullable|array',
             's13.*'        => 'nullable|integer|min:0',
+            's13m'         => 'nullable|array',
+            's13m.*'       => 'nullable|integer|min:0',
             'students_1_2' => 'required|integer|min:0',
             'students_1_4' => 'required|integer|min:0',
         ]);
@@ -82,10 +91,15 @@ class AcademicIncomeAssessmentController extends Controller
                 ->orWhereIn('level', ['master', 'phd'])
             )->get()->keyBy('id');
 
-        $programs13 = DegreeProgram::where('is_active', true)
+        $programs13_bach = DegreeProgram::where('is_active', true)
             ->with('latestCourseCredit')
             ->where('level', 'bachelor')
             ->where(fn($q) => $q->where('study_year', 1)->orWhereNull('study_year'))
+            ->get()->keyBy('id');
+
+        $programs13_master = DegreeProgram::where('is_active', true)
+            ->with('latestCourseCredit')
+            ->whereIn('level', ['master', 'phd'])
             ->get()->keyBy('id');
 
         $creditPrices = CreditUnitPriceSetting::orderByDesc('start_year')
@@ -97,31 +111,74 @@ class AcademicIncomeAssessmentController extends Controller
         $feeYear1 = RegistrationFeeSetting::where('section_type', 'year1')
             ->with('items')->orderByDesc('start_year')->first();
 
-        // Sections 1.1 and 1.3 — per degree program, rate depends on level
-        $sectionPrograms = ['1.1' => [$programs11, 's11'], '1.3' => [$programs13, 's13']];
-        foreach ($sectionPrograms as $sectionCode => [$sectionProgramList, $inputKey]) {
-            $inputs = $request->input($inputKey, []);
-            foreach ($sectionProgramList as $program) {
-                $nuol       = $program->level === 'bachelor' ? $nuolBachelor : $nuolMasterPhd;
-                $count      = (int) ($inputs[$program->id] ?? 0);
-                $creditUnit = $program->latestCourseCredit?->course_credit_unit ?? 0;
-                $price      = $creditPrices[$program->level]?->credit_unit_price ?? 0;
-                $total      = $count * $creditUnit * $price * (1 - $nuol);
+        // Section 1.1 — bachelor yr2-4 + master/phd yr2+; rate = credit_unit × price/unit
+        $inputs11 = $request->input('s11', []);
+        foreach ($programs11 as $program) {
+            $nuol       = $program->level === 'bachelor' ? $nuolBachelor : $nuolMasterPhd;
+            $count      = (int) ($inputs11[$program->id] ?? 0);
+            $creditUnit = $program->latestCourseCredit?->course_credit_unit ?? 0;
+            $price      = $creditPrices[$program->level]?->credit_unit_price ?? 0;
+            $total      = $count * $creditUnit * $price * (1 - $nuol);
 
-                AcademicIncomeItem::updateOrCreate(
-                    ['plan_id' => $academicIncome->id, 'section_code' => $sectionCode, 'degree_program_id' => $program->id],
-                    [
-                        'student_count'              => $count,
-                        'snap_credit_unit_price'     => $price,
-                        'snap_course_credit_unit'    => $creditUnit,
-                        'snap_registration_fee_rate' => null,
-                        'snap_nuol_pct'              => $nuol,
-                        'total_income'               => $total,
-                        'first_payment_amount'       => 0,
-                        'second_payment_amount'      => 0,
-                    ]
-                );
-            }
+            AcademicIncomeItem::updateOrCreate(
+                ['plan_id' => $academicIncome->id, 'section_code' => '1.1', 'degree_program_id' => $program->id],
+                [
+                    'student_count'              => $count,
+                    'snap_credit_unit_price'     => $price,
+                    'snap_course_credit_unit'    => $creditUnit,
+                    'snap_registration_fee_rate' => null,
+                    'snap_nuol_pct'              => $nuol,
+                    'total_income'               => $total,
+                    'first_payment_amount'       => round($total * 0.60, 2),
+                    'second_payment_amount'      => round($total * 0.40, 2),
+                ]
+            );
+        }
+
+        // Section 1.3 bachelor — same formula as 1.1
+        $inputs13 = $request->input('s13', []);
+        foreach ($programs13_bach as $program) {
+            $count      = (int) ($inputs13[$program->id] ?? 0);
+            $creditUnit = $program->latestCourseCredit?->course_credit_unit ?? 0;
+            $price      = $creditPrices['bachelor']?->credit_unit_price ?? 0;
+            $total      = $count * $creditUnit * $price * (1 - $nuolBachelor);
+
+            AcademicIncomeItem::updateOrCreate(
+                ['plan_id' => $academicIncome->id, 'section_code' => '1.3', 'degree_program_id' => $program->id],
+                [
+                    'student_count'              => $count,
+                    'snap_credit_unit_price'     => $price,
+                    'snap_course_credit_unit'    => $creditUnit,
+                    'snap_registration_fee_rate' => null,
+                    'snap_nuol_pct'              => $nuolBachelor,
+                    'total_income'               => $total,
+                    'first_payment_amount'       => round($total * 0.60, 2),
+                    'second_payment_amount'      => 0,
+                ]
+            );
+        }
+
+        // Section 1.3 master/phd — year-1 rate is higher than year-2+ rate.
+        // Store as snap_course_credit_unit=1, snap_credit_unit_price=year1_rate (same as seeder).
+        $inputs13m = $request->input('s13m', []);
+        foreach ($programs13_master as $program) {
+            $count     = (int) ($inputs13m[$program->id] ?? 0);
+            $year1Rate = $program->latestCourseCredit?->year1_rate ?? 0;
+            $total     = $count * $year1Rate * (1 - $nuolMasterPhd);
+
+            AcademicIncomeItem::updateOrCreate(
+                ['plan_id' => $academicIncome->id, 'section_code' => '1.3', 'degree_program_id' => $program->id],
+                [
+                    'student_count'              => $count,
+                    'snap_credit_unit_price'     => $year1Rate,
+                    'snap_course_credit_unit'    => 1,
+                    'snap_registration_fee_rate' => null,
+                    'snap_nuol_pct'              => $nuolMasterPhd,
+                    'total_income'               => $total,
+                    'first_payment_amount'       => round($total * 0.60, 2),
+                    'second_payment_amount'      => 0,
+                ]
+            );
         }
 
         // Section 1.2 — Year 2-4 registration fee (bachelor rate)

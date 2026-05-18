@@ -129,6 +129,21 @@ class CourseCreditSeeder extends Seeder
             'D-BIO'     => 40,  // 24,000,000 / 600,000
         ];
 
+        // Year-1 rates for master/phd (section 1.3) — from Planning 2026.xls row 108-132.
+        // Year 1 has more course-work credits than year 2+, so rate is higher.
+        $year1Rates = [
+            'M-PHYS'  => 15840000,
+            'M-MATH'  => 16560000,
+            'M-BIO'   => 14760000,
+            'M-CHEM'  => 16560000,
+            'M-CS'    => 16560000,
+            'MR-PHYS' => 16560000,
+            'MR-CHEM' => 16560000,
+            'MR-BIO'  => 16560000,
+            'D-PHYS'  => 34200000,
+            'D-BIO'   => 36000000,
+        ];
+
         $programIds = DegreeProgram::whereIn('code', array_keys($credits))
             ->pluck('id', 'code');
 
@@ -139,7 +154,12 @@ class CourseCreditSeeder extends Seeder
 
             CourseCreditSetting::updateOrCreate(
                 ['degree_program_id' => $programId],
-                ['course_credit_unit' => $units, 'start_year' => 2026, 'updated_at' => $now]
+                [
+                    'course_credit_unit' => $units,
+                    'year1_rate'         => $year1Rates[$code] ?? null,
+                    'start_year'         => 2026,
+                    'updated_at'         => $now,
+                ]
             );
         }
     }

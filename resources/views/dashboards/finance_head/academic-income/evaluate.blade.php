@@ -66,11 +66,29 @@
             <div class="fns-sec-desc">ສູດ: ຈຳນວນ ນ/ສ × ໜ່ວຍກິດ × ລາຄາ/ໜ່ວຍ × (1 − % ມຊ)</div>
         </div>
     </div>
-    <div class="fns-table-wrap" style="border:1px solid var(--fns-gray-200); box-shadow:none;">
+
+    {{-- 1.3a: Bachelor year 1 --}}
+    <div style="font-size:0.8rem; font-weight:600; color:var(--fns-gray-500); margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.04em;">
+        ປ.ຕີ ປີ 1
+    </div>
+    <div class="fns-table-wrap" style="border:1px solid var(--fns-gray-200); box-shadow:none; margin-bottom:1rem;">
         @include('dashboards.finance_head.academic-income._program-table', [
-            'programs'    => $programs13,
+            'programs'    => $programs13_bach,
             'section'     => '1.3',
             'inputPrefix' => 's13',
+        ])
+    </div>
+
+    {{-- 1.3b: Master/PhD year 1 (year1_rate) --}}
+    <div style="font-size:0.8rem; font-weight:600; color:var(--fns-gray-500); margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.04em;">
+        ປ.ໂທ / ປ.ເອກ ປີ 1
+    </div>
+    <div class="fns-table-wrap" style="border:1px solid var(--fns-gray-200); box-shadow:none;">
+        @include('dashboards.finance_head.academic-income._program-table', [
+            'programs'      => $programs13_master,
+            'section'       => '1.3',
+            'inputPrefix'   => 's13m',
+            'useYear1Rate'  => true,
         ])
     </div>
 </div>
