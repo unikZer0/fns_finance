@@ -220,8 +220,6 @@ class AcademicIncomeAssessmentController extends Controller
             ]
         );
 
-        return redirect()
-            ->route('head_of_finance.academic-income.summary', $academicIncome)
-            ->with('success', 'ບັນທຶກການປະເມີນລາຍຮັບສຳເລັດ');
+        return back()->with('success', 'ບັນທຶກການປະເມີນລາຍຮັບສຳເລັດ');
     }
 }
