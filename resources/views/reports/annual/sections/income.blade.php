@@ -115,6 +115,16 @@ $s5 = [
 $grandGross = $t11['gross'] + $rt12['gross'] + $t13['gross'] + $rt14['gross'] + $s4['gross'] + $s5['gross'];
 $grandNuol  = $t11['nuol']  + $rt12['nuol']  + $t13['nuol']  + $rt14['nuol'];
 $grandFac   = $t11['fac']   + $rt12['fac']   + $t13['fac']   + $rt14['fac']   + $s4['fac']  + $s5['fac'];
+
+/* ─ Proportional allocation: sec1.1 vs sec1.3 ───── */
+$creditFac   = $t11['fac'] + $t13['fac'];  // total faculty credit income
+$creditGross2 = $t11['gross'] + $t13['gross'];
+$alloc11Pct  = $creditFac > 0 ? $t11['fac'] / $creditFac : 0;
+$alloc13Pct  = $creditFac > 0 ? $t13['fac'] / $creditFac : 0;
+// Round to 4 decimal places then ensure they sum to exactly 1
+$alloc11Pct  = round($alloc11Pct, 6);
+$alloc13Pct  = round(1 - $alloc11Pct, 6);
+$fmtPct2 = fn($v) => number_format($v * 100, 2).'%';
 @endphp
 
 {{-- ═══════════════════════════════════════════════════════════════════
@@ -255,6 +265,41 @@ $grandFac   = $t11['fac']   + $rt12['fac']   + $t13['fac']   + $rt14['fac']   + 
         </tr>
         <tr><td class="c dim">6</td><td class="dim">ຄ່າບໍລິການວິຊາການ ແລະ ຄ່າບໍລິການອື່ນໆ</td><td class="r">—</td><td class="r">—</td><td class="r">0</td><td class="r">0</td><td class="r">0</td><td class="r"></td><td class="r">0</td></tr>
     </tbody>
+</table>
+
+{{-- ═══════════════════════════════════════════════════════════════════
+     PROPORTIONAL ALLOCATION TABLE — sec1.1 vs sec1.3
+     ═══════════════════════════════════════════════════════════════════ --}}
+<table class="rpt-table avoid-break" style="margin-top:6pt; width:55%;">
+    <thead>
+        <tr>
+            <th style="width:6%">ລ/ດ</th>
+            <th style="width:42%">ລາຍການ</th>
+            <th style="width:24%">ລາຍຮັບລວມ ຄວທ (ກີບ)</th>
+            <th style="width:14%">ສ່ວນແບ່ງ (%)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="c dim">1.1</td>
+            <td class="dim">ປີ 2–4 + ປ.ໂທ/ເອກ ປີ 2+</td>
+            <td class="r">{{ $fmt($t11['fac']) }}</td>
+            <td class="r" style="font-weight:600;">{{ $fmtPct2($alloc11Pct) }}</td>
+        </tr>
+        <tr>
+            <td class="c dim">1.3</td>
+            <td class="dim">ປີ 1 (ທຸກລະດັບ)</td>
+            <td class="r">{{ $fmt($t13['fac']) }}</td>
+            <td class="r" style="font-weight:600;">{{ $fmtPct2($alloc13Pct) }}</td>
+        </tr>
+    </tbody>
+    <tfoot>
+        <tr class="subtotal">
+            <td colspan="2" class="c">ລວມຄ່າໜ່ວຍກິດ</td>
+            <td class="r">{{ $fmt($creditFac) }}</td>
+            <td class="r" style="font-weight:700;">100.00%</td>
+        </tr>
+    </tfoot>
 </table>
 
 {{-- ── Summary signature block (4 persons) ── --}}
