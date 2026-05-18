@@ -22,14 +22,14 @@ class CourseCreditController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        $programs = DegreeProgram::orderBy('level')->orderBy('code')->get();
+        $programs = DegreeProgram::orderBy('level')->orderByRaw('study_year IS NULL')->orderBy('study_year')->orderBy('name')->get();
 
         return view('dashboards.finance_head.settings.course-credits.index', compact('settings', 'programs'));
     }
 
     public function create()
     {
-        $programs = DegreeProgram::where('is_active', true)->orderBy('level')->orderBy('code')->get();
+        $programs = DegreeProgram::where('is_active', true)->orderBy('level')->orderByRaw('study_year IS NULL')->orderBy('study_year')->orderBy('name')->get();
 
         return view('dashboards.finance_head.settings.course-credits.create', compact('programs'));
     }
@@ -52,7 +52,7 @@ class CourseCreditController extends Controller
 
     public function edit(CourseCreditSetting $courseCredit)
     {
-        $programs = DegreeProgram::orderBy('level')->orderBy('code')->get();
+        $programs = DegreeProgram::orderBy('level')->orderByRaw('study_year IS NULL')->orderBy('study_year')->orderBy('name')->get();
 
         return view('dashboards.finance_head.settings.course-credits.edit', compact('courseCredit', 'programs'));
     }

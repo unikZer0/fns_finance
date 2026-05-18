@@ -25,8 +25,8 @@ class DegreeProgramController extends Controller
             $query->where('level', $request->level);
         }
 
-        $programs = $query->orderBy('level')->orderBy('code')->paginate(15)->withQueryString();
-        $grouped = DegreeProgram::orderBy('code')->get()->groupBy('level');
+        $programs = $query->orderBy('level')->orderByRaw('study_year IS NULL')->orderBy('study_year')->orderBy('name')->paginate(20)->withQueryString();
+        $grouped = DegreeProgram::orderByRaw('study_year IS NULL')->orderBy('study_year')->orderBy('name')->get()->groupBy('level');
 
         return view('dashboards.finance_head.settings.degree-programs.index', compact('programs', 'grouped'));
     }
@@ -39,13 +39,15 @@ class DegreeProgramController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'code'      => 'required|string|max:50|unique:degree_programs',
-            'name'      => 'required|string|max:255',
-            'level'     => 'required|in:bachelor,master,phd',
-            'is_active' => 'boolean',
+            'code'       => 'required|string|max:50|unique:degree_programs',
+            'name'       => 'required|string|max:255',
+            'level'      => 'required|in:bachelor,master,phd',
+            'study_year' => 'nullable|integer|min:1|max:6',
+            'is_active'  => 'boolean',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['study_year'] = $validated['study_year'] ?: null;
 
         DegreeProgram::create($validated);
 
@@ -62,13 +64,15 @@ class DegreeProgramController extends Controller
     public function update(Request $request, DegreeProgram $degreeProgram)
     {
         $validated = $request->validate([
-            'code'      => ['required', 'string', 'max:50', Rule::unique('degree_programs')->ignore($degreeProgram->id)],
-            'name'      => 'required|string|max:255',
-            'level'     => 'required|in:bachelor,master,phd',
-            'is_active' => 'boolean',
+            'code'       => ['required', 'string', 'max:50', Rule::unique('degree_programs')->ignore($degreeProgram->id)],
+            'name'       => 'required|string|max:255',
+            'level'      => 'required|in:bachelor,master,phd',
+            'study_year' => 'nullable|integer|min:1|max:6',
+            'is_active'  => 'boolean',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['study_year'] = $validated['study_year'] ?: null;
 
         $degreeProgram->update($validated);
 

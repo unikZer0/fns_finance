@@ -27,37 +27,11 @@
 <div class="fns-card" style="margin-bottom:1.25rem;">
     <h3 style="font-weight:600; margin-bottom:0.25rem;">1.1 ລາຍຮັບຄ່າໜ່ວຍກິດ ນ/ສ ປີ 2–4 ລະບົບຈ່າຍເງິນ ແລະ ປ.ໂທ</h3>
     <p style="color:#6b7280; font-size:0.8rem; margin-bottom:1rem;">ສູດ: ນ/ສ × ໜ່ວຍກິດ × ລາຄາ × (1 − % ມຊ) | ງວດ 1 = 60%, ງວດ 2 = 40%</p>
-    <table class="fns-table">
-        <thead>
-            <tr>
-                <th>ສາຂາວິຊາ</th>
-                <th>ລະດັບ</th>
-                <th style="width:80px;">ໜ່ວຍກິດ</th>
-                <th style="width:140px;">ລາຄາ/ໜ່ວຍ</th>
-                <th style="width:120px;">ຈຳນວນ ນ/ສ</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($programs as $p)
-            @php
-                $creditUnit = $p->latestCourseCredit?->course_credit_unit ?? '—';
-                $price = $creditPrices[$p->level]?->credit_unit_price ?? '—';
-                $existing = $existingItems->get('1.1_' . $p->id);
-            @endphp
-            <tr>
-                <td>{{ $p->name }}</td>
-                <td><span class="fns-badge {{ $p->level==='bachelor'?'fns-badge-blue':($p->level==='master'?'fns-badge-green':'fns-badge-purple') }}">{{ $p->level_label }}</span></td>
-                <td style="text-align:center;">{{ $creditUnit }}</td>
-                <td style="text-align:right;">{{ is_numeric($price) ? number_format($price,2) : $price }}</td>
-                <td>
-                    <input type="number" name="s11[{{ $p->id }}]" min="0"
-                        value="{{ old('s11.'.$p->id, $existing?->student_count ?? 0) }}"
-                        class="fns-input">
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+    @include('dashboards.finance_head.academic-income._program-table', [
+        'programs'    => $programs11,
+        'section'     => '1.1',
+        'inputPrefix' => 's11',
+    ])
 </div>
 
 {{-- Section 1.2 --}}
@@ -81,37 +55,11 @@
 <div class="fns-card" style="margin-bottom:1.25rem;">
     <h3 style="font-weight:600; margin-bottom:0.25rem;">1.3 ລາຍຮັບຄ່າໜ່ວຍກິດ ນ/ສ ປີ 1 ລະບົບຈ່າຍເງິນ</h3>
     <p style="color:#6b7280; font-size:0.8rem; margin-bottom:1rem;">ສູດ: ນ/ສ × ໜ່ວຍກິດ × ລາຄາ × (1 − % ມຊ) | ງວດ 1 = 60%</p>
-    <table class="fns-table">
-        <thead>
-            <tr>
-                <th>ສາຂາວິຊາ</th>
-                <th>ລະດັບ</th>
-                <th style="width:80px;">ໜ່ວຍກິດ</th>
-                <th style="width:140px;">ລາຄາ/ໜ່ວຍ</th>
-                <th style="width:120px;">ຈຳນວນ ນ/ສ</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($programs as $p)
-            @php
-                $creditUnit = $p->latestCourseCredit?->course_credit_unit ?? '—';
-                $price = $creditPrices[$p->level]?->credit_unit_price ?? '—';
-                $existing = $existingItems->get('1.3_' . $p->id);
-            @endphp
-            <tr>
-                <td>{{ $p->name }}</td>
-                <td><span class="fns-badge {{ $p->level==='bachelor'?'fns-badge-blue':($p->level==='master'?'fns-badge-green':'fns-badge-purple') }}">{{ $p->level_label }}</span></td>
-                <td style="text-align:center;">{{ $creditUnit }}</td>
-                <td style="text-align:right;">{{ is_numeric($price) ? number_format($price,2) : $price }}</td>
-                <td>
-                    <input type="number" name="s13[{{ $p->id }}]" min="0"
-                        value="{{ old('s13.'.$p->id, $existing?->student_count ?? 0) }}"
-                        class="fns-input">
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+    @include('dashboards.finance_head.academic-income._program-table', [
+        'programs'    => $programs13,
+        'section'     => '1.3',
+        'inputPrefix' => 's13',
+    ])
 </div>
 
 {{-- Section 1.4 --}}

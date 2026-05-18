@@ -32,6 +32,7 @@
                 <th>ລະຫັດ</th>
                 <th>ຊື່ສາຂາວິຊາ</th>
                 <th>ລະດັບ</th>
+                <th>ຊັ້ນປີ</th>
                 <th>ສະຖານະ</th>
                 <th>ຈັດການ</th>
             </tr>
@@ -47,6 +48,7 @@
                         {{ $p->level_label }}
                     </span>
                 </td>
+                <td>{{ $p->study_year ? 'ປີ ' . $p->study_year : '—' }}</td>
                 <td>
                     <span class="fns-badge {{ $p->is_active ? 'fns-badge-green' : 'fns-badge-gray' }}">
                         {{ $p->is_active ? 'ໃຊ້ງານ' : 'ປິດ' }}

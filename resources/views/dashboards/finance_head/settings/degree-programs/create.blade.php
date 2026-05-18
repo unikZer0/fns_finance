@@ -32,6 +32,15 @@
         </div>
 
         <div class="fns-form-group">
+            <label class="fns-label">ຊັ້ນປີ (ສຳລັບ ປ.ຕີ)</label>
+            <input type="number" name="study_year" min="1" max="6"
+                value="{{ old('study_year') }}"
+                class="fns-input @error('study_year') fns-input-error @enderror"
+                placeholder="ຕື່ມສຳລັບ ປ.ຕີ ເທົ່ານັ້ນ">
+            @error('study_year')<p class="fns-error">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fns-form-group">
             <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
                 <input type="checkbox" name="is_active" value="1" @checked(old('is_active', true))>
                 ເປີດໃຊ້ງານ

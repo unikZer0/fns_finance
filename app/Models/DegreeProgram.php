@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class DegreeProgram extends Model
 {
-    protected $fillable = ['code', 'name', 'level', 'is_active'];
+    protected $fillable = ['code', 'name', 'level', 'study_year', 'is_active'];
 
     protected $casts = ['is_active' => 'boolean'];
 

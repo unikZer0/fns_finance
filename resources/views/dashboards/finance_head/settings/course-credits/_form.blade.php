@@ -4,7 +4,7 @@
         <option value="">-- ເລືອກສາຂາວິຊາ --</option>
         @foreach($programs as $p)
             <option value="{{ $p->id }}" @selected(old('degree_program_id', $setting->degree_program_id ?? '') == $p->id)>
-                [{{ $p->level_label }}] {{ $p->code }} — {{ $p->name }}
+                [{{ $p->level_label }}{{ $p->study_year ? ' ປີ '.$p->study_year : '' }}] {{ $p->name }}
             </option>
         @endforeach
     </select>

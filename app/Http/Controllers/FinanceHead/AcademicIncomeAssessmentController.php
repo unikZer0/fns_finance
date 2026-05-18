@@ -20,11 +20,25 @@ class AcademicIncomeAssessmentController extends Controller
                 ->with('error', 'ແຜນທີ່ອະນຸມັດແລ້ວບໍ່ສາມາດແກ້ໄຂໄດ້');
         }
 
-        $programs = DegreeProgram::where('is_active', true)
+        // Section 1.1: bachelor year 2+ and master/phd
+        $programs11 = DegreeProgram::where('is_active', true)
             ->with('latestCourseCredit')
-            ->orderBy('level')
-            ->orderBy('code')
+            ->where(fn($q) => $q
+                ->where(fn($q2) => $q2->where('level', 'bachelor')->where('study_year', '>=', 2))
+                ->orWhereIn('level', ['master', 'phd'])
+            )
+            ->orderBy('level')->orderByRaw('study_year IS NULL')->orderBy('study_year')->orderBy('name')
             ->get();
+
+        // Section 1.3: bachelor year 1
+        $programs13 = DegreeProgram::where('is_active', true)
+            ->with('latestCourseCredit')
+            ->where('level', 'bachelor')
+            ->where(fn($q) => $q->where('study_year', 1)->orWhereNull('study_year'))
+            ->orderBy('name')
+            ->get();
+
+        $programs = $programs11->merge($programs13)->unique('id');
 
         $creditPrices = CreditUnitPriceSetting::orderByDesc('start_year')
             ->get()
@@ -44,7 +58,7 @@ class AcademicIncomeAssessmentController extends Controller
         $existingItems = $academicIncome->items->keyBy(fn($item) => $item->section_code . '_' . $item->degree_program_id);
 
         return view('dashboards.finance_head.academic-income.evaluate', compact(
-            'academicIncome', 'programs', 'creditPrices', 'feeYear2_4', 'feeYear1', 'existingItems'
+            'academicIncome', 'programs11', 'programs13', 'creditPrices', 'feeYear2_4', 'feeYear1', 'existingItems'
         ));
     }
 
@@ -81,7 +95,20 @@ class AcademicIncomeAssessmentController extends Controller
             'nuol_pct_1_4' => $nuolPct['1.4'],
         ]);
 
-        $programs = DegreeProgram::where('is_active', true)->with('latestCourseCredit')->get()->keyBy('id');
+        $programs11 = DegreeProgram::where('is_active', true)
+            ->with('latestCourseCredit')
+            ->where(fn($q) => $q
+                ->where(fn($q2) => $q2->where('level', 'bachelor')->where('study_year', '>=', 2))
+                ->orWhereIn('level', ['master', 'phd'])
+            )->get()->keyBy('id');
+
+        $programs13 = DegreeProgram::where('is_active', true)
+            ->with('latestCourseCredit')
+            ->where('level', 'bachelor')
+            ->where(fn($q) => $q->where('study_year', 1)->orWhereNull('study_year'))
+            ->get()->keyBy('id');
+
+        $programs = $programs11->merge($programs13);
 
         $creditPrices = CreditUnitPriceSetting::orderByDesc('start_year')
             ->get()
@@ -99,9 +126,10 @@ class AcademicIncomeAssessmentController extends Controller
             ->first();
 
         // Sections 1.1 and 1.3 — per degree program
-        foreach (['1.1' => 's11', '1.3' => 's13'] as $sectionCode => $inputKey) {
+        $sectionPrograms = ['1.1' => [$programs11, 's11'], '1.3' => [$programs13, 's13']];
+        foreach ($sectionPrograms as $sectionCode => [$sectionProgramList, $inputKey]) {
             $inputs = $request->input($inputKey, []);
-            foreach ($programs as $program) {
+            foreach ($sectionProgramList as $program) {
                 $count      = (int) ($inputs[$program->id] ?? 0);
                 $creditUnit = $program->latestCourseCredit?->course_credit_unit ?? 0;
                 $price      = $creditPrices[$program->level]?->credit_unit_price ?? 0;
