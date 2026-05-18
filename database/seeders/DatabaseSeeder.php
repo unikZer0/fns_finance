@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             DegreeProgramSeeder::class,
             CourseCreditSeeder::class,
             ExpensePlanSeeder::class,
+            AcademicIncomePlanSeeder::class,
         ]);
     }
 }

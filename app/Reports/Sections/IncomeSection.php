@@ -40,7 +40,7 @@ class IncomeSection
         $p1      = $items->sum('first_payment_amount');
         $p2      = $items->sum('second_payment_amount');
         $gross   = $items->sum(fn ($it) =>
-            in_array($it->section_code, ['1.2', '1.4'])
+            in_array($it->section_code, ['1.2', '1.4', '4', '5'])
                 ? $it->student_count * $it->snap_registration_fee_rate
                 : $it->student_count * $it->snap_course_credit_unit * $it->snap_credit_unit_price
         );

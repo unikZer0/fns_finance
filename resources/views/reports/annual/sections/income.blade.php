@@ -15,29 +15,25 @@
 
 @php
 /* ─ helpers ─────────────────────────────────────── */
-$fmt  = fn($v) => number_format((float)$v, 0);
-$pct  = fn($v) => number_format((float)$v * 100, 0).'%';
+$fmt = fn($v) => number_format((float)$v, 0);
+$pct = fn($v) => number_format((float)$v * 100, 0).'%';
 
 /* ─ raw item collections ─────────────────────────── */
-$sec11 = $grouped->get('1.1', collect());   // bachelor Y2-4 + master/phd
-$sec12 = $grouped->get('1.2', collect());   // Y2-4 registration (1 aggregate row)
-$sec13 = $grouped->get('1.3', collect());   // bachelor Y1
-$sec14 = $grouped->get('1.4', collect());   // Y1 registration   (1 aggregate row)
+$sec11 = $grouped->get('1.1', collect());  // credit yr2-4 + master/phd yr2+
+$sec12 = $grouped->get('1.2', collect());  // yr2-4 registration (aggregate)
+$sec13 = $grouped->get('1.3', collect());  // credit yr1 (bachelor + master yr1)
+$sec14 = $grouped->get('1.4', collect());  // yr1 registration (aggregate)
+$sec4  = $grouped->get('4',   collect());  // ຄ່າບູລະນະຫ້ອງທົດລອງຄອມ
+$sec5  = $grouped->get('5',   collect());  // ຄ່າບຳລຸງອຸປະກອນຫ້ອງທົດລອງ
 
-/* ─ helper: gross income for a credit row ───────── */
-$creditGross = fn($it) => $it->student_count
-                         * $it->snap_course_credit_unit
-                         * $it->snap_credit_unit_price;
+/* ─ sec13 split bachelor / master ───────────────── */
+$sec13_bach = $sec13->filter(fn($it) => $it->degreeProgram?->level === 'bachelor');
+$sec13_mast = $sec13->filter(fn($it) => in_array($it->degreeProgram?->level, ['master','phd']));
 
-/* ─ Section 1.1 sub-totals by study_year group ──── */
-$grpYear = fn($year) => $sec11->filter(
-    fn($it) => $it->degreeProgram?->level === 'bachelor'
-            && $it->degreeProgram?->study_year == $year
-);
-$grpMPD  = $sec11->filter(
-    fn($it) => in_array($it->degreeProgram?->level, ['master','phd'])
-);
+/* ─ gross helper (credit rows) ──────────────────── */
+$creditGross = fn($it) => $it->student_count * $it->snap_course_credit_unit * $it->snap_credit_unit_price;
 
+/* ─ summary group helper ─────────────────────────── */
 $sumGrp = function($items) use ($creditGross) {
     $cnt   = $items->sum('student_count');
     $gross = $items->sum($creditGross);
@@ -46,10 +42,13 @@ $sumGrp = function($items) use ($creditGross) {
     return compact('cnt','gross','fac','nuol');
 };
 
-$s11y2 = $sumGrp($grpYear(2));
-$s11y3 = $sumGrp($grpYear(3));
-$s11y4 = $sumGrp($grpYear(4));
-$s11mp = $sumGrp($grpMPD);
+/* ─ Section 1.1 yr2/3/4 bachelor sub-totals ─────── */
+$grpBach = fn($yr) => $sec11->filter(fn($it) =>
+    $it->degreeProgram?->level === 'bachelor' && $it->degreeProgram?->study_year == $yr
+);
+$s11y2 = $sumGrp($grpBach(2));
+$s11y3 = $sumGrp($grpBach(3));
+$s11y4 = $sumGrp($grpBach(4));
 
 $t11 = [
     'cnt'   => $sec11->sum('student_count'),
@@ -58,11 +57,16 @@ $t11 = [
 ];
 $t11['nuol'] = $t11['gross'] - $t11['fac'];
 
-/* ─ Section 1.2 (registration, 1 aggregate item) ── */
-$r12item = $sec12->first();
-$cnt12   = $r12item?->student_count ?? 0;
+/* ─ Section 2.5: ALL masters (sec11 yr2+ + sec13 yr1) ── */
+$allMasters = $sec11->filter(fn($it) => in_array($it->degreeProgram?->level, ['master','phd']))
+                    ->concat($sec13_mast);
+$s25 = $sumGrp($allMasters);
 
-/* ─ Section 1.3 sub-totals ───────────────────────── */
+/* ─ Section 2.1: bachelor yr1 gross; Excel student count = all sec13 ─ */
+$t13_bach    = $sumGrp($sec13_bach);
+$cnt13_all   = $sec13->sum('student_count'); // 280 (includes yr1 masters)
+
+/* ─ Section 1.3 full total (for detail table footer) */
 $t13 = [
     'cnt'   => $sec13->sum('student_count'),
     'gross' => $sec13->sum($creditGross),
@@ -70,16 +74,17 @@ $t13 = [
 ];
 $t13['nuol'] = $t13['gross'] - $t13['fac'];
 
-/* ─ Section 1.4 (registration, 1 aggregate item) ── */
+/* ─ Registration sections ────────────────────────── */
+$r12item = $sec12->first();
+$cnt12   = $r12item?->student_count ?? 0;
 $r14item = $sec14->first();
 $cnt14   = $r14item?->student_count ?? 0;
 
-/* ─ Reg fee item totals (computed from fee settings) */
 $regFeeTotal = function($setting, $count) {
     if (! $setting || ! $count) return ['gross'=>0,'nuol'=>0,'fac'=>0];
     $gross = 0; $nuol = 0;
     foreach ($setting->items as $fi) {
-        $g     = $fi->amount * $count;
+        $g = $fi->amount * $count;
         $gross += $g;
         $nuol  += $g * $fi->nuol_pct;
     }
@@ -88,10 +93,28 @@ $regFeeTotal = function($setting, $count) {
 $rt12 = $regFeeTotal($feeYear2_4, $cnt12);
 $rt14 = $regFeeTotal($feeYear1,   $cnt14);
 
-/* ─ Grand totals ─────────────────────────────────── */
-$grandGross = $t11['gross'] + $rt12['gross'] + $t13['gross'] + $rt14['gross'];
+/* ─ Sections 4 & 5 ──────────────────────────────── */
+$s4item = $sec4->first();
+$s5item = $sec5->first();
+$s4 = [
+    'cnt'   => $s4item?->student_count ?? 0,
+    'gross' => ($s4item?->student_count ?? 0) * ($s4item?->snap_registration_fee_rate ?? 0),
+    'fac'   => (float)($s4item?->total_income ?? 0),
+    'nuol'  => 0,
+    'rate'  => $s4item?->snap_registration_fee_rate ?? 0,
+];
+$s5 = [
+    'cnt'   => $s5item?->student_count ?? 0,
+    'gross' => ($s5item?->student_count ?? 0) * ($s5item?->snap_registration_fee_rate ?? 0),
+    'fac'   => (float)($s5item?->total_income ?? 0),
+    'nuol'  => 0,
+    'rate'  => $s5item?->snap_registration_fee_rate ?? 0,
+];
+
+/* ─ Grand totals (all sections) ─────────────────── */
+$grandGross = $t11['gross'] + $rt12['gross'] + $t13['gross'] + $rt14['gross'] + $s4['gross'] + $s5['gross'];
 $grandNuol  = $t11['nuol']  + $rt12['nuol']  + $t13['nuol']  + $rt14['nuol'];
-$grandFac   = $t11['fac']   + $rt12['fac']   + $t13['fac']   + $rt14['fac'];
+$grandFac   = $t11['fac']   + $rt12['fac']   + $t13['fac']   + $rt14['fac']   + $s4['fac']  + $s5['fac'];
 @endphp
 
 {{-- ═══════════════════════════════════════════════════════════════════
@@ -174,11 +197,11 @@ $grandFac   = $t11['fac']   + $rt12['fac']   + $t13['fac']   + $rt14['fac'];
         <tr>
             <td class="c dim">2.1</td>
             <td class="dim" style="padding-left:14pt;">ນັກສຶກສາ ປີທີ 1</td>
-            <td class="r">{{ $fmt($t13['cnt']) }}</td>
+            <td class="r">{{ $fmt($cnt13_all) }}</td>
             <td class="r"></td>
-            <td class="r">{{ $fmt($t13['gross']) }}</td>
-            <td class="r">{{ $fmt($t13['nuol']) }}</td>
-            <td class="r">{{ $fmt($t13['fac']) }}</td>
+            <td class="r">{{ $fmt($t13_bach['gross']) }}</td>
+            <td class="r">{{ $fmt($t13_bach['nuol']) }}</td>
+            <td class="r">{{ $fmt($t13_bach['fac']) }}</td>
             <td class="r"></td>
             <td class="r"></td>
         </tr>
@@ -198,18 +221,38 @@ $grandFac   = $t11['fac']   + $rt12['fac']   + $t13['fac']   + $rt14['fac'];
         <tr>
             <td class="c dim">2.5</td>
             <td class="dim" style="padding-left:14pt;">ນັກສຶກສາ ປ. ໂທ + ເອກ</td>
-            <td class="r">{{ $fmt($s11mp['cnt']) }}</td>
+            <td class="r">{{ $fmt($s25['cnt']) }}</td>
             <td class="r"></td>
-            <td class="r">{{ $fmt($s11mp['gross']) }}</td>
-            <td class="r">{{ $fmt($s11mp['nuol']) }}</td>
-            <td class="r">{{ $fmt($s11mp['fac']) }}</td>
+            <td class="r">{{ $fmt($s25['gross']) }}</td>
+            <td class="r">{{ $fmt($s25['nuol']) }}</td>
+            <td class="r">{{ $fmt($s25['fac']) }}</td>
             <td class="r"></td>
             <td class="r"></td>
         </tr>
-        {{-- rows 3-6: other income not in current module --}}
+        {{-- rows 3-6 --}}
         <tr><td class="c dim">3</td><td class="dim">ຄ່າລົງທະບຽນເທີມສາມ</td><td class="r">0</td><td class="r">90,000</td><td class="r">0</td><td class="r">0</td><td class="r">0</td><td class="r"></td><td class="r">0</td></tr>
-        <tr><td class="c dim">4</td><td class="dim">ຄ່າບູລະນະຫ້ອງທົດລອງຄອມພິວເຕີ</td><td class="r">—</td><td class="r">50,000</td><td class="r">0</td><td class="r">0</td><td class="r">0</td><td class="r"></td><td class="r">0</td></tr>
-        <tr><td class="c dim">5</td><td class="dim">ຄ່າບຳລຸງອຸປະກອນຫ້ອງທົດລອງ</td><td class="r">—</td><td class="r">20,000</td><td class="r">0</td><td class="r">0</td><td class="r">0</td><td class="r"></td><td class="r">0</td></tr>
+        <tr>
+            <td class="c dim">4</td>
+            <td class="dim">ຄ່າບູລະນະຫ້ອງທົດລອງຄອມພິວເຕີ</td>
+            <td class="r">{{ $s4['cnt'] ?: '—' }}</td>
+            <td class="r">{{ $s4['rate'] ? $fmt($s4['rate']) : '—' }}</td>
+            <td class="r">{{ $fmt($s4['gross']) }}</td>
+            <td class="r">0</td>
+            <td class="r">{{ $fmt($s4['fac']) }}</td>
+            <td class="r"></td>
+            <td class="r">{{ $fmt($s4['fac']) }}</td>
+        </tr>
+        <tr>
+            <td class="c dim">5</td>
+            <td class="dim">ຄ່າບຳລຸງອຸປະກອນຫ້ອງທົດລອງ</td>
+            <td class="r">{{ $s5['cnt'] ?: '—' }}</td>
+            <td class="r">{{ $s5['rate'] ? $fmt($s5['rate']) : '—' }}</td>
+            <td class="r">{{ $fmt($s5['gross']) }}</td>
+            <td class="r">0</td>
+            <td class="r">{{ $fmt($s5['fac']) }}</td>
+            <td class="r"></td>
+            <td class="r">{{ $fmt($s5['fac']) }}</td>
+        </tr>
         <tr><td class="c dim">6</td><td class="dim">ຄ່າບໍລິການວິຊາການ ແລະ ຄ່າບໍລິການອື່ນໆ</td><td class="r">—</td><td class="r">—</td><td class="r">0</td><td class="r">0</td><td class="r">0</td><td class="r"></td><td class="r">0</td></tr>
     </tbody>
 </table>
@@ -381,11 +424,7 @@ $grandFac   = $t11['fac']   + $rt12['fac']   + $t13['fac']   + $rt14['fac'];
             $gr    = $it->student_count * $fpp;
             $nuolV = $it->snap_nuol_pct;
             $facV  = 1 - $nuolV;
-            $progName = $it->degreeProgram
-                ? ($it->degreeProgram->level === 'bachelor'
-                    ? $it->degreeProgram->name.' ປີທີ 1'
-                    : $it->degreeProgram->name)
-                : '—';
+            $progName = $it->degreeProgram?->name ?? '—';
         @endphp
         <tr>
             <td class="c dim">{{ $idx + 1 }}</td>
