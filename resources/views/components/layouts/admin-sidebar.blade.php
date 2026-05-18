@@ -116,6 +116,11 @@
                         <x-icons.shield-check />
                         ເປີເຊັນ ມຊ (%)
                     </a>
+                    <a href="{{ route('head_of_finance.settings.income-rates.index') }}"
+                        class="fns-nav-item {{ request()->routeIs('head_of_finance.settings.income-rates.*') ? 'active' : '' }}">
+                        <x-icons.settings style="width:16px;height:16px;" />
+                        ອັດຕາລາຍຮັບ (Items 3-6)
+                    </a>
                 </div>
             </div>
         @endcan

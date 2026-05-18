@@ -60,8 +60,15 @@
         '1.2' => '1.2  ລາຍຮັບຄ່າລົງທະບຽນ ນ/ສ ປີ 2–4 ຂອງ ຄວທ',
         '1.3' => '1.3  ລາຍຮັບຄ່າໜ່ວຍກິດ ນ/ສ ປີ 1',
         '1.4' => '1.4  ຄ່າລົງທະບຽນ ນ/ສ ປີ 1 ຂອງ ຄວທ',
+        '2.1' => '2.1  ລາຍຮັບ Item 3',
+        '2.2' => '2.2  ລາຍຮັບ Item 4',
+        '2.3' => '2.3  ລາຍຮັບ Item 5',
+        '2.4' => '2.4  ລາຍຮັບ Item 6',
     ];
-    $sectionColors = ['1.1' => '#3b82f6', '1.2' => '#10b981', '1.3' => '#f59e0b', '1.4' => '#8b5cf6'];
+    $sectionColors = [
+        '1.1' => '#3b82f6', '1.2' => '#10b981', '1.3' => '#f59e0b', '1.4' => '#8b5cf6',
+        '2.1' => '#6366f1', '2.2' => '#0ea5e9', '2.3' => '#14b8a6', '2.4' => '#f97316',
+    ];
 @endphp
 
 @foreach($grouped as $sectionCode => $items)
@@ -112,7 +119,7 @@
 <div class="fns-grand-total">
     <div>
         <div class="fns-grand-total-label">ລວມລາຍຮັບວິຊາການທັງໝົດ</div>
-        <div style="font-size:0.72rem; color:rgba(255,255,255,0.35); margin-top:0.1rem;">ໝວດ 1.1 + 1.2 + 1.3 + 1.4</div>
+        <div style="font-size:0.72rem; color:rgba(255,255,255,0.35); margin-top:0.1rem;">ໝວດ 1.1 + 1.2 + 1.3 + 1.4 + Items 3–6</div>
     </div>
     <div class="fns-grand-total-amount">{{ number_format($grandTotal, 2) }} <span style="font-size:0.85rem; color:rgba(255,255,255,0.5);">ກີບ</span></div>
 </div>

@@ -9,6 +9,7 @@ use App\Models\CreditUnitPriceSetting;
 use App\Models\DegreeProgram;
 use App\Models\NuolPctSetting;
 use App\Models\RegistrationFeeSetting;
+use App\Models\IncomeRateSetting;
 use Illuminate\Http\Request;
 
 class AcademicIncomeAssessmentController extends Controller
@@ -56,11 +57,12 @@ class AcademicIncomeAssessmentController extends Controller
 
         $nuolBachelor  = NuolPctSetting::latestFor('bachelor');
         $nuolMasterPhd = NuolPctSetting::latestFor('master_phd');
+        $incomeRates   = IncomeRateSetting::allKeyed();
 
         return view('dashboards.finance_head.academic-income.evaluate', compact(
             'academicIncome', 'programs11', 'programs13_bach', 'programs13_master',
             'creditPrices', 'feeYear2_4', 'feeYear1', 'existingItems',
-            'nuolBachelor', 'nuolMasterPhd'
+            'nuolBachelor', 'nuolMasterPhd', 'incomeRates'
         ));
     }
 
@@ -79,6 +81,10 @@ class AcademicIncomeAssessmentController extends Controller
             's13m.*'       => 'nullable|integer|min:0',
             'students_1_2' => 'required|integer|min:0',
             'students_1_4' => 'required|integer|min:0',
+            'students_2_1' => 'required|integer|min:0',
+            'students_2_2' => 'required|integer|min:0',
+            'students_2_3' => 'required|integer|min:0',
+            'students_2_4' => 'required|integer|min:0',
         ]);
 
         $nuolBachelor  = NuolPctSetting::latestFor('bachelor')?->percentage ?? 0.17;
@@ -215,6 +221,77 @@ class AcademicIncomeAssessmentController extends Controller
                 'snap_registration_fee_rate' => $feeRate1,
                 'snap_nuol_pct'              => $nuolBachelor,
                 'total_income'               => $total14,
+                'first_payment_amount'       => 0,
+                'second_payment_amount'      => 0,
+            ]
+        );
+
+        // Sections 2.1–2.4 — income rate based items
+        $incomeRates = IncomeRateSetting::allKeyed();
+
+        // 2.1 — count × item3_rate
+        $rate21  = (float) ($incomeRates->get('item3_rate')?->rate ?? 0);
+        $count21 = (int) $request->students_2_1;
+        AcademicIncomeItem::updateOrCreate(
+            ['plan_id' => $academicIncome->id, 'section_code' => '2.1', 'degree_program_id' => null],
+            [
+                'student_count'              => $count21,
+                'snap_credit_unit_price'     => $rate21,
+                'snap_course_credit_unit'    => null,
+                'snap_registration_fee_rate' => null,
+                'snap_nuol_pct'              => 0,
+                'total_income'               => $count21 * $rate21,
+                'first_payment_amount'       => 0,
+                'second_payment_amount'      => 0,
+            ]
+        );
+
+        // 2.2 — count(1.2+1.4) × item4_rate
+        $rate22  = (float) ($incomeRates->get('item4_rate')?->rate ?? 0);
+        $count22 = (int) $request->students_2_2;
+        AcademicIncomeItem::updateOrCreate(
+            ['plan_id' => $academicIncome->id, 'section_code' => '2.2', 'degree_program_id' => null],
+            [
+                'student_count'              => $count22,
+                'snap_credit_unit_price'     => null,
+                'snap_course_credit_unit'    => null,
+                'snap_registration_fee_rate' => $rate22,
+                'snap_nuol_pct'              => 0,
+                'total_income'               => $count22 * $rate22,
+                'first_payment_amount'       => 0,
+                'second_payment_amount'      => 0,
+            ]
+        );
+
+        // 2.3 — count(1.2+1.4) × item5_rate
+        $rate23  = (float) ($incomeRates->get('item5_rate')?->rate ?? 0);
+        $count23 = (int) $request->students_2_3;
+        AcademicIncomeItem::updateOrCreate(
+            ['plan_id' => $academicIncome->id, 'section_code' => '2.3', 'degree_program_id' => null],
+            [
+                'student_count'              => $count23,
+                'snap_credit_unit_price'     => null,
+                'snap_course_credit_unit'    => null,
+                'snap_registration_fee_rate' => $rate23,
+                'snap_nuol_pct'              => 0,
+                'total_income'               => $count23 * $rate23,
+                'first_payment_amount'       => 0,
+                'second_payment_amount'      => 0,
+            ]
+        );
+
+        // 2.4 — count × item6_rate
+        $rate24  = (float) ($incomeRates->get('item6_rate')?->rate ?? 0);
+        $count24 = (int) $request->students_2_4;
+        AcademicIncomeItem::updateOrCreate(
+            ['plan_id' => $academicIncome->id, 'section_code' => '2.4', 'degree_program_id' => null],
+            [
+                'student_count'              => $count24,
+                'snap_credit_unit_price'     => $rate24,
+                'snap_course_credit_unit'    => null,
+                'snap_registration_fee_rate' => null,
+                'snap_nuol_pct'              => 0,
+                'total_income'               => $count24 * $rate24,
                 'first_payment_amount'       => 0,
                 'second_payment_amount'      => 0,
             ]

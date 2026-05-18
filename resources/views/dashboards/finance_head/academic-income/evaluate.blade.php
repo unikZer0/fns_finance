@@ -125,6 +125,114 @@
     </div>
 </div>
 
+{{-- Section 2.1 --}}
+<div class="fns-card" style="margin-bottom:1.25rem;">
+    <div class="fns-sec-hd">
+        <div class="fns-sec-num">3</div>
+        <div>
+            <div class="fns-sec-title">{{ $incomeRates->get('item3_rate')?->label ?? 'Item 3' }}</div>
+            <div class="fns-sec-desc">ສູດ: ຈຳນວນ ນ/ສ × ອັດຕາຕໍ່ໜ່ວຍ</div>
+        </div>
+    </div>
+    <div class="fns-rate-chip" style="margin-bottom:1rem; display:inline-flex; gap:1rem; align-items:center;">
+        <div>
+            <div class="fns-rate-chip-label">ອັດຕາຕໍ່ ນ/ສ</div>
+            <div class="fns-rate-chip-val" style="font-size:1.05rem;">{{ number_format((float)($incomeRates->get('item3_rate')?->rate ?? 0), 0) }} ກີບ</div>
+        </div>
+    </div>
+    <div class="fns-form-group" style="max-width:240px; margin-bottom:0;">
+        <label class="fns-label">ຈຳນວນ ນ/ສ</label>
+        <input type="number" name="students_2_1" id="students_2_1" min="0"
+            value="{{ old('students_2_1', $existingItems->get('2.1_')?->student_count ?? 0) }}"
+            class="fns-input" required>
+    </div>
+</div>
+
+{{-- Section 2.2 --}}
+<div class="fns-card" style="margin-bottom:1.25rem;">
+    <div class="fns-sec-hd">
+        <div class="fns-sec-num">4</div>
+        <div>
+            <div class="fns-sec-title">{{ $incomeRates->get('item4_rate')?->label ?? 'Item 4' }}</div>
+            <div class="fns-sec-desc">ສູດ: ຈຳນວນ ນ/ສ ທັງໝົດ (1.2 + 1.4) × ອັດຕາຕໍ່ໜ່ວຍ</div>
+        </div>
+    </div>
+    <div class="fns-rate-chip" style="margin-bottom:1rem; display:inline-flex; gap:1rem; align-items:center;">
+        <div>
+            <div class="fns-rate-chip-label">ອັດຕາຕໍ່ ນ/ສ</div>
+            <div class="fns-rate-chip-val" style="font-size:1.05rem;">{{ number_format((float)($incomeRates->get('item4_rate')?->rate ?? 0), 0) }} ກີບ</div>
+        </div>
+    </div>
+    <div style="display:flex; gap:0.5rem; align-items:flex-end; max-width:380px;">
+        <div class="fns-form-group" style="flex:1; margin-bottom:0;">
+            <label class="fns-label">ຈຳນວນ ນ/ສ ທັງໝົດ (1.2 + 1.4)</label>
+            <input type="number" name="students_2_2" id="students_2_2" min="0"
+                value="{{ old('students_2_2', $existingItems->get('2.2_')?->student_count ?? 0) }}"
+                class="fns-input" required>
+        </div>
+        <button type="button" class="fns-btn fns-btn-secondary" id="btn_auto_22"
+            onclick="autoFill('students_2_2')"
+            title="ຄຳນວນ ນ/ສ ທັງໝົດ ອັດຕະໂນມັດ (1.2 + 1.4)"
+            style="margin-bottom:0; white-space:nowrap;">
+            ⚡ Auto
+        </button>
+    </div>
+</div>
+
+{{-- Section 2.3 --}}
+<div class="fns-card" style="margin-bottom:1.25rem;">
+    <div class="fns-sec-hd">
+        <div class="fns-sec-num">5</div>
+        <div>
+            <div class="fns-sec-title">{{ $incomeRates->get('item5_rate')?->label ?? 'Item 5' }}</div>
+            <div class="fns-sec-desc">ສູດ: ຈຳນວນ ນ/ສ ທັງໝົດ (1.2 + 1.4) × ອັດຕາຕໍ່ໜ່ວຍ</div>
+        </div>
+    </div>
+    <div class="fns-rate-chip" style="margin-bottom:1rem; display:inline-flex; gap:1rem; align-items:center;">
+        <div>
+            <div class="fns-rate-chip-label">ອັດຕາຕໍ່ ນ/ສ</div>
+            <div class="fns-rate-chip-val" style="font-size:1.05rem;">{{ number_format((float)($incomeRates->get('item5_rate')?->rate ?? 0), 0) }} ກີບ</div>
+        </div>
+    </div>
+    <div style="display:flex; gap:0.5rem; align-items:flex-end; max-width:380px;">
+        <div class="fns-form-group" style="flex:1; margin-bottom:0;">
+            <label class="fns-label">ຈຳນວນ ນ/ສ ທັງໝົດ (1.2 + 1.4)</label>
+            <input type="number" name="students_2_3" id="students_2_3" min="0"
+                value="{{ old('students_2_3', $existingItems->get('2.3_')?->student_count ?? 0) }}"
+                class="fns-input" required>
+        </div>
+        <button type="button" class="fns-btn fns-btn-secondary" id="btn_auto_23"
+            onclick="autoFill('students_2_3')"
+            title="ຄຳນວນ ນ/ສ ທັງໝົດ ອັດຕະໂນມັດ (1.2 + 1.4)"
+            style="margin-bottom:0; white-space:nowrap;">
+            ⚡ Auto
+        </button>
+    </div>
+</div>
+
+{{-- Section 2.4 --}}
+<div class="fns-card" style="margin-bottom:1.25rem;">
+    <div class="fns-sec-hd">
+        <div class="fns-sec-num">6</div>
+        <div>
+            <div class="fns-sec-title">{{ $incomeRates->get('item6_rate')?->label ?? 'Item 6' }}</div>
+            <div class="fns-sec-desc">ສູດ: ຈຳນວນ ນ/ສ × ອັດຕາຕໍ່ໜ່ວຍ</div>
+        </div>
+    </div>
+    <div class="fns-rate-chip" style="margin-bottom:1rem; display:inline-flex; gap:1rem; align-items:center;">
+        <div>
+            <div class="fns-rate-chip-label">ອັດຕາຕໍ່ ນ/ສ</div>
+            <div class="fns-rate-chip-val" style="font-size:1.05rem;">{{ number_format((float)($incomeRates->get('item6_rate')?->rate ?? 0), 0) }} ກີບ</div>
+        </div>
+    </div>
+    <div class="fns-form-group" style="max-width:240px; margin-bottom:0;">
+        <label class="fns-label">ຈຳນວນ ນ/ສ</label>
+        <input type="number" name="students_2_4" id="students_2_4" min="0"
+            value="{{ old('students_2_4', $existingItems->get('2.4_')?->student_count ?? 0) }}"
+            class="fns-input" required>
+    </div>
+</div>
+
 {{-- Submit --}}
 <div style="display:flex; gap:0.5rem; align-items:center;">
     <button type="submit" class="fns-btn fns-btn-primary">
@@ -133,6 +241,16 @@
     </button>
     <a href="{{ route('head_of_finance.academic-income.show', $academicIncome) }}" class="fns-btn fns-btn-secondary">ຍົກເລີກ</a>
 </div>
+
+@push('scripts')
+<script>
+function autoFill(targetId) {
+    const v12 = parseInt(document.querySelector('[name=students_1_2]')?.value || 0, 10);
+    const v14 = parseInt(document.querySelector('[name=students_1_4]')?.value || 0, 10);
+    document.getElementById(targetId).value = v12 + v14;
+}
+</script>
+@endpush
 
 </form>
 @endsection

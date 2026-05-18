@@ -32,6 +32,9 @@ Route::middleware(['auth', 'check.active', 'role:head_of_finance'])
             Route::resource('course-credits', \App\Http\Controllers\FinanceHead\Settings\CourseCreditController::class, ['parameters' => ['course-credits' => 'courseCredit']])->except(['show']);
             Route::resource('registration-fee', \App\Http\Controllers\FinanceHead\Settings\RegistrationFeeController::class, ['parameters' => ['registration-fee' => 'registrationFee']])->except(['show']);
             Route::resource('nuol-pct', \App\Http\Controllers\FinanceHead\Settings\NuolPctSettingController::class, ['parameters' => ['nuol-pct' => 'nuolPct']])->except(['show']);
+            // Income Rate Settings (single-page: index + one patch to update all 4 keys)
+            Route::get('income-rates', [\App\Http\Controllers\FinanceHead\Settings\IncomeRateSettingController::class, 'index'])->name('income-rates.index');
+            Route::patch('income-rates', [\App\Http\Controllers\FinanceHead\Settings\IncomeRateSettingController::class, 'update'])->name('income-rates.update');
         });
 
         // Academic Income

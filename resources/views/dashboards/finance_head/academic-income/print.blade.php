@@ -150,12 +150,16 @@ $sec11 = $grouped->get('1.1', collect());
 $sec12 = $grouped->get('1.2', collect());
 $sec13 = $grouped->get('1.3', collect());
 $sec14 = $grouped->get('1.4', collect());
+$sec21 = $grouped->get('2.1', collect());
+$sec22 = $grouped->get('2.2', collect());
+$sec23 = $grouped->get('2.3', collect());
+$sec24 = $grouped->get('2.4', collect());
 
 $calc = function(Collection $items): array {
     $gross = $items->sum(fn($it) =>
-        $it->section_code === '1.2' || $it->section_code === '1.4'
+        in_array($it->section_code, ['1.2','1.4','2.2','2.3'])
             ? $it->student_count * $it->snap_registration_fee_rate
-            : $it->student_count * $it->snap_course_credit_unit * $it->snap_credit_unit_price
+            : $it->student_count * ($it->snap_credit_unit_price ?? 0)
     );
     $fac   = $items->sum('total_income');
     $nuol  = $gross - $fac;
@@ -168,12 +172,16 @@ $t11 = $calc($sec11);
 $t12 = $calc($sec12);
 $t13 = $calc($sec13);
 $t14 = $calc($sec14);
+$t21 = $calc($sec21);
+$t22 = $calc($sec22);
+$t23 = $calc($sec23);
+$t24 = $calc($sec24);
 
-$grandFac   = $t11['fac']  + $t12['fac']  + $t13['fac']  + $t14['fac'];
-$grandGross = $t11['gross'] + $t12['gross'] + $t13['gross'] + $t14['gross'];
-$grandNuol  = $t11['nuol'] + $t12['nuol'] + $t13['nuol'] + $t14['nuol'];
-$grandP1    = $t11['p1']   + $t12['p1']   + $t13['p1']   + $t14['p1'];
-$grandP2    = $t11['p2']   + $t12['p2']   + $t13['p2']   + $t14['p2'];
+$grandFac   = $t11['fac']  + $t12['fac']  + $t13['fac']  + $t14['fac']  + $t21['fac']  + $t22['fac']  + $t23['fac']  + $t24['fac'];
+$grandGross = $t11['gross'] + $t12['gross'] + $t13['gross'] + $t14['gross'] + $t21['gross'] + $t22['gross'] + $t23['gross'] + $t24['gross'];
+$grandNuol  = $t11['nuol'] + $t12['nuol'] + $t13['nuol'] + $t14['nuol'] + $t21['nuol'] + $t22['nuol'] + $t23['nuol'] + $t24['nuol'];
+$grandP1    = $t11['p1']   + $t12['p1']   + $t13['p1']   + $t14['p1']   + $t21['p1']   + $t22['p1']   + $t23['p1']   + $t24['p1'];
+$grandP2    = $t11['p2']   + $t12['p2']   + $t13['p2']   + $t14['p2']   + $t21['p2']   + $t22['p2']   + $t23['p2']   + $t24['p2'];
 @endphp
 
 {{-- ═══════════════════════════════════════════
@@ -403,9 +411,53 @@ $grandP2    = $t11['p2']   + $t12['p2']   + $t13['p2']   + $t14['p2'];
     </tfoot>
 </table>
 
-{{-- ═══════════════════════════════════════════
-     GRAND TOTAL SUMMARY TABLE
-     ═══════════════════════════════════════════ --}}
+{{-- ==========================================================
+     SECTIONS 2.1–2.4 — Income Rate Items 3–6
+     ========================================================== --}}
+@foreach([
+    '2.1' => ['label' => 'Item 3', 't' => $t21, 'sec' => $sec21, 'type' => 'rate'],
+    '2.2' => ['label' => 'Item 4 (1.2+1.4 × ອັດຕາ)', 't' => $t22, 'sec' => $sec22, 'type' => 'fee'],
+    '2.3' => ['label' => 'Item 5 (1.2+1.4 × ອັດຕາ)', 't' => $t23, 'sec' => $sec23, 'type' => 'fee'],
+    '2.4' => ['label' => 'Item 6', 't' => $t24, 'sec' => $sec24, 'type' => 'rate'],
+] as $secCode => [$secLabel, $secT, $secItems, $secType])
+<div class="sec-hd"><span>{{ $secCode }}</span>{{ $secLabel }}</div>
+<table>
+    <thead>
+        <tr>
+            <th style="width:3%">#</th>
+            <th style="width:30%">ລາຍການ</th>
+            <th style="width:10%">ຈຳ ນ/ສ</th>
+            <th style="width:14%">ອັດຕາ/ຄົນ (ກີບ)</th>
+            <th style="width:14%">ລາຍຮັບລວມ (ກີບ)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($secItems as $idx => $item)
+        @php
+            $rateSnap = $secType === 'fee' ? ($item->snap_registration_fee_rate ?? 0) : ($item->snap_credit_unit_price ?? 0);
+            $grossRow = $item->student_count * $rateSnap;
+        @endphp
+        <tr>
+            <td class="c">{{ $idx + 1 }}</td>
+            <td>{{ $item->degreeProgram?->name ?? 'ລວມ (ທຸກສາຂາ)' }}</td>
+            <td class="r">{{ number_format($item->student_count) }}</td>
+            <td class="r">{{ number_format($rateSnap, 0) }}</td>
+            <td class="r">{{ number_format($item->total_income, 0) }}</td>
+        </tr>
+        @empty
+        <tr><td colspan="5" class="c" style="color:#999;padding:6pt;">ບໍ່ມີຂໍ້ມູນ</td></tr>
+        @endforelse
+    </tbody>
+    <tfoot>
+        <tr class="subtotal">
+            <td colspan="4" class="c">ລວມໝວດ {{ $secCode }}</td>
+            <td class="r">{{ number_format($secT['fac'], 0) }}</td>
+        </tr>
+    </tfoot>
+</table>
+@endforeach
+
+
 <div class="summary-wrap">
     <div class="summary-title">ສັງລວມລາຍຮັບວິຊາການທັງໝົດ</div>
     <table class="sum-table">
@@ -426,6 +478,10 @@ $grandP2    = $t11['p2']   + $t12['p2']   + $t13['p2']   + $t14['p2'];
                 '2' => ['ໝວດ 1.2 — ຄ່າລົງທະບຽນ ປີ 2–4',             $t12],
                 '3' => ['ໝວດ 1.3 — ຄ່າໜ່ວຍກິດ ປີ 1',                 $t13],
                 '4' => ['ໝວດ 1.4 — ຄ່າລົງທະບຽນ ປີ 1',                $t14],
+                '5' => ['ໝວດ 2.1 — Item 3',                            $t21],
+                '6' => ['ໝວດ 2.2 — Item 4',                            $t22],
+                '7' => ['ໝວດ 2.3 — Item 5',                            $t23],
+                '8' => ['ໝວດ 2.4 — Item 6',                            $t24],
             ] as $num => [$label, $t])
             <tr>
                 <td class="c">{{ $num }}</td>
