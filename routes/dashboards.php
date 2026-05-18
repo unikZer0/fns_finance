@@ -41,6 +41,11 @@ Route::middleware(['auth', 'check.active', 'role:head_of_finance'])
         Route::get('academic-income/{academicIncome}/summary', [\App\Http\Controllers\FinanceHead\AcademicIncomeSummaryController::class, 'summary'])->name('academic-income.summary');
         Route::get('academic-income/{academicIncome}/print', [\App\Http\Controllers\FinanceHead\AcademicIncomeSummaryController::class, 'printView'])->name('academic-income.print');
         Route::post('academic-income/{academicIncome}/approve', [\App\Http\Controllers\FinanceHead\AcademicIncomePlanController::class, 'approve'])->name('academic-income.approve');
+
+        // Annual Report (multi-module PDF)
+        Route::get('reports/{year}', [\App\Http\Controllers\FinanceHead\AnnualReportController::class, 'show'])
+             ->name('reports.show')
+             ->where('year', '[0-9]{4}');
     });
 
 // 3. Faculty Head
