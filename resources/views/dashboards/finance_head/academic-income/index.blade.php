@@ -71,11 +71,9 @@
                 <td style="font-size:0.82rem; color:var(--fns-gray-400); font-variant-numeric:tabular-nums;">{{ $plan->created_at->format('d/m/Y') }}</td>
                 <td>
                     <div style="display:flex; gap:0.35rem; flex-wrap:wrap; align-items:center;">
-                        <a href="{{ route('head_of_finance.academic-income.show', $plan) }}" class="fns-btn fns-btn-sm fns-btn-secondary">ລາຍລະອຽດ</a>
                         @if(!$plan->isApproved())
                             <a href="{{ route('head_of_finance.academic-income.evaluate', $plan) }}" class="fns-btn fns-btn-sm fns-btn-primary">ປ້ອນຂໍ້ມູນ</a>
                         @endif
-                        <a href="{{ route('head_of_finance.academic-income.summary', $plan) }}" class="fns-btn fns-btn-sm fns-btn-secondary">ສັງລວມ</a>
                         @if(!$plan->isApproved())
                             <form method="POST" action="{{ route('head_of_finance.academic-income.destroy', $plan) }}" style="display:inline;"
                                 onsubmit="return confirm('ລຶບແຜນປີ {{ $plan->fiscal_year }} ບໍ?\nການລຶບບໍ່ສາມາດກູ້ຄືນໄດ້.')">

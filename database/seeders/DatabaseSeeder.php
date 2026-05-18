@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             DepartmentSeeder::class,
             AdminUserSeeder::class,
+            DegreeProgramSeeder::class,
+            CourseCreditSeeder::class,
         ]);
     }
 }
