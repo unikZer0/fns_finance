@@ -24,6 +24,21 @@ Route::middleware(['auth', 'check.active', 'role:head_of_finance'])
     ->name('head_of_finance.')
     ->group(function () {
         Route::get('/home', [\App\Http\Controllers\FinanceHead\HomeController::class, 'index'])->name('home');
+
+        // Settings
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::resource('degree-programs', \App\Http\Controllers\FinanceHead\Settings\DegreeProgramController::class)->except(['show']);
+            Route::resource('credit-unit-price', \App\Http\Controllers\FinanceHead\Settings\CreditUnitPriceController::class, ['parameters' => ['credit-unit-price' => 'creditUnitPrice']])->except(['show']);
+            Route::resource('course-credits', \App\Http\Controllers\FinanceHead\Settings\CourseCreditController::class, ['parameters' => ['course-credits' => 'courseCredit']])->except(['show']);
+            Route::resource('registration-fee', \App\Http\Controllers\FinanceHead\Settings\RegistrationFeeController::class, ['parameters' => ['registration-fee' => 'registrationFee']])->except(['show']);
+        });
+
+        // Academic Income
+        Route::resource('academic-income', \App\Http\Controllers\FinanceHead\AcademicIncomePlanController::class, ['parameters' => ['academic-income' => 'academicIncome']])->except(['edit', 'update']);
+        Route::get('academic-income/{academicIncome}/evaluate', [\App\Http\Controllers\FinanceHead\AcademicIncomeAssessmentController::class, 'evaluate'])->name('academic-income.evaluate');
+        Route::post('academic-income/{academicIncome}/evaluate', [\App\Http\Controllers\FinanceHead\AcademicIncomeAssessmentController::class, 'saveEvaluate'])->name('academic-income.saveEvaluate');
+        Route::get('academic-income/{academicIncome}/summary', [\App\Http\Controllers\FinanceHead\AcademicIncomeSummaryController::class, 'summary'])->name('academic-income.summary');
+        Route::post('academic-income/{academicIncome}/approve', [\App\Http\Controllers\FinanceHead\AcademicIncomePlanController::class, 'approve'])->name('academic-income.approve');
     });
 
 // 3. Faculty Head

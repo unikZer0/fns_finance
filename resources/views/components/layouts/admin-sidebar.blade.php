@@ -61,6 +61,46 @@
                 <x-icons.home />
                 ໜ້າຫຼັກ
             </a>
+
+            <div class="fns-nav-section-label">ລາຍຮັບວິຊາການ</div>
+            <a href="{{ route('head_of_finance.academic-income.index') }}"
+                class="fns-nav-item {{ request()->routeIs('head_of_finance.academic-income.*') ? 'active' : '' }}">
+                <x-icons.book-open />
+                ການປະເມີນລາຍຮັບ
+            </a>
+
+            <div class="fns-nav-section-label">ການຕັ້ງຄ່າ</div>
+            <div x-data="{ openFhSettings: {{ request()->routeIs('head_of_finance.settings.*') ? 'true' : 'false' }} }">
+                <button class="fns-nav-group-btn" @click="openFhSettings = !openFhSettings">
+                    <span style="display:flex; align-items:center; gap:0.6rem;">
+                        <x-icons.settings style="width:16px;height:16px;flex-shrink:0;" />
+                        ການຕັ້ງຄ່າ
+                    </span>
+                    <span :style="openFhSettings ? 'transform:rotate(180deg)' : ''" style="display:inline-flex;transition:transform 0.2s;"><x-icons.chevron-down style="width:13px;height:13px;" /></span>
+                </button>
+                <div x-show="openFhSettings" x-transition class="fns-nav-group-children">
+                    <a href="{{ route('head_of_finance.settings.degree-programs.index') }}"
+                        class="fns-nav-item {{ request()->routeIs('head_of_finance.settings.degree-programs.*') ? 'active' : '' }}">
+                        <x-icons.building-office />
+                        ສາຂາວິຊາ
+                    </a>
+                    <a href="{{ route('head_of_finance.settings.credit-unit-price.index') }}"
+                        class="fns-nav-item {{ request()->routeIs('head_of_finance.settings.credit-unit-price.*') ? 'active' : '' }}">
+                        <x-icons.calendar />
+                        ລາຄາຄ່າໜ່ວຍກິດ
+                    </a>
+                    <a href="{{ route('head_of_finance.settings.course-credits.index') }}"
+                        class="fns-nav-item {{ request()->routeIs('head_of_finance.settings.course-credits.*') ? 'active' : '' }}">
+                        <x-icons.book-open />
+                        ໜ່ວຍກິດຕາມຫຼັກສູດ
+                    </a>
+                    <a href="{{ route('head_of_finance.settings.registration-fee.index') }}"
+                        class="fns-nav-item {{ request()->routeIs('head_of_finance.settings.registration-fee.*') ? 'active' : '' }}">
+                        <x-icons.shield-check />
+                        ຄ່າລົງທະບຽນ
+                    </a>
+                </div>
+            </div>
         @endcan
 
     </nav>
