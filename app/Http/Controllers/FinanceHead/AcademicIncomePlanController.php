@@ -14,7 +14,13 @@ class AcademicIncomePlanController extends Controller
             ->orderByDesc('fiscal_year')
             ->paginate(15);
 
-        return view('dashboards.finance_head.academic-income.index', compact('plans'));
+        $counts = AcademicIncomePlan::selectRaw("
+            count(*) as total,
+            sum(status = 'APPROVED') as approved,
+            sum(status = 'DRAFT') as draft
+        ")->first();
+
+        return view('dashboards.finance_head.academic-income.index', compact('plans', 'counts'));
     }
 
     public function create()

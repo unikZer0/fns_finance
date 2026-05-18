@@ -1,12 +1,12 @@
 <table class="fns-table">
     <thead>
         <tr>
-            <th>ຊັ້ນປີ</th>
+            <th style="width:5rem;">ຊັ້ນປີ</th>
             <th>ສາຂາວິຊາ</th>
-            <th>ລະດັບ</th>
-            <th style="width:80px;">ໜ່ວຍກິດ</th>
-            <th style="width:150px;">ລາຄາ/ໜ່ວຍ (ກີບ)</th>
-            <th style="width:120px;">ຈຳນວນ ນ/ສ</th>
+            <th style="width:6rem;">ລະດັບ</th>
+            <th class="col-num" style="width:5rem;">ໜ່ວຍກິດ</th>
+            <th class="col-num" style="width:12rem;">ລາຄາ/ໜ່ວຍ (ກີບ)</th>
+            <th class="col-num" style="width:8rem;">ຈຳນວນ ນ/ສ</th>
         </tr>
     </thead>
     <tbody>
@@ -15,37 +15,48 @@
             $creditUnit = $p->latestCourseCredit?->course_credit_unit ?? null;
             $price      = $creditPrices[$p->level]?->credit_unit_price ?? null;
             $existing   = $existingItems->get($section . '_' . $p->id);
+            $warn       = !$creditUnit || !$price;
         @endphp
-        <tr>
-            <td>{{ $p->study_year ? 'ປີ ' . $p->study_year : '—' }}</td>
-            <td>{{ $p->name }}</td>
+        <tr @if($warn) style="background:rgba(245,158,11,0.04);" @endif>
+            <td style="font-size:0.83rem; color:var(--fns-gray-600); text-align:center;">
+                {{ $p->study_year ? 'ປີ '.$p->study_year : '—' }}
+            </td>
+            <td style="font-size:0.85rem;">
+                {{ $p->name }}
+                @if($warn)
+                    <span title="ຍັງບໍ່ຕັ້ງຄ່າໜ່ວຍກິດ/ລາຄາ" style="color:#d97706; font-size:0.7rem; margin-left:0.3rem;">⚠</span>
+                @endif
+            </td>
             <td>
-                <span class="fns-badge {{ $p->level==='bachelor'?'fns-badge-blue':($p->level==='master'?'fns-badge-green':'fns-badge-purple') }}">
+                <span class="fns-badge {{ $p->level==='bachelor'?'fns-badge-blue':($p->level==='master'?'fns-badge-green':'fns-badge-purple') }}" style="font-size:0.68rem;">
                     {{ $p->level_label }}
                 </span>
             </td>
-            <td style="text-align:center;">
+            <td class="col-num" style="font-size:0.85rem;">
                 @if($creditUnit)
                     {{ $creditUnit }}
                 @else
-                    <span style="color:#f59e0b;" title="ຍັງບໍ່ຕັ້ງຄ່າ">—</span>
+                    <span style="color:#d97706;" title="ຍັງບໍ່ຕັ້ງຄ່າ">—</span>
                 @endif
             </td>
-            <td style="text-align:right;">
+            <td class="col-num" style="font-size:0.85rem;">
                 @if($price)
-                    {{ number_format($price, 2) }}
+                    {{ number_format($price, 0) }}
                 @else
-                    <span style="color:#f59e0b;" title="ຍັງບໍ່ຕັ້ງລາຄາ">—</span>
+                    <span style="color:#d97706;" title="ຍັງບໍ່ຕັ້ງລາຄາ">—</span>
                 @endif
             </td>
             <td>
                 <input type="number" name="{{ $inputPrefix }}[{{ $p->id }}]" min="0"
                     value="{{ old($inputPrefix.'.'.$p->id, $existing?->student_count ?? 0) }}"
-                    class="fns-input">
+                    class="fns-input"
+                    style="padding:0.35rem 0.5rem; font-size:0.85rem; text-align:right;">
             </td>
         </tr>
         @empty
-        <tr><td colspan="6" style="text-align:center; color:#9ca3af;">ບໍ່ມີສາຂາວິຊາ</td></tr>
+        <tr>
+            <td colspan="6" style="text-align:center; padding:1.5rem; color:var(--fns-gray-400);">ບໍ່ມີສາຂາວິຊາ — ກະລຸນາຕັ້ງຄ່າ</td>
+        </tr>
         @endforelse
     </tbody>
 </table>

@@ -4,22 +4,34 @@
 @section('page-title', 'ການຕັ້ງຄ່າລົງທະບຽນ')
 
 @section('content')
-<div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
-    <a href="{{ route('head_of_finance.settings.registration-fee.create') }}" class="fns-btn fns-btn-primary">+ ເພີ່ມຄ່າລົງທະບຽນ</a>
+
+<div class="fns-toolbar">
+    <span style="font-size:0.8rem; color:var(--fns-gray-400);">ຕັ້ງຄ່າຄ່າລົງທະບຽນ ສຳລັບ ນ/ສ ປີ 1 ແລະ ປີ 2–4</span>
+    <div class="fns-toolbar-right">
+        <a href="{{ route('head_of_finance.settings.registration-fee.create') }}" class="fns-btn fns-btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:15px;height:15px;"><path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z"/></svg>
+            ເພີ່ມຄ່າລົງທະບຽນ
+        </a>
+    </div>
 </div>
 
 @forelse($settings as $s)
+@php $total = $s->total_rate; @endphp
 <div class="fns-card" style="margin-bottom:1.25rem;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-        <div>
-            <span class="fns-badge {{ $s->section_type === 'year2_4' ? 'fns-badge-blue' : 'fns-badge-green' }}" style="font-size:0.85rem; padding:0.3rem 0.8rem;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+            <span class="fns-badge {{ $s->section_type === 'year2_4' ? 'fns-badge-blue' : 'fns-badge-green' }}" style="font-size:0.82rem; padding:0.3rem 0.85rem;">
                 {{ \App\Models\RegistrationFeeSetting::sectionLabel($s->section_type) }}
             </span>
-            <span style="margin-left:0.75rem; color:#6b7280; font-size:0.875rem;">ປີ {{ $s->start_year }}
-                @if($s->gov_doc_id) · {{ $s->gov_doc_id }} @endif
-            </span>
+            <div>
+                <span style="font-family:'Cinzel',serif; font-weight:700; color:var(--fns-navy); font-size:0.95rem;">{{ number_format($total, 0) }} ກີບ</span>
+                <span style="font-size:0.78rem; color:var(--fns-gray-400); margin-left:0.5rem;">· ປີ {{ $s->start_year }}</span>
+                @if($s->gov_doc_id)
+                    <span style="font-size:0.78rem; color:var(--fns-gray-400); margin-left:0.35rem;">· {{ $s->gov_doc_id }}</span>
+                @endif
+            </div>
         </div>
-        <div style="display:flex; gap:0.5rem;">
+        <div style="display:flex; gap:0.35rem;">
             <a href="{{ route('head_of_finance.settings.registration-fee.edit', $s) }}" class="fns-btn fns-btn-sm fns-btn-secondary">ແກ້ໄຂ</a>
             <form method="POST" action="{{ route('head_of_finance.settings.registration-fee.destroy', $s) }}" style="display:inline;"
                 onsubmit="return confirm('ລຶບລາຍການນີ້ບໍ?')">
@@ -28,33 +40,40 @@
             </form>
         </div>
     </div>
-    <table class="fns-table">
+    <table class="fns-table" style="border:1px solid var(--fns-gray-200); border-radius:8px; overflow:hidden;">
         <thead>
             <tr>
-                <th>#</th>
+                <th style="width:3rem; text-align:center;">#</th>
                 <th>ລາຍການ</th>
-                <th>ຈຳນວນ (ກີບ)</th>
-                <th>% ມຊ</th>
+                <th class="col-num" style="width:12rem;">ຈຳນວນ (ກີບ)</th>
+                <th class="col-num" style="width:8rem;">% ມຊ</th>
             </tr>
         </thead>
         <tbody>
             @foreach($s->items as $item)
             <tr>
-                <td>{{ $loop->iteration }}</td>
-                <td>{{ $item->name }}</td>
-                <td>{{ number_format($item->amount, 2) }}</td>
-                <td>{{ number_format($item->nuol_pct * 100, 2) }}%</td>
+                <td style="text-align:center; font-size:0.75rem; color:var(--fns-gray-400);">{{ $loop->iteration }}</td>
+                <td style="font-size:0.85rem;">{{ $item->name }}</td>
+                <td class="col-num" style="font-weight:600; color:var(--fns-navy);">{{ number_format($item->amount, 0) }}</td>
+                <td class="col-num" style="font-size:0.83rem; color:var(--fns-gray-600);">{{ number_format($item->nuol_pct * 100, 2) }}%</td>
             </tr>
             @endforeach
-            <tr style="background:#f9fafb; font-weight:600;">
+        </tbody>
+        <tfoot>
+            <tr>
                 <td colspan="2" style="text-align:right;">ລວມ</td>
-                <td>{{ number_format($s->total_rate, 2) }}</td>
+                <td class="col-num" style="color:var(--fns-navy); font-size:0.95rem;">{{ number_format($total, 0) }}</td>
                 <td></td>
             </tr>
-        </tbody>
+        </tfoot>
     </table>
 </div>
 @empty
-<div class="fns-card" style="text-align:center; color:#9ca3af;">ບໍ່ມີຂໍ້ມູນ</div>
+<div class="fns-card" style="text-align:center; padding:2.5rem;">
+    <div style="font-size:2rem; opacity:0.2; margin-bottom:0.75rem;">💰</div>
+    <p style="color:var(--fns-gray-400); font-size:0.88rem; margin-bottom:1rem;">ຍັງບໍ່ມີຂໍ້ມູນ</p>
+    <a href="{{ route('head_of_finance.settings.registration-fee.create') }}" class="fns-btn fns-btn-primary">ເພີ່ມຄ່າລົງທະບຽນ</a>
+</div>
 @endforelse
+
 @endsection

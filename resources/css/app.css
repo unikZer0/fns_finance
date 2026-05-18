@@ -559,3 +559,149 @@
 }
 .fns-action-btn-outline:hover { background: var(--fns-gray-100); }
 
+/* ── Content-area Buttons ───────────────────────────────── */
+.fns-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    text-decoration: none;
+    white-space: nowrap;
+    line-height: 1.2;
+    font-family: inherit;
+}
+.fns-btn.fns-btn-primary {
+    width: auto;
+    background: var(--fns-navy);
+    color: #fff;
+    border-color: var(--fns-navy);
+    box-shadow: 0 1px 4px rgba(26,39,68,0.2);
+    letter-spacing: 0;
+    text-transform: none;
+    transform: none;
+}
+.fns-btn.fns-btn-primary:hover  { background: var(--fns-navy-light); box-shadow: 0 3px 8px rgba(26,39,68,0.28); transform: none; }
+.fns-btn.fns-btn-primary::before { display: none; }
+.fns-btn.fns-btn-secondary { background: #fff; color: var(--fns-navy); border-color: var(--fns-gray-200); }
+.fns-btn.fns-btn-secondary:hover { background: var(--fns-gray-100); border-color: #b0aead; }
+.fns-btn.fns-btn-danger { background: rgba(139,26,26,0.07); color: #991b1b; border-color: rgba(139,26,26,0.22); }
+.fns-btn.fns-btn-danger:hover { background: rgba(139,26,26,0.15); }
+.fns-btn.fns-btn-success { background: rgba(22,101,52,0.08); color: #166534; border-color: rgba(22,101,52,0.28); }
+.fns-btn.fns-btn-success:hover { background: rgba(22,101,52,0.16); }
+.fns-btn.fns-btn-gold { background: var(--fns-gold); color: var(--fns-navy-deep); border-color: var(--fns-gold); font-weight: 700; box-shadow: 0 1px 4px rgba(201,153,26,0.35); }
+.fns-btn.fns-btn-gold:hover { background: var(--fns-gold-light); }
+/* sm modifier — must come after color variants to win cascade on padding/font-size */
+.fns-btn.fns-btn-sm { padding: 0.3rem 0.72rem; font-size: 0.74rem; border-radius: 6px; }
+
+/* ── Forms (content area) ───────────────────────────────── */
+.fns-form-group { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 1rem; }
+.fns-label { font-size: 0.75rem; font-weight: 600; color: var(--fns-gray-600); letter-spacing: 0.03em; }
+.fns-input {
+    width: 100%;
+    padding: 0.58rem 0.9rem;
+    border: 1px solid var(--fns-gray-200);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    color: #111827;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    appearance: none;
+    -webkit-appearance: none;
+}
+.fns-input:focus { border-color: var(--fns-navy-light); box-shadow: 0 0 0 3px rgba(46,63,110,0.1); }
+.fns-input-error { border-color: #dc2626 !important; box-shadow: none !important; }
+.fns-error { font-size: 0.73rem; color: #dc2626; }
+
+/* ── Badge additions ────────────────────────────────────── */
+.fns-badge-blue   { background: rgba(59,130,246,0.1);   color: #1d4ed8; border: 1px solid rgba(59,130,246,0.25); }
+.fns-badge-purple { background: rgba(124,58,237,0.1);   color: #6d28d9; border: 1px solid rgba(124,58,237,0.25); }
+.fns-badge-gray   { background: rgba(107,114,128,0.09); color: #4b5563; border: 1px solid rgba(107,114,128,0.2); }
+
+/* ── Stat cards (index pages) ───────────────────────────── */
+.fns-stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.fns-stat-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--fns-gray-200);
+    padding: 1rem 1.25rem 1rem 1.5rem;
+    box-shadow: 0 1px 5px rgba(26,39,68,0.05);
+    position: relative;
+    overflow: hidden;
+}
+.fns-stat-bar {
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    border-radius: 12px 0 0 12px;
+}
+.fns-stat-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: var(--fns-gray-400);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+}
+.fns-stat-value { font-size: 1.65rem; font-weight: 700; color: var(--fns-navy); line-height: 1; font-family: 'Cinzel', serif; }
+
+/* ── Toolbar ────────────────────────────────────────────── */
+.fns-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem; }
+.fns-toolbar-left  { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.fns-toolbar-right { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+/* ── Evaluate section headers ───────────────────────────── */
+.fns-sec-hd { display: flex; align-items: flex-start; gap: 0.85rem; margin-bottom: 1rem; }
+.fns-sec-num {
+    flex-shrink: 0;
+    width: 2.4rem; height: 2.4rem;
+    border-radius: 10px;
+    background: var(--fns-navy);
+    color: var(--fns-gold-light);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem; font-weight: 700;
+}
+.fns-sec-title { font-weight: 700; font-size: 0.92rem; color: var(--fns-navy); line-height: 1.3; }
+.fns-sec-desc  { font-size: 0.76rem; color: var(--fns-gray-400); margin-top: 0.1rem; }
+
+/* ── Rate display chips (NUOL, fee info) ────────────────── */
+.fns-rate-chip {
+    background: var(--fns-gray-100);
+    border: 1px solid var(--fns-gray-200);
+    border-radius: 10px;
+    padding: 0.75rem 1.1rem;
+}
+.fns-rate-chip-label { font-size: 0.66rem; font-weight: 700; color: var(--fns-gray-400); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.2rem; }
+.fns-rate-chip-val   { font-size: 1.3rem; font-weight: 700; color: var(--fns-navy); font-family: 'Cinzel', serif; line-height: 1; }
+.fns-rate-chip-sub   { font-size: 0.67rem; color: var(--fns-gray-400); margin-top: 0.15rem; }
+
+/* ── Table utilities ────────────────────────────────────── */
+.fns-table .col-num { text-align: right; font-variant-numeric: tabular-nums; }
+.fns-table tfoot td { background: var(--fns-gray-100); font-weight: 700; border-top: 2px solid var(--fns-gray-200); padding: 0.6rem 1rem; }
+
+/* ── Grand total bar (summary) ──────────────────────────── */
+.fns-grand-total {
+    background: var(--fns-navy);
+    border-radius: 14px;
+    padding: 1.15rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(26,39,68,0.2);
+}
+.fns-grand-total-label  { font-size: 0.88rem; color: rgba(255,255,255,0.65); font-weight: 500; }
+.fns-grand-total-amount { font-family: 'Cinzel', serif; font-size: 1.5rem; font-weight: 700; color: var(--fns-gold-light); letter-spacing: 0.03em; }
+
