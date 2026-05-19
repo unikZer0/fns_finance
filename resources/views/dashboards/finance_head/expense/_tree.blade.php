@@ -12,8 +12,6 @@
                 onclick="openEditCatModal({{ $mainCat->id }}, '{{ addslashes($mainCat->ref_code) }}', '{{ addslashes($mainCat->name) }}', {{ $mainCat->sort_order }}, '{{ $mainCat->formula_type }}', '{{ $mainCat->col_a_label }}', '{{ $mainCat->col_b_label }}', '{{ $mainCat->col_c_label }}')">ແກ້</button>
             <button class="fns-btn fns-btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;font-size:0.7rem;"
                 onclick="openCatModal({{ $plan->id }}, {{ $mainCat->id }}, '{{ addslashes($mainCat->ref_code) }}')">+ ໝວດຍ່ອຍ</button>
-            <button class="fns-btn fns-btn-sm" style="background:rgba(255,255,255,0.12);color:#fff;font-size:0.7rem;"
-                onclick="openItemModal({{ $mainCat->id }}, '{{ $mainCat->formula_type }}', '{{ $mainCat->labelA() }}', '{{ $mainCat->labelB() }}', '{{ $mainCat->labelC() }}')">+ ລາຍການ</button>
             <form method="POST" action="{{ route('head_of_finance.expense-categories.destroy', $mainCat) }}" style="display:inline;"
                 onsubmit="return confirm('ລຶບໝວດ {{ addslashes($mainCat->name) }} ທັງໝົດ?')">
                 @csrf @method('DELETE')
@@ -36,8 +34,6 @@
                     onclick="openEditCatModal({{ $sub->id }}, '{{ addslashes($sub->ref_code) }}', '{{ addslashes($sub->name) }}', {{ $sub->sort_order }}, '{{ $sub->formula_type }}', '{{ $sub->col_a_label }}', '{{ $sub->col_b_label }}', '{{ $sub->col_c_label }}')">ແກ້</button>
                 <button class="fns-btn fns-btn-sm" style="background:#dbeafe;color:#1e40af;font-size:0.7rem;"
                     onclick="openCatModal({{ $plan->id }}, {{ $sub->id }}, '{{ addslashes($sub->ref_code) }}')">+ ໝວດຍ່ອຍ</button>
-                <button class="fns-btn fns-btn-sm fns-btn-primary" style="font-size:0.7rem;"
-                    onclick="openItemModal({{ $sub->id }}, '{{ $sub->formula_type }}', '{{ $sub->labelA() }}', '{{ $sub->labelB() }}', '{{ $sub->labelC() }}')">+ ລາຍການ</button>
                 <form method="POST" action="{{ route('head_of_finance.expense-categories.destroy', $sub) }}" style="display:inline;"
                     onsubmit="return confirm('ລຶບໝວດຍ່ອຍ {{ addslashes($sub->name) }}?')">
                     @csrf @method('DELETE')
@@ -58,8 +54,6 @@
                 <div style="display:flex;gap:5px;margin-left:10px;">
                     <button class="fns-btn fns-btn-sm" style="background:#dbeafe;color:#1e40af;font-size:0.7rem;"
                         onclick="openEditCatModal({{ $subsub->id }}, '{{ addslashes($subsub->ref_code) }}', '{{ addslashes($subsub->name) }}', {{ $subsub->sort_order }}, '{{ $subsub->formula_type }}', '{{ $subsub->col_a_label }}', '{{ $subsub->col_b_label }}', '{{ $subsub->col_c_label }}')">ແກ້</button>
-                    <button class="fns-btn fns-btn-sm fns-btn-primary" style="font-size:0.7rem;"
-                        onclick="openItemModal({{ $subsub->id }}, '{{ $subsub->formula_type }}', '{{ $subsub->labelA() }}', '{{ $subsub->labelB() }}', '{{ $subsub->labelC() }}')">+ ລາຍການ</button>
                     <form method="POST" action="{{ route('head_of_finance.expense-categories.destroy', $subsub) }}" style="display:inline;"
                         onsubmit="return confirm('ລຶບໝວດຍ່ອຍ {{ addslashes($subsub->name) }}?')">
                         @csrf @method('DELETE')
@@ -69,33 +63,45 @@
                 @endif
             </div>
 
-            {{-- Level-3 items table --}}
-            @if($subsub->items->isNotEmpty())
-            @include('dashboards.finance_head.expense._items_table', ['items' => $subsub->items, 'editable' => $editable, 'category' => $subsub])
+            {{-- Level-3 items --}}
+            @if($editable)
+                @include('dashboards.finance_head.expense._items_grid', ['items' => $subsub->items, 'category' => $subsub])
             @else
-            <p style="padding:8px 12px;font-size:0.78rem;color:#94a3b8;margin:0;">ຍັງບໍ່ມີລາຍການ</p>
+                @if($subsub->items->isNotEmpty())
+                    @include('dashboards.finance_head.expense._items_table', ['items' => $subsub->items, 'editable' => false, 'category' => $subsub])
+                @else
+                    <p style="padding:8px 12px;font-size:0.78rem;color:#94a3b8;margin:0;">ຍັງບໍ່ມີລາຍການ</p>
+                @endif
             @endif
         </div>
         @endforeach
 
         {{-- Level-2 direct items (only when no Level-3 children) --}}
         @if($sub->children->isEmpty())
-            @if($sub->items->isNotEmpty())
-            @include('dashboards.finance_head.expense._items_table', ['items' => $sub->items, 'editable' => $editable, 'category' => $sub])
+            @if($editable)
+                @include('dashboards.finance_head.expense._items_grid', ['items' => $sub->items, 'category' => $sub])
             @else
-            <p style="padding:8px 12px;font-size:0.78rem;color:#94a3b8;margin:0;">ຍັງບໍ່ມີລາຍການ</p>
+                @if($sub->items->isNotEmpty())
+                    @include('dashboards.finance_head.expense._items_table', ['items' => $sub->items, 'editable' => false, 'category' => $sub])
+                @else
+                    <p style="padding:8px 12px;font-size:0.78rem;color:#94a3b8;margin:0;">ຍັງບໍ່ມີລາຍການ</p>
+                @endif
             @endif
         @endif
     </div>
     @endforeach
 
     {{-- Level-1 direct items (main cat has no children) --}}
-    @if($mainCat->children->isEmpty() && $mainCat->items->isNotEmpty())
-    @include('dashboards.finance_head.expense._items_table', ['items' => $mainCat->items, 'editable' => $editable, 'category' => $mainCat])
-    @endif
-
-    @if($mainCat->children->isEmpty() && $mainCat->items->isEmpty() && !$editable)
-    <p style="padding:8px 12px;font-size:0.78rem;color:#94a3b8;margin:0;border-left:3px solid #e2e8f0;margin-left:12px;">ຍັງບໍ່ມີຂໍ້ມູນ</p>
+    @if($mainCat->children->isEmpty())
+        @if($editable)
+            @include('dashboards.finance_head.expense._items_grid', ['items' => $mainCat->items, 'category' => $mainCat])
+        @else
+            @if($mainCat->items->isNotEmpty())
+                @include('dashboards.finance_head.expense._items_table', ['items' => $mainCat->items, 'editable' => false, 'category' => $mainCat])
+            @else
+                <p style="padding:8px 12px;font-size:0.78rem;color:#94a3b8;margin:0;border-left:3px solid #e2e8f0;margin-left:12px;">ຍັງບໍ່ມີຂໍ້ມູນ</p>
+            @endif
+        @endif
     @endif
 
 </div>

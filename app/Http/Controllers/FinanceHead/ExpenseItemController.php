@@ -25,10 +25,17 @@ class ExpenseItemController extends Controller
 
         $category = ExpenseCategory::findOrFail($data['category_id']);
         if ($category->plan->isApproved()) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'ບໍ່ສາມາດແກ້ໄຂແຜນທີ່ອະນຸມັດແລ້ວ'], 403);
+            }
             return back()->with('error', 'ບໍ່ສາມາດແກ້ໄຂແຜນທີ່ອະນຸມັດແລ້ວ');
         }
 
-        ExpenseItem::create($data);
+        $item = ExpenseItem::create($data);
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'item' => $item->fresh()]);
+        }
 
         return redirect()->route('head_of_finance.expense.manage', $category->plan)
             ->with('success', 'ເພີ່ມລາຍການສຳເລັດ');
@@ -37,6 +44,9 @@ class ExpenseItemController extends Controller
     public function update(Request $request, ExpenseItem $expenseItem)
     {
         if ($expenseItem->category->plan->isApproved()) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'ບໍ່ສາມາດແກ້ໄຂແຜນທີ່ອະນຸມັດແລ້ວ'], 403);
+            }
             return back()->with('error', 'ບໍ່ສາມາດແກ້ໄຂແຜນທີ່ອະນຸມັດແລ້ວ');
         }
 
@@ -44,7 +54,7 @@ class ExpenseItemController extends Controller
             'name'                => 'required|string|max:255',
             'reference'           => 'nullable|string|max:100',
             'monthly_amount'      => 'required|numeric|min:0',
-            'quantity'            => 'required|integer|min:1',
+            'quantity'            => 'required|integer|min:0',
             'qty_c'               => 'nullable|numeric|min:0',
             'remark'              => 'nullable|string|max:255',
             'chart_of_account_id' => 'nullable|exists:chart_of_accounts,id',
@@ -53,17 +63,28 @@ class ExpenseItemController extends Controller
 
         $expenseItem->update($data);
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'item' => $expenseItem->fresh()]);
+        }
+
         return back()->with('success', 'ອັບເດດລາຍການສຳເລັດ');
     }
 
-    public function destroy(ExpenseItem $expenseItem)
+    public function destroy(Request $request, ExpenseItem $expenseItem)
     {
         if ($expenseItem->category->plan->isApproved()) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'ບໍ່ສາມາດແກ້ໄຂແຜນທີ່ອະນຸມັດແລ້ວ'], 403);
+            }
             return back()->with('error', 'ບໍ່ສາມາດແກ້ໄຂແຜນທີ່ອະນຸມັດແລ້ວ');
         }
 
         $plan = $expenseItem->category->plan;
         $expenseItem->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return redirect()->route('head_of_finance.expense.manage', $plan)
             ->with('success', 'ລຶບລາຍການສຳເລັດ');
