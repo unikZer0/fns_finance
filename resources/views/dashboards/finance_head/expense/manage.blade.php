@@ -16,16 +16,6 @@
 <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.2rem;flex-wrap:wrap;">
     <a href="{{ route('head_of_finance.expense.index') }}" class="fns-btn fns-btn-secondary fns-btn-sm">← ກັບຄືນ</a>
     <span style="font-size:1rem;font-weight:700;color:var(--fns-navy);">ສົກ {{ $expensePlan->fiscal_year }}</span>
-    @if($expensePlan->isApproved())
-        <span class="fns-badge fns-badge-success" style="font-size:0.8rem;">ອະນຸມັດແລ້ວ</span>
-    @else
-        <span class="fns-badge fns-badge-warning" style="font-size:0.8rem;">ຮ່າງ</span>
-        <form method="POST" action="{{ route('head_of_finance.expense.approve', $expensePlan) }}" style="display:inline;">
-            @csrf
-            <button type="submit" class="fns-btn fns-btn-success fns-btn-sm"
-                onclick="return confirm('ຢືນຢັນການອະນຸມັດ? ຈະບໍ່ສາມາດແກ້ໄຂໄດ້ອີກ.')">ອະນຸມັດ</button>
-        </form>
-    @endif
     <span style="margin-left:auto;font-size:0.85rem;color:#64748b;">
         ງົບລວມ: <strong>{{ number_format($expensePlan->allCategories->flatMap->items->sum('annual_amount'), 0) }} ກີບ</strong>
     </span>
@@ -35,18 +25,16 @@
 @include('dashboards.finance_head.expense._tree', [
     'topCategories'  => $expensePlan->topCategories,
     'plan'           => $expensePlan,
-    'editable'       => !$expensePlan->isApproved(),
+    'editable'       => true,
     'chartOfAccounts'=> $chartOfAccounts,
 ])
 
 {{-- Add main category button --}}
-@if(!$expensePlan->isApproved())
 <div style="margin-top:1rem;">
     <button class="fns-btn fns-btn-primary" onclick="openCatModal({{ $expensePlan->id }}, null, null)">
         + ເພີ່ມໝວດຫຼັກ
     </button>
 </div>
-@endif
 
 {{-- ======================= MODALS ======================= --}}
 

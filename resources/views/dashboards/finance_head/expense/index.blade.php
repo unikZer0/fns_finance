@@ -32,7 +32,6 @@
                 <th>ສົກງົບປະມານ</th>
                 <th>ສ້າງໂດຍ</th>
                 <th style="text-align:right;">ງົບລວມ (ກີບ)</th>
-                <th style="width:10%;">ສະຖານະ</th>
                 <th style="width:18%;">ຈັດການ</th>
             </tr>
         </thead>
@@ -45,34 +44,20 @@
                 <td style="text-align:right; font-weight:600;">
                     {{ number_format($plan->allCategories->flatMap->items->sum('annual_amount'), 0) }}
                 </td>
-                <td style="text-align:center;">
-                    @if($plan->isApproved())
-                        <span class="fns-badge fns-badge-success">ອະນຸມັດ</span>
-                    @else
-                        <span class="fns-badge fns-badge-warning">ຮ່າງ</span>
-                    @endif
-                </td>
                 <td>
                     <div style="display:flex;gap:6px;flex-wrap:wrap;">
                         <a href="{{ route('head_of_finance.expense.manage', $plan) }}" class="fns-btn fns-btn-sm fns-btn-primary">ຈັດການ</a>
-                        @if(!$plan->isApproved())
-                        <form method="POST" action="{{ route('head_of_finance.expense.approve', $plan) }}">
-                            @csrf
-                            <button type="submit" class="fns-btn fns-btn-sm fns-btn-success"
-                                onclick="return confirm('ຢືນຢັນການອະນຸມັດ?')">ອະນຸມັດ</button>
-                        </form>
                         <form method="POST" action="{{ route('head_of_finance.expense.destroy', $plan) }}">
                             @csrf @method('DELETE')
                             <button type="submit" class="fns-btn fns-btn-sm fns-btn-danger"
                                 onclick="return confirm('ຢືນຢັນການລຶບ?')">ລຶບ</button>
                         </form>
-                        @endif
                     </div>
                 </td>
             </tr>
             @empty
             <tr>
-                <td colspan="6" style="text-align:center; color:var(--fns-gray-400); padding:2rem;">
+                <td colspan="5" style="text-align:center; color:var(--fns-gray-400); padding:2rem;">
                     ຍັງບໍ່ມີແຜນງົບປະມານ — ກົດ "ສ້າງແຜນໃໝ່" ເພື່ອເລີ່ມຕົ້ນ
                 </td>
             </tr>
