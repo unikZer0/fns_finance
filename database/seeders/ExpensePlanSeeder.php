@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 class ExpensePlanSeeder extends Seeder
 {
+    private ExpensePlan $plan;
+
     public function run(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
@@ -20,465 +22,421 @@ class ExpensePlanSeeder extends Seeder
 
         $adminId = DB::table('users')->value('id');
 
-        $plan = ExpensePlan::create([
+        $this->plan = ExpensePlan::create([
             'fiscal_year' => 2026,
-            'status'      => 'APPROVED',
-            'notes'       => 'ແຜນງົບປະມານປະຈຳສົກ 2026 — ນำเข້າຈາກ Planning 2026.xls',
+            'status'      => 'DRAFT',
+            'notes'       => 'ນຳເຂົ້າຈາກ Planning 2026.xls',
             'created_by'  => $adminId,
         ]);
 
-        // 2.1
-        $main1 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => null,
-            'ref_code'   => '2.1',
-            'name'       => 'ແຜນປະເມີນລາຍຈ່າຍບໍລິຫານປົກກະຕິ',
-            'sort_order' => 0,
-        ]);
+        $this->seed21();
+        $this->seed22();
+        $this->seed23();
+        $this->seed24();
+        $this->seed25();
+        $this->seed26();
+    }
 
-        $sub1_1 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main1->id,
-            'ref_code'   => '2.1.1',
-            'name'       => 'ບໍລິຫານສັງລວມ',
-            'sort_order' => 0,
-        ]);
-        ExpenseItem::create(['category_id' => $sub1_1->id, 'sort_order' => 0, 'name' => 'ເຄື່ອງໃຊ້ຫ້ອງການ', 'monthly_amount' => 2800000, 'quantity' => 12, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_1->id, 'sort_order' => 1, 'name' => 'ແບບພິມ', 'monthly_amount' => 250000, 'quantity' => 12, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_1->id, 'sort_order' => 2, 'name' => 'ວາລະສານ ແລະ ໜັງສືພິມ', 'monthly_amount' => 0, 'quantity' => 12, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_1->id, 'sort_order' => 3, 'name' => 'ຮັບແຂກ', 'monthly_amount' => 800000, 'quantity' => 12, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_1->id, 'sort_order' => 4, 'name' => 'ໂທລະສັບບໍລິຫານ', 'monthly_amount' => 30000, 'quantity' => 12, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_1->id, 'sort_order' => 5, 'name' => 'ຄ່າໄປສະນີ', 'monthly_amount' => 0, 'quantity' => 12, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_1->id, 'sort_order' => 6, 'name' => 'ຄ່າບໍລິການທະນາຄານ', 'monthly_amount' => 30000, 'quantity' => 12, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_1->id, 'sort_order' => 7, 'name' => 'ຊື້ຂອງຂັວນຂອງຕ້ອນ', 'monthly_amount' => 400000, 'quantity' => 12, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_1->id, 'sort_order' => 8, 'name' => 'ວັນບຸນລະດັບຊາດ', 'monthly_amount' => 500000, 'quantity' => 12, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_1->id, 'sort_order' => 9, 'name' => 'ອຸດໜູນວຽກປ້ອງກັນ', 'monthly_amount' => 0, 'quantity' => 12, 'remark' => 'ຂື້ນຢູ່ງົບລັດ']);
-        ExpenseItem::create(['category_id' => $sub1_1->id, 'sort_order' => 10, 'name' => 'ຄ່ານ້ຳມັນບໍລິຫານ', 'monthly_amount' => 0, 'quantity' => 12, 'remark' => 'ຂື້ນຢູ່ງົບລັດ']);
+    // =====================================================================
+    // 2.1 ແຜນປະເມີນລາຍຈ່າຍບໍລິຫານປົກກະຕິ
+    // =====================================================================
+    private function seed21(): void
+    {
+        $main = $this->cat(null, '2.1', 'ແຜນປະເມີນລາຍຈ່າຍບໍລິຫານປົກກະຕິ', 1);
 
-        $sub1_2 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main1->id,
-            'ref_code'   => '2.1.2',
-            'name'       => 'ບຳລຸງຮັກສາ, ສ້ອມແປງ ແລະ ຕິດຕັ້ງ',
-            'sort_order' => 1,
-        ]);
-        ExpenseItem::create(['category_id' => $sub1_2->id, 'sort_order' => 0, 'name' => 'ບຳລຸງຮັກສາຄອມພີວເຕີ', 'monthly_amount' => 9000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_2->id, 'sort_order' => 1, 'name' => 'ບຳລຸງຮັກສາເຄື່ອງສາຍໂປຣເຈັກເຕີ', 'monthly_amount' => 5000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_2->id, 'sort_order' => 2, 'name' => 'ບຳລຸງຮັກສາແອເຢັນ', 'monthly_amount' => 45000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_2->id, 'sort_order' => 3, 'name' => 'ບຳລຸງຮັກສາຕູ້ເຢັນ + ຕູ້ນ້ຳເຢັນ', 'monthly_amount' => 2000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_2->id, 'sort_order' => 4, 'name' => 'ບຳລຸງຮັກສາພັດລົມ', 'monthly_amount' => 8000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_2->id, 'sort_order' => 5, 'name' => 'ບຳລຸງຮັກສາດອກໄຟ', 'monthly_amount' => 6000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_2->id, 'sort_order' => 6, 'name' => 'ບຳລຸງຮັກສາເຄື່ອງພິມ', 'monthly_amount' => 2000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_2->id, 'sort_order' => 7, 'name' => 'ບຳລຸງຮັກສາຈັກອັດສຳເນົາ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_2->id, 'sort_order' => 8, 'name' => 'ຈັກປ້ຳນ້ຳອັດຕະໂນມັດ', 'monthly_amount' => 4000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_2->id, 'sort_order' => 9, 'name' => 'ຈັກຕັດຫຍ້າ', 'monthly_amount' => 2000000, 'quantity' => 1, 'remark' => '']);
+        // 2.1.1 ບໍລິຫານສັງລວມ — AB: ຫົວໜ່ວຍ/ເດືອນ × ຈ/ນ
+        $s = $this->cat($main, '2.1.1', 'ບໍລິຫານສັງລວມ', 1, 'AB', 'ຫົວໜ່ວຍ/ເດືອນ', 'ຈ/ນ');
+        $this->item($s, 'ເຄື່ອງໃຊ້ຫ້ອງການ',          2800000, 12);
+        $this->item($s, 'ແບບພິມ',                    250000,  12);
+        $this->item($s, 'ວາລະສານ ແລະ ໜັງສືພິມ',      0,       12);
+        $this->item($s, 'ຮັບແຂກ',                    800000,  12);
+        $this->item($s, 'ໂທລະສັບບໍລິຫານ',             30000,   12);
+        $this->item($s, 'ຄ່າໄປສະນີ',                 0,       12);
+        $this->item($s, 'ຄ່າບໍລິການທະນາຄານ',          30000,   12);
+        $this->item($s, 'ຊື້ຂອງຂັວນຂອງຕ້ອນ',         400000,  12);
+        $this->item($s, 'ວັນບຸນລະດັບຊາດ',             500000,  12);
+        $this->item($s, 'ອຸດໜູນວຽກປ້ອງກັນ',           0,       12, 'ຂື້ນຢູ່ງົບລັດ');
+        $this->item($s, 'ຄ່ານ້ຳມັນບໍລິຫານຫ້ອງການ',     0,        4, 'ຂື້ນຢູ່ງົບລັດ');
+        $this->item($s, 'ຄ່ານ້ຳມັນເຄື່ອງ',             0,        4, 'ຂື້ນຢູ່ງົບລັດ');
 
-        $sub1_3 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main1->id,
-            'ref_code'   => '2.1.3',
-            'name'       => 'ສ້ອມແປງ ແລະ ປັບປຸງອາຄານຫ້ອງຮຽນ',
-            'sort_order' => 2,
-        ]);
-        ExpenseItem::create(['category_id' => $sub1_3->id, 'sort_order' => 0, 'name' => 'ສ້ອມແປງອາຄານສໍານັກງານຕ່າງໆ', 'monthly_amount' => 14000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_3->id, 'sort_order' => 1, 'name' => 'ປັບປຸງອາຄານຫ້ອງຮຽນ-ຫ້ອງທົດລອງ', 'monthly_amount' => 40000000, 'quantity' => 1, 'remark' => '']);
+        // 2.1.2 ບຳລຸງຮັກສາ — AB: ລາຄາຕໍ່ໜ່ວຍ × ຈຳນວນ
+        $s = $this->cat($main, '2.1.2', 'ບຳລຸງຮັກສາ, ສ້ອມແປງ ແລະ ຕິດຕັ້ງ', 2, 'AB', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນ');
+        $this->item($s, 'ບຳລຸງຮັກສາຄອມພີວເຕີ',                300000,   30);
+        $this->item($s, 'ບຳລຸງຮັກສາເຄື່ອງສາຍໂປຣເຈັກເຕີ',      200000,   25);
+        $this->item($s, 'ບຳລຸງຮັກສາແອເຢັນ',                   500000,   90);
+        $this->item($s, 'ບຳລຸງຮັກສາຕູ້ເຢັນ + ຕູ້ນ້ຳເຢັນ',      100000,   20);
+        $this->item($s, 'ບຳລຸງຮັກສາພັດລົມ',                    80000,  100);
+        $this->item($s, 'ບຳລຸງຮັກສາດອກໄຟ',                    10000,  600);
+        $this->item($s, 'ບຳລຸງຮັກສາເຄື່ອງພິມ',                100000,   20);
+        $this->item($s, 'ບຳລຸງຮັກສາຈັກອັດສຳເນົາ',            2000000,    0);
+        $this->item($s, 'ບຳລຸງຮັກສາໂທລະສັບ',                   50000,    0);
+        $this->item($s, 'ບຳລຸງຮັກສາກ້ອງຖ່າຍຮູບ',               50000,    0);
+        $this->item($s, 'ບຳລຸງຮັກສາໂທລະທັດ',                   50000,    0);
+        $this->item($s, 'ຈັກປ້ຳນ້ຳອັດຕະໂນມັດ',               1000000,    4);
+        $this->item($s, 'ຈັກຕັດຫຍ້າ',                        1000000,    2);
 
-        $sub1_4 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main1->id,
-            'ref_code'   => '2.1.4',
-            'name'       => 'ສ້ອມແປງພາຫານະ',
-            'sort_order' => 3,
-        ]);
-        ExpenseItem::create(['category_id' => $sub1_4->id, 'sort_order' => 0, 'name' => 'ສ້ອມແປງລົດຕູ້', 'monthly_amount' => 5700000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_4->id, 'sort_order' => 1, 'name' => 'ສ້ອມແປງລົດຈັກ', 'monthly_amount' => 1000000, 'quantity' => 1, 'remark' => '']);
+        // 2.1.3 ສ້ອມແປງ ແລະ ປັບປຸງ — AB: ລາຄາ × ຈຳນວນ
+        $s = $this->cat($main, '2.1.3', 'ສ້ອມແປງ ແລະ ປັບປຸງອາຄານຫ້ອງຮຽນ', 3, 'AB', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນ');
+        $this->item($s, 'ສ້ອມແປງອາຄານສໍານັກງານຕ່າງໆ',    2000000,  7);
+        $this->item($s, 'ປັບປຸງອາຄານຫ້ອງຮຽນ-ຫ້ອງທົດລອງ', 40000000, 1);
 
-        $sub1_5 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main1->id,
-            'ref_code'   => '2.1.5',
-            'name'       => 'ຊື້ເຄື່ອງຈັກ, ວັດຖຸອຸປະກອນ',
-            'sort_order' => 4,
-        ]);
-        ExpenseItem::create(['category_id' => $sub1_5->id, 'sort_order' => 0, 'name' => 'ຊື້ ໂຕະ, ຕັ່ງ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_5->id, 'sort_order' => 1, 'name' => 'ບຳລຸງຮັກສາ, ສ້ອມແປງ ໂຕະ, ຕັ່ງ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_5->id, 'sort_order' => 2, 'name' => 'ຊື້ເຄື່ອງຈັກ ແລະ ວັດຖຸອຸປະກອນ', 'monthly_amount' => 25000000, 'quantity' => 1, 'remark' => '']);
+        // 2.1.4 ສ້ອມແປງພາຫານະ — ABC: ລາຄາ × ຈຳນວນ × ຄັ້ງ
+        $s = $this->cat($main, '2.1.4', 'ສ້ອມແປງພາຫານະ', 4, 'ABC', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນ', 'ຈຳນວນຄັ້ງ');
+        $this->item($s, 'ລົດຕູ້',  2850000, 2, '', 1);
+        $this->item($s, 'ລົດຈັກ', 1000000, 1, '', 1);
 
-        $sub1_6 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main1->id,
-            'ref_code'   => '2.1.6',
-            'name'       => 'ຄ່າປະກັນໄພພາຫະນະ',
-            'sort_order' => 5,
-        ]);
-        ExpenseItem::create(['category_id' => $sub1_6->id, 'sort_order' => 0, 'name' => 'ປະກັນໄພລົດໃຫຍ່', 'monthly_amount' => 4100000, 'quantity' => 1, 'remark' => '']);
+        // 2.1.5 ຊື້ເຄື່ອງຈັກ — ABC: ລາຄາ × ຈຳນວນ × ຄັ້ງ
+        $s = $this->cat($main, '2.1.5', 'ຊື້ເຄື່ອງຈັກ, ວັດຖຸອຸປະກອນ', 5, 'ABC', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນ', 'ຈຳນວນຄັ້ງ');
+        $this->item($s, 'ຊື້ ໂຕະ, ຕັ່ງ',                        150000,        0, '', 1);
+        $this->item($s, 'ບຳລຸງຮັກສາ, ສ້ອມແປງ ໂຕະ, ຕັ່ງ',        30000,        0, '', 1);
+        $this->item($s, 'ຊື້ເຄື່ອງຈັກ ແລະ ວັດຖຸອຸປະກອນ',      25000000,        1, '', 1);
+        $this->item($s, 'ຊື້ພາຫະນະ',                         200000000,        0, '', 1);
 
-        $sub1_7 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main1->id,
-            'ref_code'   => '2.1.7',
-            'name'       => 'ລາຍຈ່າຍໄປວຽກທາງການ',
-            'sort_order' => 6,
-        ]);
-        ExpenseItem::create(['category_id' => $sub1_7->id, 'sort_order' => 0, 'name' => 'ໄປວຽກທາງການພາຍໃນປະເທດ', 'monthly_amount' => 16000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_7->id, 'sort_order' => 1, 'name' => 'ໄປວຽກທາງການຕ່າງປະເທດ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        // 2.1.6 ປະກັນໄພ — ABC: ລາຄາ × ຈຳນວນ × ຄັ້ງ
+        $s = $this->cat($main, '2.1.6', 'ຄ່າປະກັນໄພພາຫະນະ', 6, 'ABC', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນ', 'ຈຳນວນຄັ້ງ');
+        $this->item($s, 'ປະກັນໄພລົດໃຫຍ່', 2050000, 2, '', 1);
 
-        $sub1_8 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main1->id,
-            'ref_code'   => '2.1.8',
-            'name'       => 'ປົກປັກຮັກສາ ແລະ ອານາໄມອາຄານ, ສະຖານທີ່',
-            'sort_order' => 7,
-        ]);
-        ExpenseItem::create(['category_id' => $sub1_8->id, 'sort_order' => 0, 'name' => 'ບຳລຸງຮັກສາວິທະຍາເຂດ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => 'ຈ່າຍຢູ່ງົບລັດ']);
-        ExpenseItem::create(['category_id' => $sub1_8->id, 'sort_order' => 1, 'name' => 'ອານາໄມອາຄານ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => 'ຈ່າຍຢູ່ງົບລັດ']);
+        // 2.1.7 ໄປວຽກ — ABC: ອັດຕາ × ຈຳນວນຄັ້ງ × ຈຳນວນຄົນ
+        $s = $this->cat($main, '2.1.7', 'ລາຍຈ່າຍໄປວຽກທາງການ', 7, 'ABC', 'ອັດຕາ', 'ຈຳນວນຄັ້ງ', 'ຈຳນວນຄົນ');
+        $this->item($s, 'ໄປວຽກທາງການພາຍໃນປະເທດ', 800000, 5, '', 4);
+        $this->item($s, 'ໄປວຽກທາງການຕ່າງປະເທດ',  475000, 4, '', 0);
 
-        $sub1_9 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main1->id,
-            'ref_code'   => '2.1.9',
-            'name'       => 'ວຽກງານກິດຈະກຳນັກສຶກສາ',
-            'sort_order' => 8,
-        ]);
-        ExpenseItem::create(['category_id' => $sub1_9->id, 'sort_order' => 0, 'name' => 'ປະຖົມນິເທດນັກສຶກສາ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_9->id, 'sort_order' => 1, 'name' => 'ກວດສອບລະບຽບວິໃນນັກສຶກສາ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        // 2.1.8 ປົກປັກ/ອານາໄມ — AB: ຫົວໜ່ວຍ/ເດືອນ × ຈ/ນ (ຈ່າຍຢູ່ງົບລັດ)
+        $s = $this->cat($main, '2.1.8', 'ປົກປັກຮັກສາ ແລະ ອານາໄມອາຄານ, ສະຖານທີ່', 8, 'AB', 'ຫົວໜ່ວຍ/ເດືອນ', 'ຈ/ນ');
+        $this->item($s, 'ບຳລຸງຮັກສາວິທະຍາເຂດ',       0, 12, 'ຈ່າຍຢູ່ງົບລັດ');
+        $this->item($s, '- ຕັດຫຍ້າ',                 0, 12, 'ຈ່າຍຢູ່ງົບລັດ');
+        $this->item($s, '- ປູກ ແລະ ບົວລະບັດສວນ',     0, 12, 'ຈ່າຍຢູ່ງົບລັດ');
+        $this->item($s, '- ກ້າເບ້ຍໄມ້',              0, 12, 'ຈ່າຍຢູ່ງົບລັດ');
+        $this->item($s, '- ອານາໄມເດີ່ນ',             0, 12, 'ຈ່າຍຢູ່ງົບລັດ');
+        $this->item($s, 'ອານາໄມອາຄານ',              0, 12, 'ຈ່າຍຢູ່ງົບລັດ');
+        $this->item($s, '- ອານາໄມຫ້ອງຮຽນ',          0, 12, 'ຈ່າຍຢູ່ງົບລັດ');
+        $this->item($s, '- ອານາໄມຫ້ອງການ',           0, 12, 'ຈ່າຍຢູ່ງົບລັດ');
+        $this->item($s, '- ອານາໄມຫ້ອງທົດລອງຄອມ',   0, 12, 'ຈ່າຍຢູ່ງົບລັດ');
 
-        $sub1_10 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main1->id,
-            'ref_code'   => '2.1.10',
-            'name'       => 'ລາຍຈ່າຍກອງປະຊຸມ, ສຳມະນາ ແລະ ຝຶກອົບຮົມ',
-            'sort_order' => 9,
-        ]);
-        ExpenseItem::create(['category_id' => $sub1_10->id, 'sort_order' => 0, 'name' => 'ກອງປະຊຸມ ສຳນັກຄະນະບໍດີ', 'monthly_amount' => 2400000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_10->id, 'sort_order' => 1, 'name' => 'ກອງປະຊຸມ ພາກວິຊາ (6 ພາກ)', 'monthly_amount' => 1200000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_10->id, 'sort_order' => 2, 'name' => 'ກອງປະຊຸມ ພະແນກ (6 ພະແນກ)', 'monthly_amount' => 1440000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_10->id, 'sort_order' => 3, 'name' => 'ສຳມະນາ ພະແນກວິຊາການ', 'monthly_amount' => 3000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_10->id, 'sort_order' => 4, 'name' => 'ສຳມະນາ ພະແນກຈັດຕັ້ງສັງລວມ', 'monthly_amount' => 3000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_10->id, 'sort_order' => 5, 'name' => 'ສຳມະນາ ພະແນກການເງິນ-ຊັບສິນ', 'monthly_amount' => 3000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_10->id, 'sort_order' => 6, 'name' => 'ຝຶກອົບຮົມ ພະແນກຄຸ້ມຄອງນັກສຶກສາ', 'monthly_amount' => 3000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_10->id, 'sort_order' => 7, 'name' => 'ຝຶກອົບຮົມ ພະແນກຄົ້ນຄ້ວາ ແລະ ບໍລິການ', 'monthly_amount' => 3000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub1_10->id, 'sort_order' => 8, 'name' => 'ຝຶກອົບຮົມ ພະແນກຫຼັງປະລິນຍາຕີ', 'monthly_amount' => 3000000, 'quantity' => 1, 'remark' => '']);
+        // 2.1.9 ກິດຈະກຳ — AB: ຫົວໜ່ວຍ/ເດືອນ × ຈຳນວນ
+        $s = $this->cat($main, '2.1.9', 'ວຽກງານກິດຈະກຳນັກສຶກສາ', 9, 'AB', 'ຫົວໜ່ວຍ/ເດືອນ', 'ຈຳນວນ');
+        $this->item($s, 'ປະຖົມນິເທດນັກສຶກສາ',                1500000, 2);
+        $this->item($s, 'ກວດສອບການປະຕິບັດລະບຽບວິໃນ',       400000,  5);
 
-        $sub1_11 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main1->id,
-            'ref_code'   => '2.1.11',
-            'name'       => 'ລາຍຈ່າຍບໍລິຫານປົກກະຕິອື່ນໆ',
-            'sort_order' => 10,
-        ]);
-        ExpenseItem::create(['category_id' => $sub1_11->id, 'sort_order' => 0, 'name' => 'ລາຍຈ່າຍບໍລິຫານປົກກະຕິອື່ນໆ', 'monthly_amount' => 36090500, 'quantity' => 1, 'remark' => '']);
+        // 2.1.10 ກອງປະຊຸມ, ສຳມະນາ, ຝຶກອົບຮົມ (parent only, children below)
+        $s10 = $this->cat($main, '2.1.10', 'ລາຍຈ່າຍກອງປະຊຸມ, ສຳມະນາ ແລະ ຝຶກອົບຮົມ', 10);
 
-        // 2.2
-        $main2 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => null,
-            'ref_code'   => '2.2',
-            'name'       => 'ແຜນປະເມີນລາຍຈ່າຍປັບປຸງ ແລະ ສົ່ງເສີມວິຊາການ',
-            'sort_order' => 1,
-        ]);
+        // 2.1.10.1 ກອງປະຊຸມ — AB: ລາຄາ × ຈ/ນ
+        $s = $this->cat($s10, '2.1.10.1', 'ລາຍຈ່າຍກອງປະຊຸມ', 1, 'AB', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນຄັ້ງ');
+        $this->item($s, 'ສໍານັກຄະນະບໍດີ',                     200000, 12);
+        $this->item($s, 'ພາວິຊາຄະນິດສາດ',                     20000, 12);
+        $this->item($s, 'ພາກວິຊາຟິຊິກສາດ',                    20000, 12);
+        $this->item($s, 'ພາກວິຊາເຄມີສາດ',                     20000, 12);
+        $this->item($s, 'ພາກວິຊາຊີວະວິທະຍາ',                  20000, 12);
+        $this->item($s, 'ພາກວິຊາວິທະຍາສາດຄອມພິວເຕີ',          20000, 12);
+        $this->item($s, 'ພະແນກວິຊາການ',                       20000, 12);
+        $this->item($s, 'ພະແນກຈັດຕັ້ງສັງລວມ',                 20000, 12);
+        $this->item($s, 'ພະແນກການເງິນ-ຊັບສິນ',               20000, 12);
+        $this->item($s, 'ພະແນກຄຸ້ມຄອງນັກສຶກສາ',               20000, 12);
+        $this->item($s, 'ພະແນກຄົ້ນຄົ້ວ ແລະ ບໍລິການວິຊາການ',  20000, 12);
+        $this->item($s, 'ພະແນກຫຼັງປະລິນຍາຕີ',                 20000, 12);
 
-        $sub2_1 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main2->id,
-            'ref_code'   => '2.2.1',
-            'name'       => 'ຊື້ວັດຖຸ, ອຸປະກອນການຮຽນ ແລະ ການສິດສອນ',
-            'sort_order' => 0,
-        ]);
-        ExpenseItem::create(['category_id' => $sub2_1->id, 'sort_order' => 0, 'name' => 'ອຸປະກອນການຮຽນ-ການສອນ', 'monthly_amount' => 18000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub2_1->id, 'sort_order' => 1, 'name' => 'ອຸປະກອນການສອບເສັງ', 'monthly_amount' => 8000000, 'quantity' => 1, 'remark' => '']);
+        // 2.1.10.2 ສຳມະນາ — AB: ລາຄາ × ຄັ້ງ
+        $s = $this->cat($s10, '2.1.10.2', 'ລາຍຈ່າຍສຳມະນາ', 2, 'AB', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນຄັ້ງ');
+        $this->item($s, 'ສໍານັກຄະນະບໍດີ',                    500000, 0);
+        $this->item($s, 'ພາວິຊາຄະນິດສາດ',                    500000, 0, 'ຂື້ນຢູ່ພາກ 63');
+        $this->item($s, 'ພາກວິຊາຟິຊິກສາດ',                   500000, 0, 'ຂື້ນຢູ່ພາກ 63');
+        $this->item($s, 'ພາກວິຊາເຄມີສາດ',                    500000, 0, 'ຂື້ນຢູ່ພາກ 63');
+        $this->item($s, 'ພາກວິຊາຊີວະວິທະຍາ',                 500000, 0, 'ຂື້ນຢູ່ພາກ 63');
+        $this->item($s, 'ພາກວິຊາວິທະຍາສາດຄອມພິວເຕີ',         500000, 0, 'ຂື້ນຢູ່ພາກ 63');
+        $this->item($s, 'ພະແນກວິຊາການ',                     3000000, 1);
+        $this->item($s, 'ພະແນກຈັດຕັ້ງສັງລວມ',               3000000, 1);
+        $this->item($s, 'ພະແນກການເງິນ-ຊັບສິນ',              3000000, 1);
+        $this->item($s, 'ພະແນກຄຸ້ມຄອງນັກສຶກສາ',             3000000, 0);
+        $this->item($s, 'ພະແນກຄົ້ນຄົ້ວ ແລະ ບໍລິການວິຊາການ', 3000000, 0);
+        $this->item($s, 'ພະແນກຫຼັງປະລິນຍາຕີ',               3000000, 0);
 
-        $sub2_2 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main2->id,
-            'ref_code'   => '2.2.2',
-            'name'       => 'ປັບປຸງ ແລະ ພັດທະນາການສຶກສາ',
-            'sort_order' => 1,
-        ]);
-        ExpenseItem::create(['category_id' => $sub2_2->id, 'sort_order' => 0, 'name' => 'ງົບປະມານປັບປຸງ ແລະ ພັດທະນາການສຶກສາ', 'monthly_amount' => 76000000, 'quantity' => 1, 'remark' => '']);
+        // 2.1.10.3 ຝຶກອົບຮົມ — AB: ລາຄາ × ຄັ້ງ
+        $s = $this->cat($s10, '2.1.10.3', 'ລາຍຈ່າຍຝຶກອົບຮົມ', 3, 'AB', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນຄັ້ງ');
+        $this->item($s, 'ສໍານັກຄະນະບໍດີ',                    500000, 0);
+        $this->item($s, 'ພາວິຊາຄະນິດສາດ',                    500000, 0, 'ຂື້ນຢູ່ພາກ 63');
+        $this->item($s, 'ພາກວິຊາຟິຊິກສາດ',                   500000, 0, 'ຂື້ນຢູ່ພາກ 63');
+        $this->item($s, 'ພາກວິຊາເຄມີສາດ',                    500000, 0, 'ຂື້ນຢູ່ພາກ 63');
+        $this->item($s, 'ພາກວິຊາຊີວະວິທະຍາ',                 500000, 0, 'ຂື້ນຢູ່ພາກ 63');
+        $this->item($s, 'ພາກວິຊາວິທະຍາສາດຄອມພິວເຕີ',         500000, 0, 'ຂື້ນຢູ່ພາກ 63');
+        $this->item($s, 'ພະແນກວິຊາການ',                     3000000, 0);
+        $this->item($s, 'ພະແນກຈັດຕັ້ງສັງລວມ',               3000000, 0);
+        $this->item($s, 'ພະແນກການເງິນ-ຊັບສິນ',              3000000, 0);
+        $this->item($s, 'ພະແນກຄຸ້ມຄອງນັກສຶກສາ',             3000000, 1);
+        $this->item($s, 'ພະແນກຄົ້ນຄົ້ວ ແລະ ບໍລິການວິຊາການ', 3000000, 1);
+        $this->item($s, 'ພະແນກຫຼັງປະລິນຍາຕີ',               3000000, 1);
 
-        $sub2_3 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main2->id,
-            'ref_code'   => '2.2.3',
-            'name'       => 'ບຳລຸງຫ້ອງທົດລອງ',
-            'sort_order' => 2,
-        ]);
-        ExpenseItem::create(['category_id' => $sub2_3->id, 'sort_order' => 0, 'name' => 'ຫ້ອງທົດລອງ ພາກວິຊາຄະນິດສາດ', 'monthly_amount' => 3000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub2_3->id, 'sort_order' => 1, 'name' => 'ຫ້ອງທົດລອງ ພາກວິຊາຟິຊິກສາດ', 'monthly_amount' => 6000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub2_3->id, 'sort_order' => 2, 'name' => 'ຫ້ອງທົດລອງ ພາກວິຊາເຄມີສາດ', 'monthly_amount' => 6000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub2_3->id, 'sort_order' => 3, 'name' => 'ຫ້ອງທົດລອງ ພາກວິຊາຊີວະວິທະຍາ', 'monthly_amount' => 6000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub2_3->id, 'sort_order' => 4, 'name' => 'ຫ້ອງທົດລອງ ພາກວິຊາວິທະຍາສາດຄອມ', 'monthly_amount' => 7000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub2_3->id, 'sort_order' => 5, 'name' => 'ຄ່າຊ່ວຍຫ້ອງທົດລອງ', 'monthly_amount' => 6000000, 'quantity' => 1, 'remark' => '']);
+        // 2.1.11 ອື່ນໆ — AB
+        $s = $this->cat($main, '2.1.11', 'ລາຍຈ່າຍບໍລິຫານປົກກະຕິອື່ນໆ', 11, 'AB', 'ຕໍ່ເດືອນ (ກີບ)', 'ຈ/ນ');
+        $this->item($s, 'ລາຍຈ່າຍບໍລິຫານປົກກະຕິອື່ນໆ', 36090500, 1);
+    }
 
-        $sub2_4 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main2->id,
-            'ref_code'   => '2.2.4',
-            'name'       => 'ຊື້ອຸປະກອນທົດລອງ',
-            'sort_order' => 3,
-        ]);
-        ExpenseItem::create(['category_id' => $sub2_4->id, 'sort_order' => 0, 'name' => 'ອຸປະກອນທົດລອງຟິຊິກສາດ', 'monthly_amount' => 32000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub2_4->id, 'sort_order' => 1, 'name' => 'ອຸປະກອນທົດລອງເຄມີສາດ', 'monthly_amount' => 32000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub2_4->id, 'sort_order' => 2, 'name' => 'ອຸປະກອນທົດລອງຊີວະວິທະຍາ', 'monthly_amount' => 32000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub2_4->id, 'sort_order' => 3, 'name' => 'ອຸປະກອນທົດລອງຄອມພິວເຕີ', 'monthly_amount' => 320000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub2_4->id, 'sort_order' => 4, 'name' => 'ອຸປະກອນທົດລອງຄະນິດສາດ', 'monthly_amount' => 68000000, 'quantity' => 1, 'remark' => '']);
+    // =====================================================================
+    // 2.2 ແຜນປະເມີນລາຍຈ່າຍປັບປຸງ ແລະ ສົ່ງເສີມວິຊາການ
+    // =====================================================================
+    private function seed22(): void
+    {
+        $main = $this->cat(null, '2.2', 'ແຜນປະເມີນລາຍຈ່າຍປັບປຸງ ແລະ ສົ່ງເສີມວິຊາການ', 2);
 
-        $sub2_5 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main2->id,
-            'ref_code'   => '2.2.5',
-            'name'       => 'ລາຍຈ່າຍກອງປະຊຸມວິຊາການ',
-            'sort_order' => 4,
-        ]);
-        ExpenseItem::create(['category_id' => $sub2_5->id, 'sort_order' => 0, 'name' => 'ພິທີສະຫຼຸບ ແລະ ເປີດສົກ ປໍໂທ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub2_5->id, 'sort_order' => 1, 'name' => 'ກອງປະຊຸມສໍາມະນາວິຊາການ ປໍໂທ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub2_5->id, 'sort_order' => 2, 'name' => 'ກອງປະຊຸມຜູ້ຊົງຄຸນວຸດທິ ປໍໂທ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        // 2.2.1 ຊື້ວັດຖຸ ອຸປະກອນ — ABC: ລາຄາ × ຈ/ນ × ຄັ້ງ
+        $s = $this->cat($main, '2.2.1', 'ຊື້ວັດຖຸ, ອຸປະກອນການຮຽນ ແລະ ການສິດສອນ', 1, 'ABC', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈ/ນ', 'ຈຳນວນຄັ້ງ');
+        $this->item($s, 'ອຸປະກອນການຮຽນ-ການສອນ', 1500000, 12, '', 1);
+        $this->item($s, 'ອຸປະກອນການສອບເສັງ',     4000000,  1, '', 2);
 
-        $sub2_6 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main2->id,
-            'ref_code'   => '2.2.6',
-            'name'       => 'ບຳລຸງຫ້ອງອ່ານ',
-            'sort_order' => 5,
-        ]);
-        ExpenseItem::create(['category_id' => $sub2_6->id, 'sort_order' => 0, 'name' => 'ຊື້ປື້ມໃສ່ຫ້ອງອ່ານ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub2_6->id, 'sort_order' => 1, 'name' => 'ຊື້ຮ້ານປື້ມໃສ່ຫ້ອງອ່ານ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        // 2.2.2 ປັບປຸງ ແລະ ພັດທະນາການສຶກສາ
+        $s22 = $this->cat($main, '2.2.2', 'ປັບປຸງ ແລະ ພັດທະນາການສຶກສາ (ປັບປຸງຫຼັກສູດ, ພິມປື້ມ)', 2);
 
-        $sub2_7 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main2->id,
-            'ref_code'   => '2.2.7',
-            'name'       => 'ການຍົກລະດັບໄລຍະຍາວ',
-            'sort_order' => 6,
-        ]);
-        ExpenseItem::create(['category_id' => $sub2_7->id, 'sort_order' => 0, 'name' => 'ສົ່ງພະນັກງານໄປຍົກລະດັບໄລຍະຍາວ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        $s = $this->cat($s22, '2.2.2.1', 'ງົບໃນການສ້າງຕຳລາຮຽນ (ພິມປື້ມ)', 1, 'AB', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນ');
+        $this->item($s, 'ພາກວິຊາຄະນິດສາດ',                 0, 1);
+        $this->item($s, 'ພາກວິຊາຟີຊິກສາດ',                 0, 1);
+        $this->item($s, 'ພາກວິຊາເຄມີສາດ',                  0, 1);
+        $this->item($s, 'ພາກວິຊາຊີວະວິທະຍາ',               0, 1);
+        $this->item($s, 'ພາກວິຊາວິທະຍາສາດຄອມພີວເຕີ',       0, 1);
 
-        $sub2_8 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main2->id,
-            'ref_code'   => '2.2.8',
-            'name'       => 'ລາຍຈ່າຍຕິດຕາມການປະຕິບັດຫຼັກສູດ',
-            'sort_order' => 7,
-        ]);
-        ExpenseItem::create(['category_id' => $sub2_8->id, 'sort_order' => 0, 'name' => 'ງົບປະມານຕິດຕາມຫຼັກສູດ ປໍໂທ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        $s = $this->cat($s22, '2.2.2.2', 'ງົບໃນການພັດທະນາ ແລະ ປັບປຸງຫຼັກສູດ', 2, 'AB', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນ');
+        $this->item($s, 'ພາກວິຊາຄະນິດສາດ',                    0, 1);
+        $this->item($s, 'ພາກວິຊາຟີຊິກສາດ',                    0, 1);
+        $this->item($s, 'ພາກວິຊາເຄມີສາດ',                     0, 1);
+        $this->item($s, 'ພາກວິຊາຊີວະວິທະຍາ',                  0, 1);
+        $this->item($s, 'ພາກວິຊາວິທະຍາສາດຄອມພີວເຕີ',          0, 1);
+        $this->item($s, 'ປັບປຸງ ແລະ ພັດທະນາຫຼັກສູດ ປໍໂທ+ເອກ', 76000000, 1);
 
-        // 2.3
-        $main3 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => null,
-            'ref_code'   => '2.3',
-            'name'       => 'ແຜນປະເມີນລາຍຈ່າຍດັດສົມ, ສົ່ງເສີມ ແລະ ບຳລຸງຮັກສາ',
-            'sort_order' => 2,
-        ]);
+        // 2.2.3 ບຳລຸງຫ້ອງທົດລອງ — AB: ຫົວໜ່ວຍ × ຈ/ນ
+        $s = $this->cat($main, '2.2.3', 'ບຳລຸງຫ້ອງທົດລອງ', 3, 'AB', 'ຫົວໜ່ວຍ/ເດືອນ', 'ຈ/ນ');
+        $this->item($s, 'ພາກວິຊາຄະນິດສາດ',                   250000, 12);
+        $this->item($s, 'ພາກວິຊາຟິຊິກສາດ',                   500000, 12);
+        $this->item($s, 'ພາກວິຊາເຄມີສາດ',                    500000, 12);
+        $this->item($s, 'ພາກວິຊາຊີວະວິທະຍາ',                 500000, 12);
+        $this->item($s, 'ພາກວິຊາວິທະຍາສາດຄອມພິວເຕີ',        1083333, 12);
+        $this->item($s, 'ຊື້ອຸປະກອນທົດລອງ',                       0, 12);
 
-        $sub3_1 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main3->id,
-            'ref_code'   => '2.3.1',
-            'name'       => 'ບໍລິຫານວິຊາການ',
-            'sort_order' => 0,
-        ]);
-        ExpenseItem::create(['category_id' => $sub3_1->id, 'sort_order' => 0, 'name' => 'ສົ່ງເສີມວິຊາການສ່ວນກາງ', 'monthly_amount' => 25000000, 'quantity' => 1, 'remark' => '']);
+        // 2.2.4 ຊື້ອຸປະກອນທົດລອງ — AB: ລາຄາ × ຈຳນວນ
+        $s = $this->cat($main, '2.2.4', 'ຊື້ອຸປະກອນທົດລອງ', 4, 'AB', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນ');
+        $this->item($s, 'ອຸປະກອນທົດລອງຟິຊິກສາດ',     32000000,  0);
+        $this->item($s, 'ອຸປະກອນທົດລອງເຄມີສາດ',      32000000,  0);
+        $this->item($s, 'ອຸປະກອນທົດລອງຊີວະວິທະຍາ',   32000000,  0);
+        $this->item($s, 'ຄອມພິວເຕີຕັ້ງໂຕະ (PC)',      12100000, 40);
+        $this->item($s, 'ໂປຣເຈັກເຕີໃສ່ຫ້ອງຮຽນ',       5300000,  0);
 
-        $sub3_2 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main3->id,
-            'ref_code'   => '2.3.2',
-            'name'       => 'ບູລະນະ ແລະ ປົກປັກຮັກສາວັດທະນະທຳ',
-            'sort_order' => 1,
-        ]);
-        ExpenseItem::create(['category_id' => $sub3_2->id, 'sort_order' => 0, 'name' => 'ສຳນັກຄະນະບໍດີ', 'monthly_amount' => 12500000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub3_2->id, 'sort_order' => 1, 'name' => 'ພາກວິຊາຄະນິດສາດ', 'monthly_amount' => 974000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub3_2->id, 'sort_order' => 2, 'name' => 'ພາກວິຊາຟິຊິກສາດ', 'monthly_amount' => 594000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub3_2->id, 'sort_order' => 3, 'name' => 'ພາກວິຊາເຄມີສາດ', 'monthly_amount' => 1666000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub3_2->id, 'sort_order' => 4, 'name' => 'ພາກວິຊາຊີວະວິທະຍາ', 'monthly_amount' => 2000000, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub3_2->id, 'sort_order' => 5, 'name' => 'ພາກວິຊາວິທະຍາສາດຄອມ', 'monthly_amount' => 2000000, 'quantity' => 1, 'remark' => '']);
+        // 2.2.5–2.2.8 zero / not this year
+        $s = $this->cat($main, '2.2.5', 'ລາຍຈ່າຍກອງປະຊຸມວິຊາການ', 5, 'AB', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນ');
+        $this->item($s, 'ກອງປະຊຸມ/ສຳມະນາ ປໍໂທ', 0, 1);
 
-        $sub3_3 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main3->id,
-            'ref_code'   => '2.3.3',
-            'name'       => 'ໄປທັດສະນະສຶກສາ',
-            'sort_order' => 2,
-        ]);
-        ExpenseItem::create(['category_id' => $sub3_3->id, 'sort_order' => 0, 'name' => 'ທັດສະນະສຶກສາ ສຳນັກຄະນະບໍດີ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub3_3->id, 'sort_order' => 1, 'name' => 'ທັດສະນະສຶກສາ ພາກວິຊາຄະນິດສາດ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub3_3->id, 'sort_order' => 2, 'name' => 'ທັດສະນະສຶກສາ ພາກວິຊາຟິຊິກສາດ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub3_3->id, 'sort_order' => 3, 'name' => 'ທັດສະນະສຶກສາ ພາກວິຊາເຄມີສາດ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub3_3->id, 'sort_order' => 4, 'name' => 'ທັດສະນະສຶກສາ ພາກວິຊາຊີວະວິທະຍາ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub3_3->id, 'sort_order' => 5, 'name' => 'ທັດສະນະສຶກສາ ພາກວິຊາວິທະຍາສາດຄອມ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        $s = $this->cat($main, '2.2.6', 'ບຳລຸງຫ້ອງອ່ານ', 6, 'AB', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນ');
+        $this->item($s, 'ຊື້ປື້ມໃສ່ຫ້ອງອ່ານ',   425000, 0);
+        $this->item($s, 'ຊື້ຮ້ານປື້ມໃສ່ຫ້ອງອ່ານ', 2500000, 0);
 
-        // 2.4
-        $main4 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => null,
-            'ref_code'   => '2.4',
-            'name'       => 'ແຜນປະເມີນລາຍຈ່າຍບໍລິຫານອຸດໜູນກົງຈັກ',
-            'sort_order' => 3,
-        ]);
+        $s = $this->cat($main, '2.2.7', 'ການຍົກລະດັບໄລຍະຍາວ', 7, 'AB', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນ');
+        $this->item($s, 'ສົ່ງພະນັກງານໄປຍົກລະດັບ', 0, 1);
 
-        $sub4_1 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main4->id,
-            'ref_code'   => '2.4.1',
-            'name'       => 'ອຸດໜູນຄ່າບັດໂທລະສັບປະຈຳຕຳແໜ່ງ',
-            'sort_order' => 0,
-        ]);
-        ExpenseItem::create(['category_id' => $sub4_1->id, 'sort_order' => 0, 'name' => 'ຄ່າບັດໂທລະສັບ ຄະນະບໍດີ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => 'ຂື້ນຢູ່ງົບລັດ']);
-        ExpenseItem::create(['category_id' => $sub4_1->id, 'sort_order' => 1, 'name' => 'ຄ່າບັດໂທລະສັບ ຮອງຄະນະບໍດີ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => 'ຂື້ນຢູ່ງົບລັດ']);
-        ExpenseItem::create(['category_id' => $sub4_1->id, 'sort_order' => 2, 'name' => 'ຄ່າບັດໂທລະສັບ ຫົວໜ້າພາກ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => 'ຂື້ນຢູ່ງົບລັດ']);
-        ExpenseItem::create(['category_id' => $sub4_1->id, 'sort_order' => 3, 'name' => 'ຄ່າບັດໂທລະສັບ ຫົວໜ້າພະແນກ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => 'ຂື້ນຢູ່ງົບລັດ']);
+        $s = $this->cat($main, '2.2.8', 'ລາຍຈ່າຍຕິດຕາມການປະຕິບັດຫຼັກສູດ', 8, 'AB', 'ລາຄາຕໍ່ໜ່ວຍ', 'ຈຳນວນ');
+        $this->item($s, 'ຕິດຕາມຫຼັກສູດ ປໍໂທ', 0, 1);
+    }
 
-        $sub4_2 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main4->id,
-            'ref_code'   => '2.4.2',
-            'name'       => 'ອຸດໜູນຄ່ານ້ຳມັນປະຈຳຕຳແໜ່ງ',
-            'sort_order' => 1,
-        ]);
-        ExpenseItem::create(['category_id' => $sub4_2->id, 'sort_order' => 0, 'name' => 'ຄ່ານ້ຳມັນ ຄະນະບໍດີ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => 'ຂື້ນຢູ່ງົບລັດ']);
-        ExpenseItem::create(['category_id' => $sub4_2->id, 'sort_order' => 1, 'name' => 'ຄ່ານ້ຳມັນ ຮອງຄະນະບໍດີ ແລະ ຫົວໜ້າພາກ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => 'ຂື້ນຢູ່ງົບລັດ']);
-        ExpenseItem::create(['category_id' => $sub4_2->id, 'sort_order' => 2, 'name' => 'ຄ່ານ້ຳມັນ ຫົວໜ້າພະແນກ ແລະ ຮອງພາກ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => 'ຂື້ນຢູ່ງົບລັດ']);
+    // =====================================================================
+    // 2.3 ແຜນປະເມີນລາຍຈ່າຍດັດສົມ, ສົ່ງເສີມ ແລະ ບຳລຸງຮັກສາ
+    // =====================================================================
+    private function seed23(): void
+    {
+        $main = $this->cat(null, '2.3', 'ແຜນປະເມີນລາຍຈ່າຍດັດສົມ, ສົ່ງເສີມ ແລະ ບຳລຸງຮັກສາ', 3);
 
-        $sub4_3 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main4->id,
-            'ref_code'   => '2.4.3',
-            'name'       => 'ເງິນເດືອນສັນຍາຈ້າງ ແລະ ຄ່າແຮງງານ',
-            'sort_order' => 2,
-        ]);
-        ExpenseItem::create(['category_id' => $sub4_3->id, 'sort_order' => 0, 'name' => 'ຄ່າແຮງງານ ພະນັກງານສັນຍາຈ້າງ ສຳນັກ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => 'ຂື້ນຢູ່ງົບລັດ']);
-        ExpenseItem::create(['category_id' => $sub4_3->id, 'sort_order' => 1, 'name' => 'ຄ່າແຮງງານ ພະນັກງານສັນຍາຈ້າງ ຂັບລົດ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => 'ຂື້ນຢູ່ງົບລັດ']);
-        ExpenseItem::create(['category_id' => $sub4_3->id, 'sort_order' => 2, 'name' => 'ສັນຍາຈ້າງ ICT ບຳລຸງຮັກສາລະບົບ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        // 2.3.1 ບໍລິຫານວິຊາການ — AB
+        $s = $this->cat($main, '2.3.1', 'ບໍລິຫານວິຊາການ', 1, 'AB', 'ຫົວໜ່ວຍ/ເດືອນ', 'ຈ/ນ');
+        $this->item($s, 'ສົ່ງເສີມວິຊາການສ່ວນກາງ',                   0, 12, 'ຂື້ນຢູ່ພາກ 62');
+        $this->item($s, 'ກອງປະຊຸມ/ສຳມະນາການເງິນ',                   0, 12, 'ຂື້ນຢູ່ພາກ 62');
+        $this->item($s, 'ພະແນກບໍລິຫານສັງລວມ',                       0, 12, 'ຂື້ນຢູ່ພາກ 62');
+        $this->item($s, 'ໜ່ວຍງານ ICT',                               0, 12, 'ຂື້ນຢູ່ພາກ 62');
+        $this->item($s, 'ຫຼັງປະລິນຍາຕີ',                             0, 12, 'ຂື້ນຢູ່ພາກ 62');
+        $this->item($s, 'ຄົ້ນຄ້ວາ ແລະ ບໍລິການວິຊາການ',               0, 12, 'ຂື້ນຢູ່ພາກ 62');
+        $this->item($s, 'ພັດທະນາຫຸ່ນຍົນ (Robot)',                     0, 12, 'ຂື້ນຢູ່ພາກ 62');
+        $this->item($s, 'ພະແນກວິຊາການ',                              0, 12, 'ຂື້ນຢູ່ພາກ 62');
+        $this->item($s, 'ພະແນກຄຸ້ມຄອງນັກສຶກສາ',                     0, 12, 'ຂື້ນຢູ່ພາກ 62');
+        $this->item($s, 'ພາກວິຊາຄະນິດສາດ',                       416667, 12);
+        $this->item($s, 'ພາກວິຊາຟີຊິກສາດ',                       416667, 12);
+        $this->item($s, 'ພາກວິຊາເຄມີສາດ',                        416667, 12);
+        $this->item($s, 'ພາກວິຊາຊີວະວິທະຍາ',                     416667, 12);
+        $this->item($s, 'ພາກວິຊາວິທະຍາສາດຄອມພີວເຕີ',             416667, 12);
+        $this->item($s, 'ສາມອົງການຈັດຕັ້ງມະຫາຊົນ',                   0, 12);
+        $this->item($s, 'ເຄື່ອນໄຫວວຽກວິຊາການອື່ນໆ',                   0,  4);
 
-        $sub4_4 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main4->id,
-            'ref_code'   => '2.4.4',
-            'name'       => 'ອຸດໜູນການເຮັດວຽກເພີ່ມ',
-            'sort_order' => 3,
-        ]);
-        ExpenseItem::create(['category_id' => $sub4_4->id, 'sort_order' => 0, 'name' => 'ອຸດໜູນພະນັກງານລົງທະບຽນ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => 'ຂື້ນຢູ່ງົບລັດ']);
-        ExpenseItem::create(['category_id' => $sub4_4->id, 'sort_order' => 1, 'name' => 'ອຸດໜູນການສອບເສັງ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => 'ຂື້ນຢູ່ງົບລັດ']);
-        ExpenseItem::create(['category_id' => $sub4_4->id, 'sort_order' => 2, 'name' => 'ອຸດໜູນການກວດສອບງົບປະມານ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub4_4->id, 'sort_order' => 3, 'name' => 'ອຸດໜູນການຄຸ້ມຄອງນັກສຶກສາ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        // 2.3.2 ບູລະນະ ແລະ ປົກປັກ — AB
+        $s = $this->cat($main, '2.3.2', 'ບູລະນະ ແລະ ປົກປັກຮັກສາວັດທະນະທຳ', 2, 'AB', 'ຫົວໜ່ວຍ/ເດືອນ', 'ຈ/ນ');
+        $this->item($s, 'ສໍານັກຄະນະບໍດີ',                      1041667, 12);
+        $this->item($s, 'ພາກວິຊາຄະນິດສາດ',                       81167, 12);
+        $this->item($s, 'ພາກວິຊາຟິຊິກສາດ',                       49500, 12);
+        $this->item($s, 'ພາກວິຊາເຄມີສາດ',                        70750, 12);
+        $this->item($s, 'ພາກວິຊາຊີວະວິທະຍາ',                     51083, 12);
+        $this->item($s, 'ພາກວິຊາວິທະຍາສາດຄອມພິວເຕີ',            350333, 12);
 
-        $sub4_5 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main4->id,
-            'ref_code'   => '2.4.5',
-            'name'       => 'ອຸດໜູນຄ່າຄອງຊີບ',
-            'sort_order' => 4,
-        ]);
-        ExpenseItem::create(['category_id' => $sub4_5->id, 'sort_order' => 0, 'name' => 'ອຸດໜູນຄ່າຄອງຊີບ ພະນັກງານ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => 'ຂື້ນຢູ່ງົບລັດ']);
+        // 2.3.3 ທັດສະນະສຶກສາ — AB (all zero)
+        $s = $this->cat($main, '2.3.3', 'ໄປທັດສະນະສຶກສາ', 3, 'AB', 'ລາຄາ/ຫົວ', 'ຈຳນວນ');
+        $this->item($s, 'ສໍານັກຄະນະບໍດີ',                     190000, 0);
+        $this->item($s, 'ພາກວິຊາຄະນິດສາດ',                    190000, 0);
+        $this->item($s, 'ພາກວິຊາຟິຊິກສາດ',                    190000, 0);
+        $this->item($s, 'ພາກວິຊາເຄມີສາດ',                     190000, 0);
+        $this->item($s, 'ພາກວິຊາຊີວະວິທະຍາ',                  190000, 0);
+        $this->item($s, 'ພາກວິຊາວິທະຍາສາດຄອມພິວເຕີ',          190000, 0);
+    }
 
-        // 2.5
-        $main5 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => null,
-            'ref_code'   => '2.5',
-            'name'       => 'ແຜນປະເມີນລາຍຈ່າຍຄ່າສິດສອນ ແລະ ການປະເມີນ',
-            'sort_order' => 4,
-        ]);
+    // =====================================================================
+    // 2.4 ແຜນປະເມີນລາຍຈ່າຍບໍລິຫານອຸດໜູນກົງຈັກ
+    // =====================================================================
+    private function seed24(): void
+    {
+        $main = $this->cat(null, '2.4', 'ແຜນປະເມີນລາຍຈ່າຍບໍລິຫານອຸດໜູນກົງຈັກ', 4);
 
-        $sub5_1 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main5->id,
-            'ref_code'   => '2.5.1',
-            'name'       => 'ຄ່າສອນລະບົບພິເສດ',
-            'sort_order' => 0,
-        ]);
-        ExpenseItem::create(['category_id' => $sub5_1->id, 'sort_order' => 0, 'name' => 'ຄ່າຊົ່ວໂມງສອນ ພາກພິເສດ (ປ.ຕີ)', 'monthly_amount' => 331867200, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub5_1->id, 'sort_order' => 1, 'name' => 'ຄ່າຊົ່ວໂມງສອນ ປະລິນຍາໂທ', 'monthly_amount' => 326332800, 'quantity' => 1, 'remark' => '']);
+        // 2.4.1 ໂທລະສັບ — ABC
+        $s = $this->cat($main, '2.4.1', 'ອຸດໜູນຄ່າບັດໂທລະສັບປະຈຳຕຳແໜ່ງ', 1, 'ABC', 'ຫົວໜ່ວຍ/ເດືອນ', 'ຈ/ນ', 'ຈຳນວນ');
+        $this->item($s, 'ຄະນະບໍດີ',                 0, 12, 'ຈ່າຍງົບລັດ', 1);
+        $this->item($s, 'ຮອງຄະນະບໍດີ',              0, 12, 'ຈ່າຍງົບລັດ', 3);
+        $this->item($s, 'ຫົວໜ້າພາກວິຊາ',            0, 12, 'ຈ່າຍງົບລັດ', 5);
+        $this->item($s, 'ຫົວໜ້າພະແນກ',              0, 12, 'ຈ່າຍງົບລັດ', 6);
+        $this->item($s, 'ຮອງຫົວໜ້າພາກວິຊາ',         0, 12, 'ຈ່າຍງົບລັດ', 10);
+        $this->item($s, 'ຮອງຫົວໜ້າພະແນກ',           0, 12, 'ຈ່າຍງົບລັດ', 12);
+        $this->item($s, 'ຫົວໜ້າໜ່ວຍງານ, ເລຂາ',      0, 12, 'ຈ່າຍງົບລັດ', 11);
+        $this->item($s, 'ຫົວໜ້າໜ່ວຍວິຊາ',           0, 12, 'ຈ່າຍງົບລັດ', 29);
+        $this->item($s, 'ໜ່ວຍງານ, ສາມອົງການ',        0, 12, 'ຈ່າຍງົບລັດ', 8);
+        $this->item($s, 'ສາມອົງການຈັດຕັ້ງ',          0, 12, 'ຈ່າຍງົບລັດ', 3);
 
-        $sub5_2 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main5->id,
-            'ref_code'   => '2.5.2',
-            'name'       => 'ຄ່າບໍລິການສອບເສັງ',
-            'sort_order' => 1,
-        ]);
-        ExpenseItem::create(['category_id' => $sub5_2->id, 'sort_order' => 0, 'name' => 'ຄ່າກຳມະການສອບເສັງຈົບຊັ້ນ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub5_2->id, 'sort_order' => 1, 'name' => 'ຄ່າຍາມຫ້ອງເສັງ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub5_2->id, 'sort_order' => 2, 'name' => 'ຄ່າອອກຫົວບົດ ແລະ ກວດບົດ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub5_2->id, 'sort_order' => 3, 'name' => 'ຄ່າບໍລິການສອບເສັງອື່ນໆ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        // 2.4.2 ນ້ຳມັນ — ABC (ໃຊ້ງົບລັດ)
+        $s = $this->cat($main, '2.4.2', 'ອຸດໜູນຄ່ານ້ຳມັນປະຈຳຕຳແໜ່ງ', 2, 'ABC', 'ຫົວໜ່ວຍ/ເດືອນ', 'ຈ/ນ', 'ຈຳນວນ');
+        $this->item($s, 'ຄະນະບໍດີ',                                    500000, 0, 'ໃຊ້ງົບລັດ',  1);
+        $this->item($s, 'ຮອງຄະນະ, ຫົວໜ້າພາກ',                        400000, 0, 'ໃຊ້ງົບລັດ',  8);
+        $this->item($s, 'ຫົວໜ້າພະແນກ, ຮອງພາກ',                      200000, 0, 'ໃຊ້ງົບລັດ', 16);
+        $this->item($s, 'ຮອງຫົວໜ້າພະ, ຮສ ແລະ ຫົວໜ້າໜ່ວຍ',          150000, 0, 'ໃຊ້ງົບລັດ', 26);
+        $this->item($s, 'ຮອງຫົວໜ້າໜ່ວຍ, ຫົວໜ້າໜ່ວຍງານ',             80000, 0, 'ໃຊ້ງົບລັດ', 13);
+        $this->item($s, 'ຮອງຫົວໜ້າໜ່ວຍງານ',                          70000, 0, 'ໃຊ້ງົບລັດ',  1);
+        $this->item($s, 'ອາຈານ ແລະ ພະນັກງານທົ່ວໄປ',                  50000, 0, 'ໃຊ້ງົບລັດ', 35);
 
-        $sub5_3 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main5->id,
-            'ref_code'   => '2.5.3',
-            'name'       => 'ບົດໂຄງການຈົບຊັ້ນ',
-            'sort_order' => 2,
-        ]);
-        ExpenseItem::create(['category_id' => $sub5_3->id, 'sort_order' => 0, 'name' => 'ຄ່າຊີ້ນຳບົດໂຄງການຈົບຊັ້ນ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub5_3->id, 'sort_order' => 1, 'name' => 'ຄ່າກຳມະການປ້ອງກັນບົດຈົບຊັ້ນ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub5_3->id, 'sort_order' => 2, 'name' => 'ຄ່າດຳເນີນບົດ ປໍໂທ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        // 2.4.3 ສັນຍາຈ້າງ — ABC (ຈ່າຍງົບລັດ)
+        $s = $this->cat($main, '2.4.3', 'ເງິນເດືອນສັນຍາຈ້າງ ແລະ ຄ່າແຮງງານ', 3, 'ABC', 'ຄ່າແຮງ/ເດືອນ', 'ຈຳນວນຄົນ', 'ຈ/ນ');
+        $this->item($s, 'ຄ່າແຮງສໍານັກ',               2000000, 1, 'ຈ່າຍງົບລັດ', 12);
+        $this->item($s, 'ຄ່າແຮງຂັບລົດ',               2000000, 1, 'ຈ່າຍງົບລັດ', 12);
+        $this->item($s, 'ICT ສັນຍາຈ້າງ',              1000000, 0, 'ຈ່າຍງົບລັດ',  0);
 
-        $sub5_4 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main5->id,
-            'ref_code'   => '2.5.4',
-            'name'       => 'ອຸດໜູນການລົງທະບຽນ',
-            'sort_order' => 3,
-        ]);
-        ExpenseItem::create(['category_id' => $sub5_4->id, 'sort_order' => 0, 'name' => 'ອຸດໜູນການລົງທະບຽນ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        // 2.4.4 ເຮັດວຽກເພີ່ມ — ABC (ຈ່າຍງົບລັດ)
+        $s = $this->cat($main, '2.4.4', 'ອຸດໜູນການເຮັດວຽກເພີ່ມ', 4, 'ABC', 'ລາຄາ/ຄັ້ງ', 'ຈຳນວນຄັ້ງ', 'ຈ/ນ');
+        $this->item($s, 'ອຸດໜູນລົງທະບຽນ',                 0, 2, 'ຈ່າຍງົບລັດ');
+        $this->item($s, 'ອຸດໜູນການສອບເສັງ',               0, 2, 'ຈ່າຍງົບລັດ');
+        $this->item($s, 'ອຸດໜູນກວດສອບງົບ',               0, 0, 'ຈ່າຍງົບລັດ');
+        $this->item($s, 'ອຸດໜູນຕາມຂໍ້ຕົກລົງ',             0, 0, 'ຈ່າຍງົບລັດ');
+        $this->item($s, 'ອຸດໜູນເທີມສາມ',                 0, 0, 'ຈ່າຍງົບລັດ');
+        $this->item($s, 'ອຸດໜູນສະຫຼຸບການເງິນ',            0, 1, 'ຈ່າຍງົບລັດ');
+        $this->item($s, 'ອຸດໜູນ ປໍໂທ',                    0, 1, 'ຈ່າຍງົບລັດ');
+        $this->item($s, 'ອຸດໜູນນຳພາ ວທ',                  0, 0, 'ຈ່າຍງົບລັດ');
 
-        // 2.6
-        $main6 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => null,
-            'ref_code'   => '2.6',
-            'name'       => 'ແຜນລາຍຈ່າຍເຄື່ອນໄຫວນອກຫຼັກສູດ',
-            'sort_order' => 5,
-        ]);
+        // 2.4.5 ຄ່າຄອງ
+        $s = $this->cat($main, '2.4.5', 'ອຸດໜູນຄ່າຄອງຊີບ', 5, 'AB', 'ຕໍ່ເດືອນ (ກີບ)', 'ຈ/ນ');
+        $this->item($s, 'ອຸດໜູນຄ່າຄອງຊີບ', 0, 12, 'ຈ່າຍງົບລັດ');
+    }
 
-        $sub6_1 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main6->id,
-            'ref_code'   => '2.6.1',
-            'name'       => 'ບໍລິຈາກເລືອດໃຫ້ອົງການກາແດງລາວ',
-            'sort_order' => 0,
-        ]);
-        ExpenseItem::create(['category_id' => $sub6_1->id, 'sort_order' => 0, 'name' => 'ບໍລິຈາກເລືອດຄັ້ງທີ I', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub6_1->id, 'sort_order' => 1, 'name' => 'ບໍລິຈາກເລືອດຄັ້ງທີ II', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+    // =====================================================================
+    // 2.5 ແຜນປະເມີນລາຍຈ່າຍຄ່າສິດສອນ ແລະ ການປະເມີນ
+    // =====================================================================
+    private function seed25(): void
+    {
+        $main = $this->cat(null, '2.5', 'ແຜນປະເມີນລາຍຈ່າຍຄ່າສິດສອນ ແລະ ການປະເມີນ', 5);
 
-        $sub6_2 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main6->id,
-            'ref_code'   => '2.6.2',
-            'name'       => 'ເຄື່ອນໄຫວກິລາ ແລະ ສິນລະປະ',
-            'sort_order' => 1,
-        ]);
-        ExpenseItem::create(['category_id' => $sub6_2->id, 'sort_order' => 0, 'name' => 'ການແຂ່ງຂັນກິລາຊາວໜຸ່ມ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub6_2->id, 'sort_order' => 1, 'name' => 'ການເຄື່ອນໄຫວກິລາພາຍໃນ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub6_2->id, 'sort_order' => 2, 'name' => 'ການເຄື່ອນໄຫວກິລາກັບທາງນອກ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub6_2->id, 'sort_order' => 3, 'name' => 'ການເຄື່ອນໄຫວສິນລະປະກຳ ນັກສຶກສາ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub6_2->id, 'sort_order' => 4, 'name' => 'ການຝຶກຊ້ອມສິນລະປະວັນນະຄະດີ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        // 2.5.1 ຄ່າຊົ່ວໂມງສອນ — AB
+        $s = $this->cat($main, '2.5.1', 'ຄ່າສອນລະບົບພິເສດ', 1, 'AB', 'ຫົວໜ່ວຍ/ເດືອນ', 'ຈ/ນ');
+        $this->item($s, 'ຄ່າຊົ່ວໂມງສອນພາກພິເສດ', 27655600, 12);
+        $this->item($s, 'ຄ່າຊົ່ວໂມງສອນເທີມສາມ',        0, 12);
+        $this->item($s, 'ຄ່າຊົ່ວໂມງສອນ ປໍໂທ',    27194400, 12);
 
-        $sub6_3 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main6->id,
-            'ref_code'   => '2.6.3',
-            'name'       => 'ອອກແຮງງານລວມ',
-            'sort_order' => 2,
-        ]);
-        ExpenseItem::create(['category_id' => $sub6_3->id, 'sort_order' => 0, 'name' => 'ອານາໄມຫ້ອງຮຽນ, ຫ້ອງການ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub6_3->id, 'sort_order' => 1, 'name' => 'ອານາໄມສະຖານທີ່ຮັບຜິດຊອບ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub6_3->id, 'sort_order' => 2, 'name' => 'ປຸກຕົ້ນໄມ້', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        // 2.5.2 ສອບເສັງ
+        $s = $this->cat($main, '2.5.2', 'ຄ່າບໍລິການສອບເສັງ', 2, 'AB', 'ລາຄາ/ຄັ້ງ', 'ຈຳນວນ');
+        $this->item($s, 'ຄ່າກຳມະການສອບເສັງຈົບຊັ້ນ', 2000000, 0);
+        $this->item($s, 'ຄ່າຍາມຫ້ອງເສັງ',           6000000, 0);
+        $this->item($s, 'ຄ່າອອກ/ກວດຫົວບົດ',         4000000, 0);
+        $this->item($s, 'ຄ່າສອບເສັງ ປໍໂທ',                0, 0);
 
-        $sub6_4 = ExpenseCategory::create([
-            'plan_id'    => $plan->id,
-            'parent_id'  => $main6->id,
-            'ref_code'   => '2.6.4',
-            'name'       => 'ຈັດການແຂ່ງຂັນຖາມ-ຕອບວິທະຍາສາດ',
-            'sort_order' => 3,
-        ]);
-        ExpenseItem::create(['category_id' => $sub6_4->id, 'sort_order' => 0, 'name' => 'ຄ່າເຊົ່າຫ້ອງປະຊຸມ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub6_4->id, 'sort_order' => 1, 'name' => 'ຄ່ານ້ຳດື່ມມື້ຈັດງານ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub6_4->id, 'sort_order' => 2, 'name' => 'ຄ່າຂັນລາງວັນ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
-        ExpenseItem::create(['category_id' => $sub6_4->id, 'sort_order' => 3, 'name' => 'ຄ່າອອກຄຳຖາມ', 'monthly_amount' => 0, 'quantity' => 1, 'remark' => '']);
+        // 2.5.3 ບົດໂຄງການ
+        $s = $this->cat($main, '2.5.3', 'ບົດໂຄງການຈົບຊັ້ນ', 3, 'AB', 'ລາຄາ/ຄັ້ງ', 'ຈຳນວນ');
+        $this->item($s, 'ຄ່າຊີ້ນຳບົດຈົບຊັ້ນ',         0, 50);
+        $this->item($s, 'ຄ່າກຳມະການປ້ອງກັນ',          0,  1);
+        $this->item($s, 'ຄ່າ ວທ ຈົບຊັ້ນ ປໍໂທ',        0,  6);
 
+        // 2.5.4 ລົງທະບຽນ
+        $s = $this->cat($main, '2.5.4', 'ອຸດໜູນການລົງທະບຽນ', 4, 'AB', 'ຕໍ່ເດືອນ (ກີບ)', 'ຈ/ນ');
+        $this->item($s, 'ອຸດໜູນການລົງທະບຽນ', 55000000, 0);
+    }
+
+    // =====================================================================
+    // 2.6 ແຜນລາຍຈ່າຍເຄື່ອນໄຫວນອກຫຼັກສູດ
+    // =====================================================================
+    private function seed26(): void
+    {
+        $main = $this->cat(null, '2.6', 'ແຜນລາຍຈ່າຍເຄື່ອນໄຫວນອກຫຼັກສູດ', 6);
+
+        // 2.6.1 ບໍລິຈາກເລືອດ
+        $s = $this->cat($main, '2.6.1', 'ບໍລິຈາກເລືອດໃຫ້ອົງການກາແດງລາວ', 1, 'AB', 'ລາຄາ/ຫົວ', 'ຈຳນວນ');
+        $this->item($s, 'ບໍລິຈາກເລືອດຄັ້ງທີ I',  50000, 0, 'ຂື້ນຢູ່ງົບສະຫວັດດິການ');
+        $this->item($s, 'ບໍລິຈາກເລືອດຄັ້ງທີ II', 50000, 0, 'ຂື້ນຢູ່ງົບສະຫວັດດິການ');
+
+        // 2.6.2 ກິລາ ແລະ ສິນລະປະ
+        $s = $this->cat($main, '2.6.2', 'ເຄື່ອນໄຫວກິລາ ແລະ ສິນລະປະ', 2, 'AB', 'ລາຄາ/ຄັ້ງ', 'ຈຳນວນ');
+        $this->item($s, 'ການແຂ່ງຂັນກິລາຊາວໜຸ່ມ',         200000, 0);
+        $this->item($s, 'ການເຄື່ອນໄຫວກິລາພາຍໃນ',         200000, 0);
+        $this->item($s, 'ການເຄື່ອນໄຫວກິລາກັບທາງນອກ',     200000, 0);
+        $this->item($s, 'ສິນລະປະກຳຂອງນັກສຶກສາ',          200000, 0);
+        $this->item($s, 'ການຝຶກຊ້ອມສິນລະປະວັນນະຄະດີ',   200000, 0);
+
+        // 2.6.3 ອອກແຮງງານ
+        $s = $this->cat($main, '2.6.3', 'ອອກແຮງງານລວມ', 3, 'AB', 'ລາຄາ/ຄັ້ງ', 'ຈຳນວນ');
+        $this->item($s, 'ອານາໄມຫ້ອງຮຽນ, ຫ້ອງການ', 100000, 0, 'ຂື້ນຢູ່ງົບລັດ');
+        $this->item($s, 'ອານາໄມສະຖານທີ່',          100000, 0, 'ຂື້ນຢູ່ງົບລັດ');
+        $this->item($s, 'ປູກຕົ້ນໄມ້',               100000, 0, 'ຂື້ນຢູ່ງົບລັດ');
+
+        // 2.6.4 ຖາມ-ຕອບວິທະຍາສາດ
+        $s = $this->cat($main, '2.6.4', 'ຈັດການແຂ່ງຂັນຖາມ-ຕອບວິທະຍາສາດ', 4, 'AB', 'ລາຄາ/ຄັ້ງ', 'ຈຳນວນ');
+        $this->item($s, 'ຄ່າເຊົ່າຫ້ອງປະຊຸມ 1 ວັນ', 500000, 0);
+        $this->item($s, 'ຄ່ານ້ຳດື່ມ',                500000, 0);
+        $this->item($s, 'ຄ່າຂັນລາງວັນ',             500000, 0);
+        $this->item($s, 'ຄ່າອອກຄຳຖາມ',               2000, 0);
+    }
+
+    // =====================================================================
+    // Helpers
+    // =====================================================================
+    private function cat(
+        ?ExpenseCategory $parent,
+        string $ref,
+        string $name,
+        int $sort = 0,
+        string $formulaType = 'AB',
+        ?string $colA = null,
+        ?string $colB = null,
+        ?string $colC = null,
+    ): ExpenseCategory {
+        return ExpenseCategory::create([
+            'plan_id'      => $this->plan->id,
+            'parent_id'    => $parent?->id,
+            'ref_code'     => $ref,
+            'name'         => $name,
+            'sort_order'   => $sort,
+            'formula_type' => $formulaType,
+            'col_a_label'  => $colA,
+            'col_b_label'  => $colB,
+            'col_c_label'  => $colC,
+        ]);
+    }
+
+    private function item(
+        ExpenseCategory $cat,
+        string $name,
+        float $monthly,
+        int $qty,
+        string $remark = '',
+        ?float $qtyC = null,
+    ): void {
+        ExpenseItem::create([
+            'category_id'    => $cat->id,
+            'sort_order'     => 0,
+            'name'           => $name,
+            'monthly_amount' => $monthly,
+            'quantity'       => $qty,
+            'qty_c'          => $qtyC,
+            'remark'         => $remark,
+        ]);
     }
 }
-
