@@ -2,19 +2,18 @@
 @foreach($topCategories as $mainCat)
 <div class="exp-main-cat-block" style="margin-bottom:1rem;">
 
-    {{-- Main category header row --}}
+    {{-- Main category header row (Level 1) --}}
     <div class="exp-row exp-main-row" style="display:flex;align-items:center;gap:8px;background:var(--fns-navy);color:#fff;padding:8px 12px;border-radius:6px 6px 0 0;">
         <span style="font-weight:700;flex:1;">{{ $mainCat->ref_code }} — {{ $mainCat->name }}</span>
         <span style="font-weight:700;white-space:nowrap;">{{ number_format($mainCat->subtotal(), 0) }} ກີບ</span>
         @if($editable)
         <div style="display:flex;gap:6px;margin-left:12px;">
-            {{-- Add subcategory --}}
+            <button class="fns-btn fns-btn-sm" style="background:rgba(255,255,255,0.2);color:#fff;font-size:0.7rem;"
+                onclick="openEditCatModal({{ $mainCat->id }}, '{{ addslashes($mainCat->ref_code) }}', '{{ addslashes($mainCat->name) }}', {{ $mainCat->sort_order }})">ແກ້</button>
             <button class="fns-btn fns-btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;font-size:0.7rem;"
                 onclick="openCatModal({{ $plan->id }}, {{ $mainCat->id }}, '{{ addslashes($mainCat->ref_code) }}')">+ ໝວດຍ່ອຍ</button>
-            {{-- Add item directly to main cat (no children) --}}
             <button class="fns-btn fns-btn-sm" style="background:rgba(255,255,255,0.12);color:#fff;font-size:0.7rem;"
                 onclick="openItemModal({{ $mainCat->id }})">+ ລາຍການ</button>
-            {{-- Delete main cat --}}
             <form method="POST" action="{{ route('head_of_finance.expense-categories.destroy', $mainCat) }}" style="display:inline;"
                 onsubmit="return confirm('ລຶບໝວດ {{ addslashes($mainCat->name) }} ທັງໝົດ?')">
                 @csrf @method('DELETE')
@@ -24,15 +23,19 @@
         @endif
     </div>
 
-    {{-- Subcategories --}}
+    {{-- Level-2 subcategories --}}
     @foreach($mainCat->children as $sub)
     <div class="exp-sub-block" style="border-left:3px solid var(--fns-navy);margin-left:12px;">
-        {{-- Subcategory header --}}
+        {{-- Level-2 header --}}
         <div style="display:flex;align-items:center;gap:8px;background:#f1f5f9;padding:6px 12px;border-bottom:1px solid #e2e8f0;">
             <span style="font-weight:600;flex:1;color:var(--fns-navy);">{{ $sub->ref_code }} {{ $sub->name }}</span>
             <span style="font-weight:600;color:var(--fns-navy);white-space:nowrap;">{{ number_format($sub->subtotal(), 0) }} ກີບ</span>
             @if($editable)
             <div style="display:flex;gap:5px;margin-left:10px;">
+                <button class="fns-btn fns-btn-sm" style="background:#e2e8f0;color:#334155;font-size:0.7rem;"
+                    onclick="openEditCatModal({{ $sub->id }}, '{{ addslashes($sub->ref_code) }}', '{{ addslashes($sub->name) }}', {{ $sub->sort_order }})">ແກ້</button>
+                <button class="fns-btn fns-btn-sm" style="background:#dbeafe;color:#1e40af;font-size:0.7rem;"
+                    onclick="openCatModal({{ $plan->id }}, {{ $sub->id }}, '{{ addslashes($sub->ref_code) }}')">+ ໝວດຍ່ອຍ</button>
                 <button class="fns-btn fns-btn-sm fns-btn-primary" style="font-size:0.7rem;"
                     onclick="openItemModal({{ $sub->id }})">+ ລາຍການ</button>
                 <form method="POST" action="{{ route('head_of_finance.expense-categories.destroy', $sub) }}" style="display:inline;"
@@ -44,96 +47,51 @@
             @endif
         </div>
 
-        {{-- Items table --}}
-        @if($sub->items->isNotEmpty())
-        <table class="fns-table" style="margin:0;border-radius:0;">
-            <thead>
-                <tr style="font-size:0.72rem;">
-                    <th style="width:4%">#</th>
-                    <th>ລາຍການ</th>
-                    <th style="width:12%">ອ້າງອີງ</th>
-                    <th style="width:13%;text-align:right;">ຕໍ່ເດືອນ (ກີບ)</th>
-                    <th style="width:6%;text-align:center;">ຈ/ນ</th>
-                    <th style="width:14%;text-align:right;">ໝົດປີ (ກີບ)</th>
-                    <th style="width:12%">ໝາຍເຫດ</th>
-                    @if($editable)<th style="width:8%"></th>@endif
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($sub->items as $item)
-                <tr style="font-size:0.78rem;">
-                    <td class="c dim">{{ $loop->iteration }}</td>
-                    <td>{{ $item->name }}</td>
-                    <td style="color:#64748b;">{{ $item->reference }}</td>
-                    <td style="text-align:right;">{{ number_format($item->monthly_amount, 0) }}</td>
-                    <td style="text-align:center;">{{ $item->quantity }}</td>
-                    <td style="text-align:right;font-weight:600;">{{ number_format($item->annual_amount, 0) }}</td>
-                    <td style="color:#64748b;font-size:0.72rem;">{{ $item->remark }}</td>
-                    @if($editable)
-                    <td>
-                        <div style="display:flex;gap:4px;">
-                            <button class="fns-btn fns-btn-sm" style="font-size:0.65rem;padding:2px 6px;"
-                                onclick="openEditItemModal({{ json_encode($item) }})">ແກ້</button>
-                            <form method="POST" action="{{ route('head_of_finance.expense-items.destroy', $item) }}" style="display:inline;"
-                                onsubmit="return confirm('ລຶບລາຍການ?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="fns-btn fns-btn-sm fns-btn-danger" style="font-size:0.65rem;padding:2px 6px;">ລຶບ</button>
-                            </form>
-                        </div>
-                    </td>
-                    @endif
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-        @else
-        <p style="padding:8px 12px;font-size:0.78rem;color:#94a3b8;margin:0;">ຍັງບໍ່ມີລາຍການ</p>
+        {{-- Level-3 sub-subcategories --}}
+        @foreach($sub->children as $subsub)
+        <div style="border-left:3px solid #93c5fd;margin-left:16px;">
+            {{-- Level-3 header --}}
+            <div style="display:flex;align-items:center;gap:8px;background:#eff6ff;padding:5px 12px;border-bottom:1px solid #dbeafe;">
+                <span style="font-weight:600;flex:1;color:#1e40af;font-size:0.9rem;">{{ $subsub->ref_code }} {{ $subsub->name }}</span>
+                <span style="font-weight:600;color:#1e40af;white-space:nowrap;font-size:0.9rem;">{{ number_format($subsub->subtotal(), 0) }} ກີບ</span>
+                @if($editable)
+                <div style="display:flex;gap:5px;margin-left:10px;">
+                    <button class="fns-btn fns-btn-sm" style="background:#dbeafe;color:#1e40af;font-size:0.7rem;"
+                        onclick="openEditCatModal({{ $subsub->id }}, '{{ addslashes($subsub->ref_code) }}', '{{ addslashes($subsub->name) }}', {{ $subsub->sort_order }})">ແກ້</button>
+                    <button class="fns-btn fns-btn-sm fns-btn-primary" style="font-size:0.7rem;"
+                        onclick="openItemModal({{ $subsub->id }})">+ ລາຍການ</button>
+                    <form method="POST" action="{{ route('head_of_finance.expense-categories.destroy', $subsub) }}" style="display:inline;"
+                        onsubmit="return confirm('ລຶບໝວດຍ່ອຍ {{ addslashes($subsub->name) }}?')">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="fns-btn fns-btn-sm fns-btn-danger" style="font-size:0.7rem;">ລຶບ</button>
+                    </form>
+                </div>
+                @endif
+            </div>
+
+            {{-- Level-3 items table --}}
+            @if($subsub->items->isNotEmpty())
+            @include('dashboards.finance_head.expense._items_table', ['items' => $subsub->items, 'editable' => $editable])
+            @else
+            <p style="padding:8px 12px;font-size:0.78rem;color:#94a3b8;margin:0;">ຍັງບໍ່ມີລາຍການ</p>
+            @endif
+        </div>
+        @endforeach
+
+        {{-- Level-2 direct items (only when no Level-3 children) --}}
+        @if($sub->children->isEmpty())
+            @if($sub->items->isNotEmpty())
+            @include('dashboards.finance_head.expense._items_table', ['items' => $sub->items, 'editable' => $editable])
+            @else
+            <p style="padding:8px 12px;font-size:0.78rem;color:#94a3b8;margin:0;">ຍັງບໍ່ມີລາຍການ</p>
+            @endif
         @endif
     </div>
     @endforeach
 
-    {{-- Direct items (main cat has no children, items attached directly) --}}
+    {{-- Level-1 direct items (main cat has no children) --}}
     @if($mainCat->children->isEmpty() && $mainCat->items->isNotEmpty())
-    <table class="fns-table" style="margin:0;border-radius:0;">
-        <thead>
-            <tr style="font-size:0.72rem;">
-                <th style="width:4%">#</th>
-                <th>ລາຍການ</th>
-                <th style="width:12%">ອ້າງອີງ</th>
-                <th style="width:13%;text-align:right;">ຕໍ່ເດືອນ (ກີບ)</th>
-                <th style="width:6%;text-align:center;">ຈ/ນ</th>
-                <th style="width:14%;text-align:right;">ໝົດປີ (ກີບ)</th>
-                <th style="width:12%">ໝາຍເຫດ</th>
-                @if($editable)<th style="width:8%"></th>@endif
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($mainCat->items as $item)
-            <tr style="font-size:0.78rem;">
-                <td class="c dim">{{ $loop->iteration }}</td>
-                <td>{{ $item->name }}</td>
-                <td style="color:#64748b;">{{ $item->reference }}</td>
-                <td style="text-align:right;">{{ number_format($item->monthly_amount, 0) }}</td>
-                <td style="text-align:center;">{{ $item->quantity }}</td>
-                <td style="text-align:right;font-weight:600;">{{ number_format($item->annual_amount, 0) }}</td>
-                <td style="color:#64748b;font-size:0.72rem;">{{ $item->remark }}</td>
-                @if($editable)
-                <td>
-                    <div style="display:flex;gap:4px;">
-                        <button class="fns-btn fns-btn-sm" style="font-size:0.65rem;padding:2px 6px;"
-                            onclick="openEditItemModal({{ json_encode($item) }})">ແກ້</button>
-                        <form method="POST" action="{{ route('head_of_finance.expense-items.destroy', $item) }}" style="display:inline;"
-                            onsubmit="return confirm('ລຶບລາຍການ?')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="fns-btn fns-btn-sm fns-btn-danger" style="font-size:0.65rem;padding:2px 6px;">ລຶບ</button>
-                        </form>
-                    </div>
-                </td>
-                @endif
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+    @include('dashboards.finance_head.expense._items_table', ['items' => $mainCat->items, 'editable' => $editable])
     @endif
 
     @if($mainCat->children->isEmpty() && $mainCat->items->isEmpty() && !$editable)

@@ -43,14 +43,23 @@ class ExpensePlanController extends Controller
 
     public function show(ExpensePlan $expensePlan)
     {
-        $expensePlan->load(['topCategories.children.items.chartOfAccount', 'topCategories.items.chartOfAccount', 'creator']);
+        $expensePlan->load([
+            'topCategories.children.children.items.chartOfAccount',
+            'topCategories.children.items.chartOfAccount',
+            'topCategories.items.chartOfAccount',
+            'creator',
+        ]);
 
         return view('dashboards.finance_head.expense.show', compact('expensePlan'));
     }
 
     public function manage(ExpensePlan $expensePlan)
     {
-        $expensePlan->load(['topCategories.children.items.chartOfAccount', 'topCategories.items.chartOfAccount']);
+        $expensePlan->load([
+            'topCategories.children.children.items.chartOfAccount',
+            'topCategories.children.items.chartOfAccount',
+            'topCategories.items.chartOfAccount',
+        ]);
 
         $chartOfAccounts = \App\Models\ChartOfAccount::orderBy('account_code')->get();
 

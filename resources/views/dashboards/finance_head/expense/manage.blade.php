@@ -50,6 +50,32 @@
 
 {{-- ======================= MODALS ======================= --}}
 
+{{-- Edit Category modal --}}
+<div id="editCatModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:10px;padding:1.5rem;width:400px;max-width:95vw;">
+        <h3 style="margin:0 0 1rem;font-size:1rem;">ແກ້ໄຂໝວດ</h3>
+        <form method="POST" id="editCatForm">
+            @csrf @method('PATCH')
+            <div class="fns-form-group">
+                <label class="fns-label">ລະຫັດ (ref_code) <span style="color:red">*</span></label>
+                <input type="text" name="ref_code" id="editCatRefCode" class="fns-input" required>
+            </div>
+            <div class="fns-form-group">
+                <label class="fns-label">ຊື່ໝວດ <span style="color:red">*</span></label>
+                <input type="text" name="name" id="editCatName" class="fns-input" required>
+            </div>
+            <div class="fns-form-group">
+                <label class="fns-label">ລຳດັບ (sort_order)</label>
+                <input type="number" name="sort_order" id="editCatSortOrder" class="fns-input" min="0">
+            </div>
+            <div style="display:flex;gap:8px;margin-top:1rem;">
+                <button type="submit" class="fns-btn fns-btn-primary">ບັນທຶກ</button>
+                <button type="button" class="fns-btn fns-btn-secondary" onclick="closeEditCatModal()">ຍົກເລີກ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{-- Add/Edit Category modal --}}
 <div id="catModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:10px;padding:1.5rem;width:400px;max-width:95vw;">
@@ -227,6 +253,15 @@ function calcEditAnnual() {
     var q = parseInt(document.getElementById('editItemQty').value) || 0;
     document.getElementById('editItemAnnualDisplay').value = (m * q).toLocaleString('en-US', {maximumFractionDigits:0}) + ' ກີບ';
 }
+
+function openEditCatModal(id, refCode, name, sortOrder) {
+    document.getElementById('editCatForm').action = '/head-of-finance/expense-categories/' + id;
+    document.getElementById('editCatRefCode').value = refCode;
+    document.getElementById('editCatName').value = name;
+    document.getElementById('editCatSortOrder').value = sortOrder;
+    document.getElementById('editCatModal').style.display = 'flex';
+}
+function closeEditCatModal() { document.getElementById('editCatModal').style.display = 'none'; }
 </script>
 
 @endsection

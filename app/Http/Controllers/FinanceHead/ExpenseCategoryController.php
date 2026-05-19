@@ -60,9 +60,18 @@ class ExpenseCategoryController extends Controller
         }
 
         $plan = $expenseCategory->plan;
-        $expenseCategory->delete();
+        $this->deleteRecursive($expenseCategory);
 
         return redirect()->route('head_of_finance.expense.manage', $plan)
             ->with('success', 'ລຶບໝວດສຳເລັດ');
+    }
+
+    private function deleteRecursive(ExpenseCategory $category): void
+    {
+        foreach ($category->children()->get() as $child) {
+            $this->deleteRecursive($child);
+        }
+        $category->items()->delete();
+        $category->delete();
     }
 }
