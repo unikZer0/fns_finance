@@ -7,7 +7,7 @@ use App\Models\ExpensePlan;
 class ExpenseSection
 {
     public string $id    = 'expense';
-    public string $title = 'ງົບປະມານລາຍຈ່າຍ';
+    public string $title = 'ປະເມີນລາຍຈ່າຍ';
     public string $view  = 'reports.annual.sections.expense';
 
     public function data(int $year): array

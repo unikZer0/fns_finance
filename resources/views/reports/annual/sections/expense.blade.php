@@ -3,14 +3,14 @@
 @if(!$plan || $topCategories->isEmpty())
 <div class="placeholder">
     <div class="ph-icon">📋</div>
-    <div class="ph-text">ຍັງບໍ່ມີຂໍ້ມູນງົບປະມານລາຍຈ່າຍ ສົກ {{ $year }}</div>
+    <div class="ph-text">ຍັງບໍ່ມີຂໍ້ມູນປະເມີນລາຍຈ່າຍ ສົກ {{ $year }}</div>
     <div class="ph-text" style="margin-top:3pt;font-size:7pt;color:#bbb;">ສ້າງ ExpensePlan ແລ້ວ ເພີ່ມໝວດ/ລາຍການ ກ່ອນ</div>
 </div>
 @else
 
 @php $grandTotal = (float) $plan->allCategories->flatMap->items->sum('annual_amount'); @endphp
 
-<div class="subsec-hd keep-with-next">ງົບປະມານລາຍຈ່າຍ ສົກ {{ $year }}</div>
+<div class="subsec-hd keep-with-next">ປະເມີນລາຍຈ່າຍ ສົກ {{ $year }}</div>
 
 @foreach($topCategories as $mainCat)
 @php $mainTotal = $mainCat->subtotal(); @endphp
@@ -86,7 +86,7 @@
 
 {{-- Grand total --}}
 <div class="grand-bar avoid-break" style="margin-top:10pt;">
-    <div class="grand-bar-head">ລວມງົບປະມານລາຍຈ່າຍທັງໝົດ ສົກ {{ $year }}</div>
+    <div class="grand-bar-head">ລວມປະເມີນລາຍຈ່າຍທັງໝົດ ສົກ {{ $year }}</div>
     <table class="rpt-table grand-table">
         <thead>
             <tr>

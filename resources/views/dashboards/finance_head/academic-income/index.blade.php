@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'ການປະເມີນລາຍຮັບວິຊາການ')
-@section('page-title', 'ການປະເມີນລາຍຮັບວິຊາການ')
+@section('title', 'ປະເມີນລາຍຮັບວິຊາການ')
+@section('page-title', 'ປະເມີນລາຍຮັບວິຊາການ')
 
 @section('content')
 

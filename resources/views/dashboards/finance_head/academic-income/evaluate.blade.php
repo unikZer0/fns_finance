@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'ປ້ອນຂໍ້ມູນ ປີ ' . $academicIncome->fiscal_year)
-@section('page-title', 'ປ້ອນຂໍ້ມູນການປະເມີນລາຍຮັບວິຊາການ ປີ ' . $academicIncome->fiscal_year)
+@section('page-title', 'ປ້ອນຂໍ້ມູນປະເມີນລາຍຮັບວິຊາການ ປີ ' . $academicIncome->fiscal_year)
 
 @section('content')
 <form method="POST" action="{{ route('head_of_finance.academic-income.saveEvaluate', $academicIncome) }}">

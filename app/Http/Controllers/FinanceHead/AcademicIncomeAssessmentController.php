@@ -297,6 +297,6 @@ class AcademicIncomeAssessmentController extends Controller
             ]
         );
 
-        return back()->with('success', 'ບັນທຶກການປະເມີນລາຍຮັບສຳເລັດ');
+        return back()->with('success', 'ບັນທຶກປະເມີນລາຍຮັບສຳເລັດ');
     }
 }

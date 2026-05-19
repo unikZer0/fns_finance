@@ -66,14 +66,14 @@
             <a href="{{ route('head_of_finance.expense.index') }}"
                 class="fns-nav-item {{ request()->routeIs('head_of_finance.expense.*') ? 'active' : '' }}">
                 <x-icons.book-open />
-                ງົບປະມານລາຍຈ່າຍ
+                ປະເມີນລາຍຈ່າຍ
             </a>
 
             <div class="fns-nav-section-label">ລາຍຮັບວິຊາການ</div>
             <a href="{{ route('head_of_finance.academic-income.index') }}"
                 class="fns-nav-item {{ request()->routeIs('head_of_finance.academic-income.*') ? 'active' : '' }}">
                 <x-icons.book-open />
-                ການປະເມີນລາຍຮັບ
+                ປະເມີນລາຍຮັບ
             </a>
             <a href="{{ route('head_of_finance.reports.show', ['year' => date('Y')]) }}"
                 class="fns-nav-item {{ request()->routeIs('head_of_finance.reports.*') ? 'active' : '' }}">

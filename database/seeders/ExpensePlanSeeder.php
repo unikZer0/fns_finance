@@ -32,7 +32,7 @@ class ExpensePlanSeeder extends Seeder
             'plan_id'    => $plan->id,
             'parent_id'  => null,
             'ref_code'   => '2.1',
-            'name'       => 'ແຜນງົບປະມານລາຍຈ່າຍບໍລິຫານປົກກະຕິ',
+            'name'       => 'ແຜນປະເມີນລາຍຈ່າຍບໍລິຫານປົກກະຕິ',
             'sort_order' => 0,
         ]);
 
@@ -174,7 +174,7 @@ class ExpensePlanSeeder extends Seeder
             'plan_id'    => $plan->id,
             'parent_id'  => null,
             'ref_code'   => '2.2',
-            'name'       => 'ແຜນງົບປະມານລາຍຈ່າຍປັບປຸງ ແລະ ສົ່ງເສີມວິຊາການ',
+            'name'       => 'ແຜນປະເມີນລາຍຈ່າຍປັບປຸງ ແລະ ສົ່ງເສີມວິຊາການ',
             'sort_order' => 1,
         ]);
 
@@ -268,7 +268,7 @@ class ExpensePlanSeeder extends Seeder
             'plan_id'    => $plan->id,
             'parent_id'  => null,
             'ref_code'   => '2.3',
-            'name'       => 'ແຜນງົບປະມານລາຍຈ່າຍດັດສົມ, ສົ່ງເສີມ ແລະ ບຳລຸງຮັກສາ',
+            'name'       => 'ແຜນປະເມີນລາຍຈ່າຍດັດສົມ, ສົ່ງເສີມ ແລະ ບຳລຸງຮັກສາ',
             'sort_order' => 2,
         ]);
 
@@ -314,7 +314,7 @@ class ExpensePlanSeeder extends Seeder
             'plan_id'    => $plan->id,
             'parent_id'  => null,
             'ref_code'   => '2.4',
-            'name'       => 'ແຜນງົບປະມານລາຍຈ່າຍບໍລິຫານອຸດໜູນກົງຈັກ',
+            'name'       => 'ແຜນປະເມີນລາຍຈ່າຍບໍລິຫານອຸດໜູນກົງຈັກ',
             'sort_order' => 3,
         ]);
 
@@ -378,7 +378,7 @@ class ExpensePlanSeeder extends Seeder
             'plan_id'    => $plan->id,
             'parent_id'  => null,
             'ref_code'   => '2.5',
-            'name'       => 'ແຜນງົບປະມານລາຍຈ່າຍຄ່າສິດສອນ ແລະ ການປະເມີນ',
+            'name'       => 'ແຜນປະເມີນລາຍຈ່າຍຄ່າສິດສອນ ແລະ ການປະເມີນ',
             'sort_order' => 4,
         ]);
 

@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'ງົບປະມານ ສົກ ' . $expensePlan->fiscal_year)
-@section('page-title', 'ສັງລວມງົບປະມານລາຍຈ່າຍ ສົກ ' . $expensePlan->fiscal_year)
+@section('page-title', 'ສັງລວມປະເມີນລາຍຈ່າຍ ສົກ ' . $expensePlan->fiscal_year)
 
 @section('content')
 
