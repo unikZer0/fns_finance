@@ -284,7 +284,12 @@ function calcAnnual() {
 }
 calcAnnual();
 
-function openEditItemModal(item, formulaType, labelA, labelB, labelC) {
+function openEditItemModal(btn) {
+    var item = JSON.parse(btn.dataset.item);
+    var formulaType = btn.dataset.formula;
+    var labelA = btn.dataset.labelA;
+    var labelB = btn.dataset.labelB;
+    var labelC = btn.dataset.labelC;
     var isABC = formulaType === 'ABC';
     document.getElementById('editItemForm').action = '/head-of-finance/expense-items/' + item.id;
     document.getElementById('editItemName').value = item.name;

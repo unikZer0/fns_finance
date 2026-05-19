@@ -9,11 +9,11 @@
         @if($editable)
         <div style="display:flex;gap:6px;margin-left:12px;">
             <button class="fns-btn fns-btn-sm" style="background:rgba(255,255,255,0.2);color:#fff;font-size:0.7rem;"
-                onclick="openEditCatModal({{ $mainCat->id }}, '{{ addslashes($mainCat->ref_code) }}', '{{ addslashes($mainCat->name) }}', {{ $mainCat->sort_order }}, '{{ $mainCat->formula_type }}', @json($mainCat->col_a_label), @json($mainCat->col_b_label), @json($mainCat->col_c_label))">ແກ້</button>
+                onclick="openEditCatModal({{ $mainCat->id }}, '{{ addslashes($mainCat->ref_code) }}', '{{ addslashes($mainCat->name) }}', {{ $mainCat->sort_order }}, '{{ $mainCat->formula_type }}', '{{ $mainCat->col_a_label }}', '{{ $mainCat->col_b_label }}', '{{ $mainCat->col_c_label }}')">ແກ້</button>
             <button class="fns-btn fns-btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;font-size:0.7rem;"
                 onclick="openCatModal({{ $plan->id }}, {{ $mainCat->id }}, '{{ addslashes($mainCat->ref_code) }}')">+ ໝວດຍ່ອຍ</button>
             <button class="fns-btn fns-btn-sm" style="background:rgba(255,255,255,0.12);color:#fff;font-size:0.7rem;"
-                onclick="openItemModal({{ $mainCat->id }}, '{{ $mainCat->formula_type }}', @json($mainCat->labelA()), @json($mainCat->labelB()), @json($mainCat->labelC()))">+ ລາຍການ</button>
+                onclick="openItemModal({{ $mainCat->id }}, '{{ $mainCat->formula_type }}', '{{ $mainCat->labelA() }}', '{{ $mainCat->labelB() }}', '{{ $mainCat->labelC() }}')">+ ລາຍການ</button>
             <form method="POST" action="{{ route('head_of_finance.expense-categories.destroy', $mainCat) }}" style="display:inline;"
                 onsubmit="return confirm('ລຶບໝວດ {{ addslashes($mainCat->name) }} ທັງໝົດ?')">
                 @csrf @method('DELETE')
@@ -33,11 +33,11 @@
             @if($editable)
             <div style="display:flex;gap:5px;margin-left:10px;">
                 <button class="fns-btn fns-btn-sm" style="background:#e2e8f0;color:#334155;font-size:0.7rem;"
-                    onclick="openEditCatModal({{ $sub->id }}, '{{ addslashes($sub->ref_code) }}', '{{ addslashes($sub->name) }}', {{ $sub->sort_order }}, '{{ $sub->formula_type }}', @json($sub->col_a_label), @json($sub->col_b_label), @json($sub->col_c_label))">ແກ້</button>
+                    onclick="openEditCatModal({{ $sub->id }}, '{{ addslashes($sub->ref_code) }}', '{{ addslashes($sub->name) }}', {{ $sub->sort_order }}, '{{ $sub->formula_type }}', '{{ $sub->col_a_label }}', '{{ $sub->col_b_label }}', '{{ $sub->col_c_label }}')">ແກ້</button>
                 <button class="fns-btn fns-btn-sm" style="background:#dbeafe;color:#1e40af;font-size:0.7rem;"
                     onclick="openCatModal({{ $plan->id }}, {{ $sub->id }}, '{{ addslashes($sub->ref_code) }}')">+ ໝວດຍ່ອຍ</button>
                 <button class="fns-btn fns-btn-sm fns-btn-primary" style="font-size:0.7rem;"
-                    onclick="openItemModal({{ $sub->id }}, '{{ $sub->formula_type }}', @json($sub->labelA()), @json($sub->labelB()), @json($sub->labelC()))">+ ລາຍການ</button>
+                    onclick="openItemModal({{ $sub->id }}, '{{ $sub->formula_type }}', '{{ $sub->labelA() }}', '{{ $sub->labelB() }}', '{{ $sub->labelC() }}')">+ ລາຍການ</button>
                 <form method="POST" action="{{ route('head_of_finance.expense-categories.destroy', $sub) }}" style="display:inline;"
                     onsubmit="return confirm('ລຶບໝວດຍ່ອຍ {{ addslashes($sub->name) }}?')">
                     @csrf @method('DELETE')
@@ -57,9 +57,9 @@
                 @if($editable)
                 <div style="display:flex;gap:5px;margin-left:10px;">
                     <button class="fns-btn fns-btn-sm" style="background:#dbeafe;color:#1e40af;font-size:0.7rem;"
-                        onclick="openEditCatModal({{ $subsub->id }}, '{{ addslashes($subsub->ref_code) }}', '{{ addslashes($subsub->name) }}', {{ $subsub->sort_order }}, '{{ $subsub->formula_type }}', @json($subsub->col_a_label), @json($subsub->col_b_label), @json($subsub->col_c_label))">ແກ້</button>
+                        onclick="openEditCatModal({{ $subsub->id }}, '{{ addslashes($subsub->ref_code) }}', '{{ addslashes($subsub->name) }}', {{ $subsub->sort_order }}, '{{ $subsub->formula_type }}', '{{ $subsub->col_a_label }}', '{{ $subsub->col_b_label }}', '{{ $subsub->col_c_label }}')">ແກ້</button>
                     <button class="fns-btn fns-btn-sm fns-btn-primary" style="font-size:0.7rem;"
-                        onclick="openItemModal({{ $subsub->id }}, '{{ $subsub->formula_type }}', @json($subsub->labelA()), @json($subsub->labelB()), @json($subsub->labelC()))">+ ລາຍການ</button>
+                        onclick="openItemModal({{ $subsub->id }}, '{{ $subsub->formula_type }}', '{{ $subsub->labelA() }}', '{{ $subsub->labelB() }}', '{{ $subsub->labelC() }}')">+ ລາຍການ</button>
                     <form method="POST" action="{{ route('head_of_finance.expense-categories.destroy', $subsub) }}" style="display:inline;"
                         onsubmit="return confirm('ລຶບໝວດຍ່ອຍ {{ addslashes($subsub->name) }}?')">
                         @csrf @method('DELETE')

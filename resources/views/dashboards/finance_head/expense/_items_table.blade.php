@@ -32,7 +32,12 @@
             <td>
                 <div style="display:flex;gap:4px;">
                     <button class="fns-btn fns-btn-sm" style="font-size:0.65rem;padding:2px 6px;"
-                        onclick="openEditItemModal({{ json_encode($item) }}, '{{ $category->formula_type }}', @json($category->labelA()), @json($category->labelB()), @json($category->labelC()))">ແກ້</button>
+                        data-item="{{ e(json_encode(['id'=>$item->id,'name'=>$item->name,'reference'=>$item->reference,'monthly_amount'=>$item->monthly_amount,'quantity'=>$item->quantity,'qty_c'=>$item->qty_c,'remark'=>$item->remark,'chart_of_account_id'=>$item->chart_of_account_id])) }}"
+                        data-formula="{{ $category->formula_type }}"
+                        data-label-a="{{ $category->labelA() }}"
+                        data-label-b="{{ $category->labelB() }}"
+                        data-label-c="{{ $category->labelC() }}"
+                        onclick="openEditItemModal(this)">ແກ້</button>
                     <form method="POST" action="{{ route('head_of_finance.expense-items.destroy', $item) }}" style="display:inline;"
                         onsubmit="return confirm('ລຶບລາຍການ?')">
                         @csrf @method('DELETE')
