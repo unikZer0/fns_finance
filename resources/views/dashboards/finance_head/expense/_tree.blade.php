@@ -9,11 +9,11 @@
         @if($editable)
         <div style="display:flex;gap:6px;margin-left:12px;">
             <button class="fns-btn fns-btn-sm" style="background:rgba(255,255,255,0.2);color:#fff;font-size:0.7rem;"
-                onclick="openEditCatModal({{ $mainCat->id }}, '{{ addslashes($mainCat->ref_code) }}', '{{ addslashes($mainCat->name) }}', {{ $mainCat->sort_order }})">ແກ້</button>
+                onclick="openEditCatModal({{ $mainCat->id }}, '{{ addslashes($mainCat->ref_code) }}', '{{ addslashes($mainCat->name) }}', {{ $mainCat->sort_order }}, '{{ $mainCat->formula_type }}', @json($mainCat->col_a_label), @json($mainCat->col_b_label), @json($mainCat->col_c_label))">ແກ້</button>
             <button class="fns-btn fns-btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;font-size:0.7rem;"
                 onclick="openCatModal({{ $plan->id }}, {{ $mainCat->id }}, '{{ addslashes($mainCat->ref_code) }}')">+ ໝວດຍ່ອຍ</button>
             <button class="fns-btn fns-btn-sm" style="background:rgba(255,255,255,0.12);color:#fff;font-size:0.7rem;"
-                onclick="openItemModal({{ $mainCat->id }})">+ ລາຍການ</button>
+                onclick="openItemModal({{ $mainCat->id }}, '{{ $mainCat->formula_type }}', @json($mainCat->labelA()), @json($mainCat->labelB()), @json($mainCat->labelC()))">+ ລາຍການ</button>
             <form method="POST" action="{{ route('head_of_finance.expense-categories.destroy', $mainCat) }}" style="display:inline;"
                 onsubmit="return confirm('ລຶບໝວດ {{ addslashes($mainCat->name) }} ທັງໝົດ?')">
                 @csrf @method('DELETE')
@@ -33,11 +33,11 @@
             @if($editable)
             <div style="display:flex;gap:5px;margin-left:10px;">
                 <button class="fns-btn fns-btn-sm" style="background:#e2e8f0;color:#334155;font-size:0.7rem;"
-                    onclick="openEditCatModal({{ $sub->id }}, '{{ addslashes($sub->ref_code) }}', '{{ addslashes($sub->name) }}', {{ $sub->sort_order }})">ແກ້</button>
+                    onclick="openEditCatModal({{ $sub->id }}, '{{ addslashes($sub->ref_code) }}', '{{ addslashes($sub->name) }}', {{ $sub->sort_order }}, '{{ $sub->formula_type }}', @json($sub->col_a_label), @json($sub->col_b_label), @json($sub->col_c_label))">ແກ້</button>
                 <button class="fns-btn fns-btn-sm" style="background:#dbeafe;color:#1e40af;font-size:0.7rem;"
                     onclick="openCatModal({{ $plan->id }}, {{ $sub->id }}, '{{ addslashes($sub->ref_code) }}')">+ ໝວດຍ່ອຍ</button>
                 <button class="fns-btn fns-btn-sm fns-btn-primary" style="font-size:0.7rem;"
-                    onclick="openItemModal({{ $sub->id }})">+ ລາຍການ</button>
+                    onclick="openItemModal({{ $sub->id }}, '{{ $sub->formula_type }}', @json($sub->labelA()), @json($sub->labelB()), @json($sub->labelC()))">+ ລາຍການ</button>
                 <form method="POST" action="{{ route('head_of_finance.expense-categories.destroy', $sub) }}" style="display:inline;"
                     onsubmit="return confirm('ລຶບໝວດຍ່ອຍ {{ addslashes($sub->name) }}?')">
                     @csrf @method('DELETE')
@@ -57,9 +57,9 @@
                 @if($editable)
                 <div style="display:flex;gap:5px;margin-left:10px;">
                     <button class="fns-btn fns-btn-sm" style="background:#dbeafe;color:#1e40af;font-size:0.7rem;"
-                        onclick="openEditCatModal({{ $subsub->id }}, '{{ addslashes($subsub->ref_code) }}', '{{ addslashes($subsub->name) }}', {{ $subsub->sort_order }})">ແກ້</button>
+                        onclick="openEditCatModal({{ $subsub->id }}, '{{ addslashes($subsub->ref_code) }}', '{{ addslashes($subsub->name) }}', {{ $subsub->sort_order }}, '{{ $subsub->formula_type }}', @json($subsub->col_a_label), @json($subsub->col_b_label), @json($subsub->col_c_label))">ແກ້</button>
                     <button class="fns-btn fns-btn-sm fns-btn-primary" style="font-size:0.7rem;"
-                        onclick="openItemModal({{ $subsub->id }})">+ ລາຍການ</button>
+                        onclick="openItemModal({{ $subsub->id }}, '{{ $subsub->formula_type }}', @json($subsub->labelA()), @json($subsub->labelB()), @json($subsub->labelC()))">+ ລາຍການ</button>
                     <form method="POST" action="{{ route('head_of_finance.expense-categories.destroy', $subsub) }}" style="display:inline;"
                         onsubmit="return confirm('ລຶບໝວດຍ່ອຍ {{ addslashes($subsub->name) }}?')">
                         @csrf @method('DELETE')
@@ -71,7 +71,7 @@
 
             {{-- Level-3 items table --}}
             @if($subsub->items->isNotEmpty())
-            @include('dashboards.finance_head.expense._items_table', ['items' => $subsub->items, 'editable' => $editable])
+            @include('dashboards.finance_head.expense._items_table', ['items' => $subsub->items, 'editable' => $editable, 'category' => $subsub])
             @else
             <p style="padding:8px 12px;font-size:0.78rem;color:#94a3b8;margin:0;">ຍັງບໍ່ມີລາຍການ</p>
             @endif
@@ -81,7 +81,7 @@
         {{-- Level-2 direct items (only when no Level-3 children) --}}
         @if($sub->children->isEmpty())
             @if($sub->items->isNotEmpty())
-            @include('dashboards.finance_head.expense._items_table', ['items' => $sub->items, 'editable' => $editable])
+            @include('dashboards.finance_head.expense._items_table', ['items' => $sub->items, 'editable' => $editable, 'category' => $sub])
             @else
             <p style="padding:8px 12px;font-size:0.78rem;color:#94a3b8;margin:0;">ຍັງບໍ່ມີລາຍການ</p>
             @endif
@@ -91,7 +91,7 @@
 
     {{-- Level-1 direct items (main cat has no children) --}}
     @if($mainCat->children->isEmpty() && $mainCat->items->isNotEmpty())
-    @include('dashboards.finance_head.expense._items_table', ['items' => $mainCat->items, 'editable' => $editable])
+    @include('dashboards.finance_head.expense._items_table', ['items' => $mainCat->items, 'editable' => $editable, 'category' => $mainCat])
     @endif
 
     @if($mainCat->children->isEmpty() && $mainCat->items->isEmpty() && !$editable)

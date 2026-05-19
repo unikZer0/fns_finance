@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ExpenseCategory extends Model
 {
-    protected $fillable = ['plan_id', 'parent_id', 'ref_code', 'name', 'sort_order'];
+    protected $fillable = [
+        'plan_id', 'parent_id', 'ref_code', 'name', 'sort_order',
+        'formula_type', 'col_a_label', 'col_b_label', 'col_c_label',
+    ];
 
     public function plan(): BelongsTo
     {
@@ -29,6 +32,11 @@ class ExpenseCategory extends Model
     {
         return $this->hasMany(ExpenseItem::class, 'category_id')->orderBy('sort_order');
     }
+
+    public function labelA(): string { return $this->col_a_label ?: 'ຕໍ່ເດືອນ (ກີບ)'; }
+    public function labelB(): string { return $this->col_b_label ?: 'ຈ/ນ'; }
+    public function labelC(): string { return $this->col_c_label ?: 'ຄັ້ງ'; }
+    public function isABC(): bool    { return $this->formula_type === 'ABC'; }
 
     public function subtotal(): float
     {
