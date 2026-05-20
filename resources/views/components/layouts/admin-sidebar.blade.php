@@ -68,6 +68,11 @@
                 <x-icons.book-open />
                 ປະເມີນລາຍຈ່າຍ
             </a>
+            <a href="{{ route('head_of_finance.salary.index') }}"
+                class="fns-nav-item {{ request()->routeIs('head_of_finance.salary.*') ? 'active' : '' }}">
+                <x-icons.users />
+                ຕາຕະລາງເງິນເດືອນ
+            </a>
 
             <div class="fns-nav-section-label">ລາຍຮັບວິຊາການ</div>
             <a href="{{ route('head_of_finance.academic-income.index') }}"
