@@ -164,7 +164,7 @@
                             $navLinkedRows = $navDefaultRows->whereNotNull('chart_of_account_id')->count();
                         @endphp
                         <button type="button"
-                                class="es-section-tab {{ $loop->first ? 'is-active' : '' }}"
+                                class="es-section-tab {{ (int) $activeSectionId === (int) $navSection->id ? 'is-active' : '' }}"
                                 data-section-target="{{ $navSection->id }}">
                             <span class="es-section-tab-code">{{ $navSection->code }}</span>
                             <span class="es-section-tab-copy">
@@ -190,7 +190,7 @@
                 $sectionLinkedDefaultRows = $sectionDefaultRows->whereNotNull('chart_of_account_id')->count();
                 $nextSubsectionCode = $nextChildCode($section->code, $section->subsections->pluck('code'));
             @endphp
-            <section class="es-section-card js-section-panel {{ $loop->first ? 'is-active' : '' }}" data-section-panel="{{ $section->id }}">
+            <section class="es-section-card js-section-panel {{ (int) $activeSectionId === (int) $section->id ? 'is-active' : '' }}" data-section-panel="{{ $section->id }}">
                 <div class="es-section-title">
                     <div class="es-section-code">{{ $section->code }}</div>
                     <div class="min-w-0">

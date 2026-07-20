@@ -241,6 +241,48 @@ class FinanceHeadSaveActionSmokeTest extends TestCase
         $this->assertSame($year->id, $section->planning_year_id);
     }
 
+    public function test_expense_structure_creation_keeps_the_created_section_active(): void
+    {
+        [$year, , $pattern] = $this->seedExpenseStructure();
+
+        $this->actingAs($this->financeHead)
+            ->post(route('head_of_finance.settings.expense-structure.sections.store'), [
+                'planning_year_id' => $year->id,
+                'code' => '6.22',
+                'name' => 'Created Section',
+                'description' => '',
+                'display_order' => 2,
+                'is_active' => '1',
+            ])
+            ->assertRedirect();
+
+        $createdSection = ExpenseSection::where('code', '6.22')->firstOrFail();
+
+        $this->actingAs($this->financeHead)
+            ->post(route('head_of_finance.settings.expense-structure.subsections.store', $createdSection), [
+                'parent_id' => null,
+                'code' => '6.22.1',
+                'name' => 'Created Subsection',
+                'description' => '',
+                'default_pattern_id' => $pattern->id,
+                'display_order' => 1,
+                'is_active' => '1',
+            ])
+            ->assertRedirect(route('head_of_finance.settings.expense-structure.index', [
+                'planning_year_id' => $year->id,
+                'active_section' => $createdSection->id,
+            ]));
+
+        $this->actingAs($this->financeHead)
+            ->get(route('head_of_finance.settings.expense-structure.index', [
+                'planning_year_id' => $year->id,
+                'active_section' => $createdSection->id,
+            ]))
+            ->assertOk()
+            ->assertSee('class="es-section-tab is-active"'.PHP_EOL.'                                data-section-target="'.$createdSection->id.'"', false)
+            ->assertSee('class="es-section-card js-section-panel is-active" data-section-panel="'.$createdSection->id.'"', false);
+    }
+
     public function test_account_link_page_uses_selected_planning_year_rows(): void
     {
         [$targetYear, $account, $pattern] = $this->seedExpenseStructure();

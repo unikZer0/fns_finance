@@ -113,6 +113,10 @@ class ExpenseStructureController extends Controller
             ->filter(fn (ExpenseCatalogItem $row): bool => $row->chart_of_account_id === null)
             ->values();
 
+        $activeSectionId = $sections->contains('id', $request->integer('active_section'))
+            ? $request->integer('active_section')
+            : $sections->first()?->id;
+
         $patterns = ExpensePattern::systemDefaults()
             ->where('is_active', true)
             ->orderBy('id')
@@ -137,6 +141,7 @@ class ExpenseStructureController extends Controller
             'defaultRowsByCode' => $defaultRowsByCode,
             'accountOptions' => $accountOptions,
             'accountWarnings' => $accountWarnings,
+            'activeSectionId' => $activeSectionId,
         ]);
     }
 
@@ -156,7 +161,7 @@ class ExpenseStructureController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
-        ExpenseSection::create([
+        $section = ExpenseSection::create([
             'planning_year_id' => $data['planning_year_id'],
             'code' => $data['code'],
             'name' => $data['name'],
@@ -165,7 +170,12 @@ class ExpenseStructureController extends Controller
             'is_active' => $request->boolean('is_active'),
         ]);
 
-        return back()->with('success', 'Expense section added.');
+        return redirect()
+            ->route('head_of_finance.settings.expense-structure.index', [
+                'planning_year_id' => $section->planning_year_id,
+                'active_section' => $section->id,
+            ])
+            ->with('success', 'Expense section added.');
     }
 
     public function updateSection(Request $request, ExpenseSection $expenseSection)
@@ -248,7 +258,12 @@ class ExpenseStructureController extends Controller
             'is_active' => $request->boolean('is_active'),
         ]);
 
-        return back()->with('success', 'Expense subsection added.');
+        return redirect()
+            ->route('head_of_finance.settings.expense-structure.index', [
+                'planning_year_id' => $expenseSection->planning_year_id,
+                'active_section' => $expenseSection->id,
+            ])
+            ->with('success', 'Expense subsection added.');
     }
 
     public function updateSubsection(Request $request, ExpenseSubsection $expenseSubsection)
