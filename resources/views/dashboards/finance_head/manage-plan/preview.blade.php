@@ -180,6 +180,16 @@
     </div>
 </div>
 
+<nav class="preview-topic-nav" aria-label="ເລືອກຫົວຂໍ້ລາຍງານ">
+    <span>ເລືອກຫົວຂໍ້</span>
+    <div>
+        <a href="#period-1-2" class="preview-topic-link is-active" data-preview-topic-link="plan-year" title="ລາຍຈ່າຍງົບປະມານປີ">ແຜນປີ</a>
+        <a href="#preview-income" class="preview-topic-link" data-preview-topic-link="income">ລາຍຮັບ</a>
+        <a href="#preview-expense" class="preview-topic-link" data-preview-topic-link="expense">ລາຍຈ່າຍ</a>
+        <a href="#preview-salary" class="preview-topic-link" data-preview-topic-link="salary">ເງິນເດືອນ</a>
+    </div>
+</nav>
+
 @if($reviewContext['can_manage_review'] && $planningYear->canRequestReview())
     <div class="review-modal-backdrop" data-review-modal hidden>
         <div class="review-modal" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
@@ -303,7 +313,7 @@
 @endif
 
 <div class="income-preview">
-    <section class="paper plan-year-paper" id="period-1-2">
+    <section class="paper plan-year-paper" id="period-1-2" data-preview-topic="plan-year">
         <div class="official-header">
             <div class="org-left">
                 <strong>ມະຫາວິທະຍາໄລແຫ່ງຊາດ</strong>
@@ -482,7 +492,7 @@
         <div class="balance-page-number" aria-hidden="true"></div>
     </section>
 
-    <section class="paper paper-summary income-summary-paper">
+    <section class="paper paper-summary income-summary-paper" id="preview-income" data-preview-topic="income">
         <h2 class="plan-year-report-title">1. ແຜນງົບປະມານລາຍຮັບວິຊາການຂອງ ຄວທ ສົກ {{ $planningYear->year }}</h2>
 
         <div class="income-summary-org">
@@ -793,7 +803,7 @@
         <div class="plan-year-page-number" aria-hidden="true"></div>
     </section>
 
-    <section class="paper paper-summary expense-paper expense-summary-paper">
+    <section class="paper paper-summary expense-paper expense-summary-paper" id="preview-expense" data-preview-topic="expense">
         <h2 class="expense-summary-title">2. ງົບປະມານລາຍຈ່າຍບໍລິຫານ ແລະ ວິຊາການຂອງ ຄວທ ປະຈຳສົກປີ {{ $planningYear->year }}</h2>
 
         <div class="expense-org">
@@ -956,7 +966,8 @@
         </section>
     @endforeach
 
-    <section class="paper salary-paper" id="period-3-4">
+    <span id="preview-salary" class="preview-topic-anchor" aria-hidden="true"></span>
+    <section class="paper salary-paper" id="period-3-4" data-preview-topic="salary">
         <div class="official-header salary-header">
             <div class="org-left">
                 <strong>ມະຫາວິທະຍາໄລແຫ່ງຊາດ</strong>
@@ -1550,6 +1561,78 @@
         color: var(--fns-green);
     }
 
+    .preview-topic-nav {
+        position: fixed;
+        right: 1.25rem;
+        bottom: 1.25rem;
+        z-index: 45;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .45rem;
+        margin: 0;
+        border: 1px solid #d9e1ec;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, .96);
+        box-shadow: 0 18px 45px rgba(15, 23, 42, .18);
+        padding: .42rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .preview-topic-nav > span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+    }
+
+    .preview-topic-nav > div {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: center;
+        gap: .35rem;
+    }
+
+    .preview-topic-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2.35rem;
+        border: 1px solid #d8e0ea;
+        border-radius: 999px;
+        background: #fff;
+        color: #13213b;
+        padding: .42rem 1rem;
+        font-size: .86rem;
+        font-weight: 900;
+        text-decoration: none;
+        transition: background .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease;
+    }
+
+    .preview-topic-link:hover {
+        border-color: #c29014;
+        background: #fff8e7;
+        color: #111827;
+    }
+
+    .preview-topic-link.is-active {
+        border-color: #13213b;
+        background: #13213b;
+        color: #fff;
+        box-shadow: 0 7px 18px rgba(19, 33, 59, .18);
+    }
+
+    [data-preview-topic],
+    .preview-topic-anchor {
+        scroll-margin-top: 5.75rem;
+    }
+
+    .preview-topic-anchor {
+        display: block;
+        height: 0;
+    }
+
     .review-empty {
         border: 1px dashed var(--fns-gray-200);
         border-radius: 8px;
@@ -1566,6 +1649,25 @@
             right: 1rem;
             width: auto;
         }
+
+        .preview-topic-nav {
+            left: .75rem;
+            right: .75rem;
+            bottom: .75rem;
+            border-radius: 14px;
+        }
+
+        .preview-topic-nav > div {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            width: 100%;
+        }
+
+        .preview-topic-link {
+            width: 100%;
+            padding-left: .35rem;
+            padding-right: .35rem;
+        }
     }
 
     .income-preview {
@@ -1574,6 +1676,7 @@
         gap: 1.25rem;
         color: #111827;
         font-family: 'Noto Sans Lao', ui-sans-serif, system-ui, sans-serif;
+        padding-bottom: 4.75rem;
     }
 
     .paper {
@@ -2420,6 +2523,7 @@
         .fns-alert,
         .fns-page-title,
         .review-toolbar,
+        .preview-topic-nav,
         .review-panel,
         .review-drawer-backdrop,
         .review-modal-backdrop,
@@ -2439,6 +2543,7 @@
 
         .income-preview {
             gap: 1.25rem;
+            padding-bottom: 0;
             width: 100%;
             zoom: 0.74;
         }
@@ -2533,6 +2638,43 @@
             printButton.addEventListener('click', function () {
                 window.print();
             });
+        }
+
+        const topicLinks = Array.from(document.querySelectorAll('[data-preview-topic-link]'));
+        const topicSections = Array.from(document.querySelectorAll('[data-preview-topic]'));
+        const setActiveTopic = (topic) => {
+            topicLinks.forEach((link) => {
+                link.classList.toggle('is-active', link.dataset.previewTopicLink === topic);
+            });
+        };
+
+        topicLinks.forEach((link) => {
+            link.addEventListener('click', function (event) {
+                const target = document.querySelector(link.getAttribute('href'));
+                if (!target) return;
+
+                event.preventDefault();
+                target.scrollIntoView({behavior: 'smooth', block: 'start'});
+                setActiveTopic(link.dataset.previewTopicLink);
+                history.replaceState(null, '', link.getAttribute('href'));
+            });
+        });
+
+        if (topicSections.length) {
+            const observer = new IntersectionObserver((entries) => {
+                const visible = entries
+                    .filter((entry) => entry.isIntersecting)
+                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+                if (visible?.target?.dataset.previewTopic) {
+                    setActiveTopic(visible.target.dataset.previewTopic);
+                }
+            }, {
+                rootMargin: '-18% 0px -60% 0px',
+                threshold: [0.02, 0.1, 0.25, 0.5],
+            });
+
+            topicSections.forEach((section) => observer.observe(section));
         }
 
         const modal = document.querySelector('[data-review-modal]');
