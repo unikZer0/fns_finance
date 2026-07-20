@@ -116,6 +116,11 @@ class ExpenseStructureController extends Controller
         $activeSectionId = $sections->contains('id', $request->integer('active_section'))
             ? $request->integer('active_section')
             : $sections->first()?->id;
+        $activeDefaultModalId = $sections
+            ->flatMap(fn (ExpenseSection $section) => $section->subsections->pluck('id'))
+            ->contains($request->integer('active_default'))
+                ? $request->integer('active_default')
+                : null;
 
         $patterns = ExpensePattern::systemDefaults()
             ->where('is_active', true)
@@ -142,6 +147,7 @@ class ExpenseStructureController extends Controller
             'accountOptions' => $accountOptions,
             'accountWarnings' => $accountWarnings,
             'activeSectionId' => $activeSectionId,
+            'activeDefaultModalId' => $activeDefaultModalId,
         ]);
     }
 

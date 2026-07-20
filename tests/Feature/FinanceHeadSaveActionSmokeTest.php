@@ -283,6 +283,34 @@ class FinanceHeadSaveActionSmokeTest extends TestCase
             ->assertSee('class="es-section-card js-section-panel is-active" data-section-panel="'.$createdSection->id.'"', false);
     }
 
+    public function test_expense_default_row_creation_reopens_the_same_default_modal(): void
+    {
+        [$year, , , $section, $subsection] = $this->seedExpenseStructure();
+
+        $this->actingAs($this->financeHead)
+            ->post(route('head_of_finance.settings.expense-default-rows.store'), [
+                'subsection_code' => $subsection->code,
+                'subsection_id' => $subsection->id,
+                'item_name' => 'New Modal Row',
+                'sort_order' => 2,
+            ])
+            ->assertRedirect(route('head_of_finance.settings.expense-structure.index', [
+                'planning_year_id' => $year->id,
+                'active_section' => $section->id,
+                'active_default' => $subsection->id,
+            ]));
+
+        $this->actingAs($this->financeHead)
+            ->get(route('head_of_finance.settings.expense-structure.index', [
+                'planning_year_id' => $year->id,
+                'active_section' => $section->id,
+                'active_default' => $subsection->id,
+            ]))
+            ->assertOk()
+            ->assertSee('const EXPENSE_STRUCTURE_ACTIVE_DEFAULT_MODAL = "'.$subsection->id.'";', false)
+            ->assertSee('New Modal Row');
+    }
+
     public function test_account_link_page_uses_selected_planning_year_rows(): void
     {
         [$targetYear, $account, $pattern] = $this->seedExpenseStructure();

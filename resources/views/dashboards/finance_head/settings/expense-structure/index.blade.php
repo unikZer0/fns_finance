@@ -1250,6 +1250,7 @@
 <script>
 const EXPENSE_STRUCTURE_ACCOUNT_OPTIONS = @json($accountOptions->values());
 const EXPENSE_STRUCTURE_CSRF = document.querySelector('meta[name="csrf-token"]').content;
+const EXPENSE_STRUCTURE_ACTIVE_DEFAULT_MODAL = @json($activeDefaultModalId ? (string) $activeDefaultModalId : null);
 let activeExpenseStructureSection = document.querySelector('.es-section-tab.is-active')?.dataset.sectionTarget || null;
 let activeAccountFilter = 'all';
 
@@ -1744,6 +1745,9 @@ document.addEventListener('click', (event) => {
 document.getElementById('esPrevSection')?.addEventListener('click', () => moveExpenseStructureSection(-1));
 document.getElementById('esNextSection')?.addEventListener('click', () => moveExpenseStructureSection(1));
 syncExpenseStructureSectionNav();
+if (EXPENSE_STRUCTURE_ACTIVE_DEFAULT_MODAL) {
+    openDefaultModal(EXPENSE_STRUCTURE_ACTIVE_DEFAULT_MODAL);
+}
 </script>
 @endpush
 @endsection
