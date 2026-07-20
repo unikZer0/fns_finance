@@ -141,9 +141,11 @@
             </button>
         @endif
 
-        <button type="button" class="review-primary-btn" data-print-plan>
-            ພິມ
-        </button>
+        @if($reviewContext['can_manage_review'])
+            <button type="button" class="review-primary-btn" data-print-plan>
+                ພິມ
+            </button>
+        @endif
 
         @if($reviewContext['can_manage_review'] && $planningYear->canBeEdited())
             @if(! empty($planYearWarnings['unlinked_expenses']))
@@ -1563,7 +1565,7 @@
 
     .preview-topic-nav {
         position: fixed;
-        right: 1.25rem;
+        left: 1.25rem;
         bottom: 1.25rem;
         z-index: 45;
         display: flex;
@@ -1653,7 +1655,7 @@
         .preview-topic-nav {
             left: .75rem;
             right: .75rem;
-            bottom: .75rem;
+            bottom: 4.7rem;
             border-radius: 14px;
         }
 
@@ -1676,7 +1678,7 @@
         gap: 1.25rem;
         color: #111827;
         font-family: 'Noto Sans Lao', ui-sans-serif, system-ui, sans-serif;
-        padding-bottom: 4.75rem;
+        padding-bottom: 5.25rem;
     }
 
     .paper {
