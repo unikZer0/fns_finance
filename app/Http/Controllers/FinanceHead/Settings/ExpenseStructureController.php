@@ -128,6 +128,7 @@ class ExpenseStructureController extends Controller
             ->get();
 
         $accountOptions = ChartOfAccount::with('parent')
+            ->expenseSelectable()
             ->whereDoesntHave('children')
             ->orderBy('account_code')
             ->get()

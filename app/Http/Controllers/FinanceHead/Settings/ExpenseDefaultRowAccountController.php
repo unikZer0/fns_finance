@@ -55,6 +55,7 @@ class ExpenseDefaultRowAccountController extends Controller
             ->keyBy('code');
 
         $accounts = ChartOfAccount::with('parent')
+            ->expenseSelectable()
             ->whereDoesntHave('children')
             ->orderBy('account_code')
             ->get();

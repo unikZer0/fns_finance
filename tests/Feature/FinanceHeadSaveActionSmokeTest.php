@@ -358,6 +358,41 @@ class FinanceHeadSaveActionSmokeTest extends TestCase
             ->assertDontSee('Active Year Only Item');
     }
 
+    public function test_expense_account_pickers_exclude_salary_accounts(): void
+    {
+        [$year, $expenseAccount] = $this->seedExpenseStructure();
+        ChartOfAccount::create([
+            'account_code' => '60100101',
+            'account_name' => 'Salary Account 60',
+        ]);
+        ChartOfAccount::create([
+            'account_code' => '61400100',
+            'account_name' => 'Salary Account 61',
+        ]);
+
+        $this->actingAs($this->financeHead)
+            ->get(route('head_of_finance.settings.expense-default-rows.accounts.index', [
+                'planning_year_id' => $year->id,
+            ]))
+            ->assertOk()
+            ->assertSee($expenseAccount->account_code)
+            ->assertDontSee('60100101')
+            ->assertDontSee('61400100')
+            ->assertDontSee('Salary Account 60')
+            ->assertDontSee('Salary Account 61');
+
+        $this->actingAs($this->financeHead)
+            ->get(route('head_of_finance.settings.expense-structure.index', [
+                'planning_year_id' => $year->id,
+            ]))
+            ->assertOk()
+            ->assertSee($expenseAccount->account_code)
+            ->assertDontSee('60100101')
+            ->assertDontSee('61400100')
+            ->assertDontSee('Salary Account 60')
+            ->assertDontSee('Salary Account 61');
+    }
+
     public function test_expense_setup_account_link_card_lists_each_planning_year(): void
     {
         [$firstYear, $account, $pattern] = $this->seedExpenseStructure();

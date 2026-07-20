@@ -163,7 +163,7 @@
     .account-combobox-menu {
         position: fixed;
         z-index: 80;
-        max-height: min(26rem, calc(100vh - 2rem));
+        max-height: min(34rem, calc(100vh - 2rem));
         overflow: auto;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
@@ -180,7 +180,7 @@
         border-radius: 6px;
         background: transparent;
         color: #0f172a;
-        padding: .6rem .7rem;
+        padding: .46rem .64rem;
         text-align: left;
         font: inherit;
         cursor: pointer;
@@ -210,17 +210,17 @@
     }
     .account-combobox-name {
         color: #111827;
-        font-size: .94rem;
+        font-size: .9rem;
         font-weight: 900;
-        line-height: 1.45;
+        line-height: 1.35;
         overflow-wrap: anywhere;
         white-space: normal;
     }
     .account-combobox-path {
         color: #64748b;
-        font-size: .78rem;
+        font-size: .74rem;
         font-weight: 700;
-        line-height: 1.55;
+        line-height: 1.4;
         overflow-wrap: anywhere;
         white-space: normal;
     }
@@ -283,7 +283,7 @@ function matchingAccounts(value) {
         ].some(part => String(part || '').toLowerCase().includes(normalized)))
         : ACCOUNT_OPTIONS;
 
-    return source.slice(0, 40);
+    return source;
 }
 
 function positionAccountCombobox() {
@@ -292,10 +292,19 @@ function positionAccountCombobox() {
     const rect = activeAccountInput.getBoundingClientRect();
     const menuWidth = Math.min(Math.max(rect.width, 720), window.innerWidth - 24);
     const left = Math.min(Math.max(12, rect.left), window.innerWidth - menuWidth - 12);
+    const viewportPadding = 12;
+    const gap = 6;
+    const spaceBelow = window.innerHeight - rect.bottom - viewportPadding;
+    const spaceAbove = rect.top - viewportPadding;
+    const openAbove = spaceBelow < 260 && spaceAbove > spaceBelow;
+    const availableHeight = Math.max(180, Math.min(544, openAbove ? spaceAbove - gap : spaceBelow - gap));
 
     accountComboboxMenu.style.width = `${menuWidth}px`;
     accountComboboxMenu.style.left = `${left}px`;
-    accountComboboxMenu.style.top = `${Math.min(rect.bottom + 6, window.innerHeight - 64)}px`;
+    accountComboboxMenu.style.maxHeight = `${availableHeight}px`;
+    accountComboboxMenu.style.top = openAbove
+        ? `${Math.max(viewportPadding, rect.top - availableHeight - gap)}px`
+        : `${rect.bottom + gap}px`;
 }
 
 function hideAccountCombobox() {
