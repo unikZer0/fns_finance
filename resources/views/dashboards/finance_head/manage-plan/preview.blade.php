@@ -95,6 +95,8 @@
     $balanceExpenseMonthly = (float) $expenseReport['periodTotal'];
     $balanceYearly = $balanceIncomeYearly - $balanceExpenseYearly;
     $balanceMonthly = $balanceIncomeMonthly - $balanceExpenseMonthly;
+    $balanceCanFinalize = $balanceYearly >= -0.01;
+    $balanceBlockingMessage = 'ລາຍຮັບວິຊາການຕ້ອງບໍ່ນ້ອຍກວ່າລາຍຈ່າຍວິຊາການ ຈຶ່ງຈະບັນທຶກ ຫຼື ສົ່ງຂໍຄວາມເຫັນໄດ້';
     $reviewContext = $reviewContext ?? [
         'mode' => 'finance',
         'can_manage_review' => true,
@@ -157,15 +159,19 @@
                 </a>
             @endif
 
-            <form method="POST" action="{{ route('head_of_finance.manage-plan.save', $planningYear) }}">
-                @csrf
-                <button type="submit" class="review-save-btn" onclick="return confirm('ບັນທຶກແຜນ ແລະ ປິດການແກ້ໄຂລາຍຮັບ, ລາຍຈ່າຍ, ເງິນເດືອນ?')">
-                    ບັນທຶກແຜນ
-                </button>
-            </form>
+            @if($balanceCanFinalize)
+                <form method="POST" action="{{ route('head_of_finance.manage-plan.save', $planningYear) }}">
+                    @csrf
+                    <button type="submit" class="review-save-btn" onclick="return confirm('ບັນທຶກແຜນ ແລະ ປິດການແກ້ໄຂລາຍຮັບ, ລາຍຈ່າຍ, ເງິນເດືອນ?')">
+                        ບັນທຶກແຜນ
+                    </button>
+                </form>
+            @else
+                <span class="review-balance-lock" title="{{ $balanceBlockingMessage }}">ດຸນດ່ຽງຕິດລົບ</span>
+            @endif
         @endif
 
-        @if($reviewContext['can_manage_review'] && $planningYear->canRequestReview())
+        @if($reviewContext['can_manage_review'] && $planningYear->canRequestReview() && $balanceCanFinalize)
             <button type="button" class="review-primary-btn" data-open-review-modal>
                 ສົ່ງຂໍຄວາມເຫັນ
             </button>
@@ -181,6 +187,13 @@
         @endif
     </div>
 </div>
+
+@if($reviewContext['can_manage_review'] && ! $balanceCanFinalize)
+    <div class="review-balance-alert">
+        <strong>ຍັງບັນທຶກແຜນ ຫຼື ສົ່ງຂໍຄວາມເຫັນບໍ່ໄດ້</strong>
+        <span>{{ $balanceBlockingMessage }}. ດຸນດ່ຽງປີນີ້: {{ $money($balanceYearly) }}</span>
+    </div>
+@endif
 
 <nav class="preview-topic-nav" aria-label="ເລືອກຫົວຂໍ້ລາຍງານ">
     <span>ເລືອກຫົວຂໍ້</span>
@@ -1215,6 +1228,46 @@
         background: var(--fns-green);
         border: 1px solid var(--fns-green);
         color: #fff;
+    }
+
+    .review-balance-lock {
+        align-items: center;
+        background: #fff7df;
+        border: 1px solid #e2b846;
+        border-radius: 8px;
+        color: #815500;
+        display: inline-flex;
+        font-size: .82rem;
+        font-weight: 900;
+        min-height: 2.55rem;
+        padding: .48rem .8rem;
+        white-space: nowrap;
+    }
+
+    .review-balance-alert {
+        align-items: flex-start;
+        background: #fff8e7;
+        border: 1px solid #e7c35b;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(17, 27, 51, .06);
+        color: #6f4b05;
+        display: flex;
+        flex-direction: column;
+        gap: .18rem;
+        margin: -0.35rem 0 1rem;
+        padding: .8rem 1rem;
+    }
+
+    .review-balance-alert strong {
+        color: #4b3400;
+        font-size: .9rem;
+        font-weight: 900;
+    }
+
+    .review-balance-alert span {
+        font-size: .82rem;
+        font-weight: 700;
+        line-height: 1.45;
     }
 
     .review-drawer-toggle {
